@@ -33,6 +33,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
   }, [pathname]);
 
   if (isLoginPage) return <>{children}</>;
+  if (state.checking) return null;
   if (!state.isAuthenticated) return null;
 
   const SidebarContent = () => (

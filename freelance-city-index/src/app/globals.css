@@ -65,37 +65,37 @@
    CLAUDE.md §9.1
    ============================================================ */
 :root {
-  /* Brand palette */
-  --ink: #0F172A;
-  --paper: #F8FAFC;
-  --sawah: #1E3A5F;
-  --pesisir: #3B6FE8;
+  /* Brand palette — CLAUDE.md §9.1 "Field Notes dari Lapangan" */
+  --ink: #1C2521;
+  --paper: #F7F5EF;
+  --sawah: #2F6F4E;
+  --pesisir: #1F5C73;
   --genteng: #B5562F;
-  --line: #E2E8F0;
+  --line: #D8D3C4;
   --warning: #B8860B;
   --warning-bg: #FBF3DA;
   --error: #B3261E;
   --error-bg: #FBEAE9;
 
   /* shadcn semantic tokens — dipetakan ke brand palette */
-  --background: #F8FAFC;
-  --foreground: #0F172A;
+  --background: #F7F5EF;
+  --foreground: #1C2521;
   --card: #FFFFFF;
-  --card-foreground: #0F172A;
+  --card-foreground: #1C2521;
   --popover: #FFFFFF;
-  --popover-foreground: #0F172A;
-  --primary: #1E3A5F;
+  --popover-foreground: #1C2521;
+  --primary: #2F6F4E;
   --primary-foreground: #FFFFFF;
-  --secondary: #EEF2F8;
-  --secondary-foreground: #0F172A;
-  --muted: #EEF2F8;
-  --muted-foreground: #64748B;
-  --accent: #3B6FE8;
+  --secondary: #EDE9DF;
+  --secondary-foreground: #1C2521;
+  --muted: #EDE9DF;
+  --muted-foreground: #6B7570;
+  --accent: #1F5C73;
   --accent-foreground: #FFFFFF;
   --destructive: #B3261E;
-  --border: #E2E8F0;
-  --input: #E2E8F0;
-  --ring: #3B6FE8;
+  --border: #D8D3C4;
+  --input: #D8D3C4;
+  --ring: #2F6F4E;
   --radius: 0.5rem;
 
   /* Sidebar (admin panel) */

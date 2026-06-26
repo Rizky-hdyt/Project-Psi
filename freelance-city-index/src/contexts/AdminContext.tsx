@@ -1,76 +1,32 @@
 "use client";
 
-import { createContext, useContext, useReducer, ReactNode } from "react";
-import seedData from "@/data/districts.seed.json";
-import type { DistrictScore } from "@/types/district";
-
-export interface AuditEntry {
-  id: string;
-  timestamp: string;
-  action: "UPDATE";
-  districtId: string;
-  indicatorId: string;
-  oldValue: number;
-  newValue: number;
-  operator: string;
-}
+import { createContext, useContext, useReducer, useEffect, ReactNode } from "react";
 
 interface AdminState {
   isAuthenticated: boolean;
-  scores: DistrictScore[];
-  auditLog: AuditEntry[];
+  username: string;
+  checking: boolean; // true saat verifikasi session pertama kali
 }
 
 type AdminAction =
-  | { type: "LOGIN" }
-  | { type: "LOGOUT" }
-  | {
-      type: "UPDATE_SCORE";
-      payload: { districtId: string; indicatorId: string; skor: number; oldValue: number };
-    };
-
-const initialScores: DistrictScore[] = seedData.scores.map((s) => ({
-  districtId: s.districtId,
-  indicatorId: s.indicatorId as DistrictScore["indicatorId"],
-  skor: s.skor,
-  updatedAt: s.updatedAt,
-}));
+  | { type: "SET_SESSION"; username: string }
+  | { type: "CLEAR_SESSION" }
+  | { type: "DONE_CHECKING" };
 
 const initialState: AdminState = {
   isAuthenticated: false,
-  scores: initialScores,
-  auditLog: [],
+  username: "",
+  checking: true,
 };
 
 function adminReducer(state: AdminState, action: AdminAction): AdminState {
   switch (action.type) {
-    case "LOGIN":
-      return { ...state, isAuthenticated: true };
-    case "LOGOUT":
-      return { ...state, isAuthenticated: false };
-    case "UPDATE_SCORE": {
-      const { districtId, indicatorId, skor, oldValue } = action.payload;
-      const now = new Date().toISOString();
-      const entry: AuditEntry = {
-        id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-        timestamp: now,
-        action: "UPDATE",
-        districtId,
-        indicatorId,
-        oldValue,
-        newValue: skor,
-        operator: "admin",
-      };
-      return {
-        ...state,
-        scores: state.scores.map((s) =>
-          s.districtId === districtId && s.indicatorId === indicatorId
-            ? { ...s, skor, updatedAt: now }
-            : s
-        ),
-        auditLog: [entry, ...state.auditLog],
-      };
-    }
+    case "SET_SESSION":
+      return { isAuthenticated: true, username: action.username, checking: false };
+    case "CLEAR_SESSION":
+      return { isAuthenticated: false, username: "", checking: false };
+    case "DONE_CHECKING":
+      return { ...state, checking: false };
     default:
       return state;
   }
@@ -78,9 +34,9 @@ function adminReducer(state: AdminState, action: AdminAction): AdminState {
 
 interface AdminContextValue {
   state: AdminState;
-  login: (username: string, password: string) => boolean;
-  logout: () => void;
-  updateScore: (districtId: string, indicatorId: string, skor: number) => void;
+  login: (username: string, password: string) => Promise<{ ok: boolean; error?: string }>;
+  logout: () => Promise<void>;
+  updateScore: (districtId: string, indicatorId: string, skor: number) => Promise<{ ok: boolean; error?: string }>;
 }
 
 const AdminContext = createContext<AdminContextValue | null>(null);
@@ -88,26 +44,48 @@ const AdminContext = createContext<AdminContextValue | null>(null);
 export function AdminProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(adminReducer, initialState);
 
-  function login(username: string, password: string): boolean {
-    if (username === "admin" && password === "freelancecity2026") {
-      dispatch({ type: "LOGIN" });
-      return true;
-    }
-    return false;
-  }
+  // Verifikasi session dari cookie saat pertama load (agar refresh tidak logout)
+  useEffect(() => {
+    fetch("/api/auth/session")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.authenticated) {
+          dispatch({ type: "SET_SESSION", username: data.username });
+        } else {
+          dispatch({ type: "DONE_CHECKING" });
+        }
+      })
+      .catch(() => dispatch({ type: "DONE_CHECKING" }));
+  }, []);
 
-  function logout() {
-    dispatch({ type: "LOGOUT" });
-  }
-
-  function updateScore(districtId: string, indicatorId: string, skor: number) {
-    const current = state.scores.find(
-      (s) => s.districtId === districtId && s.indicatorId === indicatorId
-    );
-    dispatch({
-      type: "UPDATE_SCORE",
-      payload: { districtId, indicatorId, skor, oldValue: current?.skor ?? 0 },
+  async function login(username: string, password: string) {
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }),
     });
+    if (res.ok) {
+      dispatch({ type: "SET_SESSION", username });
+      return { ok: true };
+    }
+    const data = await res.json();
+    return { ok: false, error: data.error ?? "Login gagal" };
+  }
+
+  async function logout() {
+    await fetch("/api/auth/logout", { method: "POST" });
+    dispatch({ type: "CLEAR_SESSION" });
+  }
+
+  async function updateScore(districtId: string, indicatorId: string, skor: number) {
+    const res = await fetch("/api/admin/scores", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ districtId, indicatorId, skor }),
+    });
+    if (res.ok) return { ok: true };
+    const data = await res.json();
+    return { ok: false, error: data.error ?? "Gagal menyimpan" };
   }
 
   return (

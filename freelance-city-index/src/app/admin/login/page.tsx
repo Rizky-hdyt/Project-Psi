@@ -24,7 +24,7 @@ export default function AdminLoginPage() {
     return null;
   }
 
-  function handleSubmit(e: FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
 
@@ -38,13 +38,13 @@ export default function AdminLoginPage() {
     }
 
     setLoading(true);
-    const ok = login(username.trim(), password);
+    const result = await login(username.trim(), password);
     setLoading(false);
 
-    if (ok) {
+    if (result.ok) {
       router.push("/admin");
     } else {
-      setError("Username atau password salah");
+      setError(result.error ?? "Username atau password salah");
     }
   }
 

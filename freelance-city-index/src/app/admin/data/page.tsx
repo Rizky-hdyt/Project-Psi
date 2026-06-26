@@ -3,11 +3,11 @@
 import { useState, useEffect, ChangeEvent } from "react";
 import { Save, CheckCircle2 } from "lucide-react";
 import { useAdmin } from "@/contexts/AdminContext";
+import { useDistricts } from "@/hooks/useDistricts";
 import { validateIndicatorScore } from "@/lib/validation/adminInput";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import districtsData from "@/data/districts.seed.json";
 
 const INDICATORS = [
   { id: "internet", label: "Internet Quality", desc: "Kualitas & kecepatan internet (0–100)" },
@@ -45,18 +45,23 @@ function initForm(
 }
 
 export default function DataManagementPage() {
-  const { state, updateScore } = useAdmin();
-  const districts = districtsData.districts;
+  const { updateScore } = useAdmin();
+  const { districts, scores, loading, error } = useDistricts();
 
-  const [forms, setForms] = useState<Record<string, DistrictForm>>(() => {
-    const init: Record<string, DistrictForm> = {};
-    for (const d of districts) {
-      init[d.id] = initForm(d.id, state.scores);
-    }
-    return init;
-  });
-
+  const [forms, setForms] = useState<Record<string, DistrictForm>>({});
   const [savedDistrict, setSavedDistrict] = useState<string | null>(null);
+  const [savingDistrict, setSavingDistrict] = useState<string | null>(null);
+
+  // Initialize forms once data is loaded from API
+  useEffect(() => {
+    if (!loading && districts.length > 0) {
+      const init: Record<string, DistrictForm> = {};
+      for (const d of districts) {
+        init[d.id] = initForm(d.id, scores);
+      }
+      setForms(init);
+    }
+  }, [loading, districts, scores]);
 
   useEffect(() => {
     if (savedDistrict) {
@@ -67,17 +72,17 @@ export default function DataManagementPage() {
 
   function handleChange(districtId: string, indicatorId: IndicatorId, e: ChangeEvent<HTMLInputElement>) {
     const val = e.target.value;
-    const error = val === "" ? null : validateIndicatorScore(val);
+    const err = val === "" ? null : validateIndicatorScore(val);
     setForms((prev) => ({
       ...prev,
       [districtId]: {
         ...prev[districtId],
-        [indicatorId]: { value: val, error, saved: false },
+        [indicatorId]: { value: val, error: err, saved: false },
       },
     }));
   }
 
-  function handleSave(districtId: string) {
+  async function handleSave(districtId: string) {
     const form = forms[districtId];
     let hasError = false;
     const updated = { ...form } as DistrictForm;
@@ -101,19 +106,30 @@ export default function DataManagementPage() {
       return;
     }
 
-    for (const ind of INDICATORS) {
-      updateScore(districtId, ind.id, Number(form[ind.id].value));
-      updated[ind.id] = { ...updated[ind.id], saved: true };
-    }
+    setSavingDistrict(districtId);
+    const results = await Promise.all(
+      INDICATORS.map((ind) =>
+        updateScore(districtId, ind.id, Number(form[ind.id].value))
+      )
+    );
+    setSavingDistrict(null);
 
-    setForms((prev) => ({ ...prev, [districtId]: updated }));
-    setSavedDistrict(districtId);
+    const anyFailed = results.some((r) => !r.ok);
+    if (!anyFailed) {
+      const saved = { ...form } as DistrictForm;
+      for (const ind of INDICATORS) {
+        saved[ind.id] = { ...updated[ind.id], saved: true };
+      }
+      setForms((prev) => ({ ...prev, [districtId]: saved }));
+      setSavedDistrict(districtId);
+    }
   }
 
   function isFormDirty(districtId: string): boolean {
     const form = forms[districtId];
+    if (!form) return false;
     return INDICATORS.some((ind) => {
-      const original = state.scores.find(
+      const original = scores.find(
         (s) => s.districtId === districtId && s.indicatorId === ind.id
       );
       return form[ind.id].value !== String(original?.skor ?? "");
@@ -121,6 +137,7 @@ export default function DataManagementPage() {
   }
 
   function hasFormError(districtId: string): boolean {
+    if (!forms[districtId]) return false;
     return INDICATORS.some((ind) => !!forms[districtId][ind.id].error);
   }
 
@@ -136,87 +153,105 @@ export default function DataManagementPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 max-w-[680px]">
-        {districts.map((district) => {
-          const form = forms[district.id];
-          const isSaved = savedDistrict === district.id;
-          const dirty = isFormDirty(district.id);
-          const hasErr = hasFormError(district.id);
+      {loading && (
+        <div className="grid gap-4 max-w-[680px]">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-48 animate-pulse rounded-lg bg-muted" />
+          ))}
+        </div>
+      )}
 
-          return (
-            <div
-              key={district.id}
-              className="rounded-lg border border-line bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.06)]"
-            >
-              <div className="mb-4 flex items-center justify-between">
-                <div>
-                  <h2 className="font-semibold text-ink">{district.nama}</h2>
-                  <p className="text-xs text-muted-foreground">{district.tipe}</p>
+      {error && (
+        <div className="rounded-lg border border-error/30 bg-error-bg px-4 py-3 max-w-[680px]">
+          <p className="text-sm text-error">Koneksi terputus. Coba muat ulang halaman.</p>
+        </div>
+      )}
+
+      {!loading && !error && (
+        <div className="grid gap-4 max-w-[680px]">
+          {districts.map((district) => {
+            const form = forms[district.id];
+            if (!form) return null;
+            const isSaved = savedDistrict === district.id;
+            const isSaving = savingDistrict === district.id;
+            const dirty = isFormDirty(district.id);
+            const hasErr = hasFormError(district.id);
+
+            return (
+              <div
+                key={district.id}
+                className="rounded-lg border border-line bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.06)]"
+              >
+                <div className="mb-4 flex items-center justify-between">
+                  <div>
+                    <h2 className="font-semibold text-ink">{district.nama}</h2>
+                    <p className="text-xs text-muted-foreground">{district.tipe}</p>
+                  </div>
+                  {isSaved && (
+                    <span className="flex items-center gap-1.5 text-xs font-medium text-sawah">
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                      Tersimpan
+                    </span>
+                  )}
                 </div>
-                {isSaved && (
-                  <span className="flex items-center gap-1.5 text-xs font-medium text-sawah">
-                    <CheckCircle2 className="h-3.5 w-3.5" />
-                    Tersimpan
-                  </span>
-                )}
-              </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                {INDICATORS.map((ind) => {
-                  const field = form[ind.id];
-                  return (
-                    <div key={ind.id} className="space-y-1">
-                      <Label
-                        htmlFor={`${district.id}-${ind.id}`}
-                        className="text-xs font-medium text-ink"
-                      >
-                        {ind.label}
-                      </Label>
-                      <Input
-                        id={`${district.id}-${ind.id}`}
-                        type="number"
-                        min={0}
-                        max={100}
-                        step={1}
-                        value={field.value}
-                        onChange={(e) => handleChange(district.id, ind.id, e)}
-                        aria-invalid={!!field.error}
-                        aria-describedby={
-                          field.error ? `${district.id}-${ind.id}-err` : undefined
-                        }
-                        className="h-9 font-mono"
-                      />
-                      {field.error ? (
-                        <p
-                          id={`${district.id}-${ind.id}-err`}
-                          className="text-xs text-error"
-                          role="alert"
+                <div className="grid grid-cols-2 gap-4">
+                  {INDICATORS.map((ind) => {
+                    const field = form[ind.id];
+                    return (
+                      <div key={ind.id} className="space-y-1">
+                        <Label
+                          htmlFor={`${district.id}-${ind.id}`}
+                          className="text-xs font-medium text-ink"
                         >
-                          {field.error}
-                        </p>
-                      ) : (
-                        <p className="text-[11px] text-muted-foreground">{ind.desc}</p>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+                          {ind.label}
+                        </Label>
+                        <Input
+                          id={`${district.id}-${ind.id}`}
+                          type="number"
+                          min={0}
+                          max={100}
+                          step={1}
+                          value={field.value}
+                          onChange={(e) => handleChange(district.id, ind.id, e)}
+                          aria-invalid={!!field.error}
+                          aria-describedby={
+                            field.error ? `${district.id}-${ind.id}-err` : undefined
+                          }
+                          className="h-9 font-mono"
+                        />
+                        {field.error ? (
+                          <p
+                            id={`${district.id}-${ind.id}-err`}
+                            className="text-xs text-error"
+                            role="alert"
+                          >
+                            {field.error}
+                          </p>
+                        ) : (
+                          <p className="text-[11px] text-muted-foreground">{ind.desc}</p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
 
-              <div className="mt-4 flex justify-end">
-                <Button
-                  size="sm"
-                  disabled={!dirty || hasErr}
-                  onClick={() => handleSave(district.id)}
-                  className="gap-1.5 bg-sawah text-white hover:bg-sawah/90 disabled:opacity-40"
-                >
-                  <Save className="h-3.5 w-3.5" />
-                  Simpan {districtName(district.id)}
-                </Button>
+                <div className="mt-4 flex justify-end">
+                  <Button
+                    size="sm"
+                    disabled={!dirty || hasErr || isSaving}
+                    onClick={() => handleSave(district.id)}
+                    className="gap-1.5 bg-sawah text-white hover:bg-sawah/90 disabled:opacity-40"
+                  >
+                    <Save className="h-3.5 w-3.5" />
+                    {isSaving ? "Menyimpan..." : `Simpan ${districtName(district.id)}`}
+                  </Button>
+                </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

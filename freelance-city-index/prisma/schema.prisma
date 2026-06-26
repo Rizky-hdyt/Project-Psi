@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model District {
+  id                     String          @id
+  nama                   String
+  tipe                   String
+  umk                    Int
+  coworkingCount         Int
+  internetMbps           Int
+  kostMin                Int
+  kostMax                Int
+  estimasiBiayaHidup     Int
+  ringkasanKarakteristik String
+  scores                 DistrictScore[]
+  auditLogs              AuditLog[]
+}
+
+model DistrictScore {
+  id          String   @id @default(cuid())
+  districtId  String
+  indicatorId String
+  skor        Float
+  updatedAt   DateTime @default(now()) @updatedAt
+  district    District @relation(fields: [districtId], references: [id])
+
+  @@unique([districtId, indicatorId])
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  districtId  String
+  indicatorId String
+  nilaiLama   Float
+  nilaiBaru   Float
+  operator    String
+  createdAt   DateTime @default(now())
+  district    District @relation(fields: [districtId], references: [id])
+}

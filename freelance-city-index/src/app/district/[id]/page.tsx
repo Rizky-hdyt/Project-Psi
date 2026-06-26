@@ -8,7 +8,8 @@ import { Navbar } from "@/components/shared/Navbar";
 import { WhyThisMatch } from "@/components/shared/WhyThisMatch";
 import { rankDistricts } from "@/lib/scoring/rank";
 import { generateWhyText } from "@/lib/scoring/whyThisMatch";
-import seedData from "@/data/districts.seed.json";
+import { useDistricts } from "@/hooks/useDistricts";
+import { getDistrictVisual } from "@/data/districts.visuals";
 import type { QuizInput } from "@/types/quiz";
 import type { District, DistrictScore } from "@/types/district";
 import type { IndicatorId } from "@/types/recommendation";
@@ -65,10 +66,37 @@ export default function DistrictDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const params = useSearchParams();
+  const { districts, scores, loading, error } = useDistricts();
 
-  const districts = seedData.districts as District[];
-  const scores    = seedData.scores as DistrictScore[];
-  const district  = districts.find((d) => d.id === id);
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#F8F9FA]">
+        <Navbar />
+        <div className="mx-auto max-w-[1120px] px-4 py-8 sm:px-6 sm:py-10 space-y-4">
+          <div className="h-8 w-48 animate-pulse rounded-lg bg-muted" />
+          <div className="h-12 w-72 animate-pulse rounded-lg bg-muted" />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="h-24 animate-pulse rounded-xl bg-muted" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4">
+        <p className="text-error">Koneksi terputus. Coba muat ulang halaman.</p>
+        <Button onClick={() => window.location.reload()} className="gap-2 bg-sawah text-white hover:bg-sawah/90">
+          Coba Lagi
+        </Button>
+      </div>
+    );
+  }
+
+  const district = districts.find((d) => d.id === id);
 
   if (!district) {
     return (
@@ -140,41 +168,61 @@ export default function DistrictDetailPage() {
     },
   ];
 
+  const visual = getDistrictVisual(district.id);
+
   return (
-    <div className="min-h-screen bg-[#F8F9FA]">
+    <div className="min-h-screen bg-paper">
       <Navbar />
 
-      <div className="mx-auto max-w-[1120px] px-4 py-8 sm:px-6 sm:py-10">
-        {/* Back button */}
-        <div className="mb-6">
-          <Button
-            variant="ghost"
-            size="sm"
+      {/* ── Hero image/gradient ────────────────────────────────── */}
+      <div className="relative h-56 sm:h-72 overflow-hidden">
+        {/* Background image */}
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url(${visual.imageUrl})` }}
+        />
+        {/* Gradient overlay (also fallback if image fails) */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `linear-gradient(to bottom, ${visual.gradientFrom}CC 0%, ${visual.gradientTo}EE 100%)`,
+          }}
+        />
+        {/* Back button (on hero) */}
+        <div className="absolute left-4 top-4 sm:left-6">
+          <button
             onClick={() => router.push(resultUrl)}
-            className="gap-1.5 text-muted-foreground hover:text-ink -ml-2"
+            className="flex items-center gap-1.5 rounded-full border border-white/30 bg-white/20 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-sm transition-all hover:bg-white/30"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-3.5 w-3.5" />
             Kembali ke hasil
-          </Button>
+          </button>
         </div>
-
-        {/* Title */}
-        <div className="mb-8">
-          <p className="mb-1 font-mono text-xs font-medium uppercase tracking-widest text-muted-foreground">
-            {district.tipe}
-          </p>
-          <h1 className="font-display text-3xl font-bold text-ink sm:text-4xl">
-            {district.nama}
-          </h1>
+        {/* District info on hero */}
+        <div className="absolute bottom-0 left-0 p-5 sm:p-8">
+          <div className="flex items-end gap-3">
+            <span className="text-4xl">{visual.emoji}</span>
+            <div>
+              <p className="mb-0.5 font-mono text-xs font-medium uppercase tracking-widest text-white/70">
+                {district.tipe} · DIY
+              </p>
+              <h1 className="font-display text-3xl font-bold text-white sm:text-4xl drop-shadow-sm">
+                {district.nama}
+              </h1>
+            </div>
+          </div>
           {rankedEntry && (
-            <p className="mt-2 font-mono text-sm text-muted-foreground">
-              Skor Anda:{" "}
-              <span className="font-bold text-ink">{rankedEntry.skorTotal}</span>
-              {" · "}Rank #{rankedEntry.rank} dari 5 distrik
-            </p>
+            <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 backdrop-blur-sm">
+              <span className="font-mono text-xs text-white/80">Skor Anda:</span>
+              <span className="font-mono text-sm font-bold text-white">{rankedEntry.skorTotal}</span>
+              <span className="text-white/50">·</span>
+              <span className="font-mono text-xs text-white/80">Rank #{rankedEntry.rank} dari 5</span>
+            </div>
           )}
         </div>
+      </div>
 
+      <div className="mx-auto max-w-[1120px] px-4 py-8 sm:px-6 sm:py-10">
         {/* District Snapshot */}
         <section className="mb-8">
           <p className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -186,8 +234,11 @@ export default function DistrictDetailPage() {
                 key={label}
                 className="flex gap-3 rounded-xl border border-line bg-white p-4 shadow-[0_1px_2px_rgba(28,37,33,0.06)]"
               >
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-line">
-                  <Icon className="h-4 w-4 text-pesisir" />
+                <div
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
+                  style={{ background: `${visual.gradientFrom}18` }}
+                >
+                  <Icon className="h-4 w-4" style={{ color: visual.gradientFrom }} />
                 </div>
                 <div className="min-w-0">
                   <p className="mb-0.5 text-xs font-medium text-muted-foreground">{label}</p>

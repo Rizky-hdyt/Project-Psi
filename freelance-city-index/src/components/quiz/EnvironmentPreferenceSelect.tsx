@@ -9,11 +9,13 @@ const OPTIONS: {
   label: string;
   sub: string;
   icon: React.ElementType;
+  color: string;
+  bg: string;
 }[] = [
-  { value: "quiet",     label: "Quiet",     sub: "Tenang & fokus",    icon: Volume1   },
-  { value: "cafe",      label: "Cafe",      sub: "Suasana cafe",      icon: Coffee    },
-  { value: "coworking", label: "Coworking", sub: "Ruang kerja ramai", icon: Building2 },
-  { value: "flexible",  label: "Flexible",  sub: "Tidak ada preferensi", icon: Shuffle  },
+  { value: "quiet",     label: "Quiet",     sub: "Tenang & fokus",       icon: Volume1,   color: "#2F6F4E", bg: "#EDF5F1" },
+  { value: "cafe",      label: "Cafe",      sub: "Suasana cafe hangat",  icon: Coffee,    color: "#B5562F", bg: "#FAF0EA" },
+  { value: "coworking", label: "Coworking", sub: "Ruang kerja kolaboratif", icon: Building2, color: "#1F5C73", bg: "#EEF4F8" },
+  { value: "flexible",  label: "Flexible",  sub: "Semua cocok",          icon: Shuffle,   color: "#7B6040", bg: "#F5F0E8" },
 ];
 
 interface Props {
@@ -27,8 +29,8 @@ export function EnvironmentPreferenceSelect({ value, onChange }: Props) {
       <label className="mb-3 block text-sm font-semibold text-ink">
         Lingkungan kerja seperti apa yang Anda sukai?
       </label>
-      <div className="grid grid-cols-2 gap-2">
-        {OPTIONS.map(({ value: val, label, sub, icon: Icon }) => {
+      <div className="grid grid-cols-2 gap-2.5">
+        {OPTIONS.map(({ value: val, label, sub, icon: Icon, color, bg }) => {
           const isActive = value === val;
           return (
             <button
@@ -36,24 +38,37 @@ export function EnvironmentPreferenceSelect({ value, onChange }: Props) {
               type="button"
               onClick={() => onChange(val)}
               aria-pressed={isActive}
+              style={isActive ? {
+                borderColor: color,
+                backgroundColor: bg,
+                boxShadow: `0 0 0 1px ${color}, 0 4px 12px ${color}25`,
+              } : undefined}
               className={cn(
-                "flex min-h-[44px] items-center gap-3 rounded-lg border px-4 py-3 text-left transition-all",
+                "flex min-h-[60px] flex-col items-start gap-2 rounded-xl border p-3.5 text-left transition-all duration-200",
                 isActive
-                  ? "border-sawah bg-sawah/8 ring-1 ring-sawah"
-                  : "border-line bg-white hover:border-sawah/50"
+                  ? "border-transparent"
+                  : "border-line bg-white shadow-[0_1px_2px_rgba(28,37,33,0.05)] hover:shadow-[0_4px_10px_rgba(28,37,33,0.09)] hover:-translate-y-0.5"
               )}
             >
-              <Icon
-                className={cn(
-                  "h-4 w-4 shrink-0",
-                  isActive ? "text-sawah" : "text-muted-foreground"
-                )}
-              />
+              <div
+                className="flex h-8 w-8 items-center justify-center rounded-lg transition-all"
+                style={{
+                  backgroundColor: isActive ? color : bg,
+                }}
+              >
+                <Icon
+                  className="h-4 w-4"
+                  style={{ color: isActive ? "#fff" : color }}
+                />
+              </div>
               <div>
-                <p className={cn("text-xs font-semibold", isActive ? "text-sawah" : "text-ink")}>
+                <p
+                  className="text-xs font-semibold"
+                  style={{ color: isActive ? color : "#1C2521" }}
+                >
                   {label}
                 </p>
-                <p className="text-[10px] text-muted-foreground">{sub}</p>
+                <p className="text-[10px] leading-tight text-muted-foreground">{sub}</p>
               </div>
             </button>
           );

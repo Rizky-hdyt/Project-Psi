@@ -22,9 +22,10 @@ import { Navbar } from "@/components/shared/Navbar";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { rankDistricts } from "@/lib/scoring/rank";
 import { generateWhyText } from "@/lib/scoring/whyThisMatch";
-import seedData from "@/data/districts.seed.json";
+import { useDistricts } from "@/hooks/useDistricts";
+import { getDistrictVisual } from "@/data/districts.visuals";
 import type { QuizInput } from "@/types/quiz";
-import type { District, DistrictScore } from "@/types/district";
+import type { District } from "@/types/district";
 import type { IndicatorId, RankedDistrict } from "@/types/recommendation";
 
 // ── District metadata ────────────────────────────────────────────────────────
@@ -34,14 +35,6 @@ const DISTRICT_SECONDARY_BADGE: Record<string, string> = {
   bantul: "Best for Creators",
   "kulon-progo": "Most Potential",
   gunungkidul: "Lowest Cost",
-};
-
-const DISTRICT_AVATAR_BG: Record<string, string> = {
-  "kota-yogyakarta": "bg-pesisir",
-  sleman: "bg-sawah",
-  bantul: "bg-genteng",
-  "kulon-progo": "bg-ink",
-  gunungkidul: "bg-warning",
 };
 
 const INDICATORS: { id: IndicatorId; label: string; shortLabel: string; icon: React.ElementType }[] = [
@@ -62,12 +55,13 @@ function formatRupiah(n: number) {
 
 // ── District Avatar ──────────────────────────────────────────────────────────
 function DistrictAvatar({ districtId, nama }: { districtId: string; nama: string }) {
-  const bg = DISTRICT_AVATAR_BG[districtId] ?? "bg-line";
+  const visual = getDistrictVisual(districtId);
   return (
     <div
-      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${bg} text-white font-mono text-sm font-bold`}
+      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full font-mono text-sm font-bold text-white"
+      style={{ background: `linear-gradient(135deg, ${visual.gradientFrom}, ${visual.gradientTo})` }}
     >
-      {nama.charAt(0)}
+      {visual.emoji}
     </div>
   );
 }
@@ -82,16 +76,10 @@ function ScoreComparisonChart({ ranked, districts }: { ranked: RankedDistrict[];
       <p className="mb-0.5 text-sm font-semibold text-ink">Score Comparison</p>
       <p className="mb-4 text-xs text-muted-foreground">All {ranked.length} districts ranked</p>
       <div className="space-y-2.5">
-        {ranked.map((r, i) => {
+        {ranked.map((r) => {
           const d = districtMap[r.districtId];
+          const visual = getDistrictVisual(r.districtId);
           const pct = Math.round((r.skorTotal / maxScore) * 100);
-          const barColors = [
-            "bg-sawah",
-            "bg-pesisir",
-            "bg-warning",
-            "bg-genteng",
-            "bg-muted-foreground",
-          ];
           return (
             <div key={r.districtId} className="flex items-center gap-2">
               <span className="w-20 shrink-0 truncate text-xs text-muted-foreground">
@@ -100,8 +88,11 @@ function ScoreComparisonChart({ ranked, districts }: { ranked: RankedDistrict[];
               <div className="flex-1">
                 <div className="h-2 w-full overflow-hidden rounded-full bg-line">
                   <div
-                    className={`h-full rounded-full ${barColors[i] ?? "bg-line"} motion-safe:transition-all motion-safe:duration-500`}
-                    style={{ width: `${pct}%` }}
+                    className="h-full rounded-full motion-safe:transition-all motion-safe:duration-500"
+                    style={{
+                      width: `${pct}%`,
+                      background: `linear-gradient(90deg, ${visual.gradientFrom}, ${visual.gradientTo})`,
+                    }}
                   />
                 </div>
               </div>
@@ -131,15 +122,24 @@ function TopRecommendationCard({
   const d = districts.find((x) => x.id === top.districtId);
   if (!d) return null;
 
+  const topVisual = getDistrictVisual(top.districtId);
   return (
-    <div className="rounded-xl bg-sawah p-5 text-white shadow-[0_2px_8px_rgba(30,58,95,0.25)]">
+    <div
+      className="rounded-xl p-5 text-white shadow-[0_4px_16px_rgba(0,0,0,0.2)]"
+      style={{
+        background: `linear-gradient(135deg, ${topVisual.gradientFrom} 0%, ${topVisual.gradientTo} 100%)`,
+      }}
+    >
       <div className="mb-3 flex items-center gap-1.5">
         <MapPin className="h-3.5 w-3.5 opacity-80" />
         <span className="text-xs font-semibold uppercase tracking-wider opacity-80">
           Top Recommendation
         </span>
       </div>
-      <h3 className="mb-1 font-display text-xl font-bold">{d.nama}</h3>
+      <div className="mb-1 flex items-center gap-2">
+        <span className="text-2xl">{topVisual.emoji}</span>
+        <h3 className="font-display text-xl font-bold">{d.nama}</h3>
+      </div>
       <p className="mb-4 text-sm opacity-75 leading-relaxed line-clamp-2">
         {d.ringkasanKarakteristik}
       </p>
@@ -190,17 +190,25 @@ function DistrictRankCard({
 }) {
   const displayScore = (ranked.skorTotal / 10).toFixed(1);
   const secondaryBadge = DISTRICT_SECONDARY_BADGE[district.id];
-
   const scoreBar = Math.round(ranked.skorTotal);
+  const visual = getDistrictVisual(district.id);
 
   return (
     <div
       className={
         isBest
-          ? "rounded-xl border-2 border-sawah bg-white shadow-[0_2px_8px_rgba(47,111,78,0.12)]"
-          : "rounded-xl border border-line bg-white shadow-[0_1px_2px_rgba(28,37,33,0.06)]"
+          ? "rounded-xl border-2 border-sawah bg-white shadow-[0_4px_16px_rgba(47,111,78,0.15)] overflow-hidden"
+          : "rounded-xl border border-line bg-white shadow-[0_1px_3px_rgba(28,37,33,0.06)] overflow-hidden"
       }
     >
+      {/* Gradient strip header */}
+      <div
+        className="h-1.5 w-full"
+        style={{
+          background: `linear-gradient(90deg, ${visual.gradientFrom}, ${visual.gradientTo})`,
+        }}
+      />
+
       {/* Card header — always visible */}
       <button
         className="flex w-full items-start gap-3 p-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-t-xl"
@@ -360,6 +368,7 @@ function ResultContent() {
 
   const [openCardId, setOpenCardId] = useState<string | null>(null);
   const [hasInteracted, setHasInteracted] = useState(false);
+  const { districts, scores, loading: distLoading, error: distError } = useDistricts();
 
   if (!personaId) {
     return (
@@ -375,6 +384,37 @@ function ResultContent() {
     );
   }
 
+  if (distLoading) {
+    return (
+      <div className="flex flex-col gap-6 lg:flex-row">
+        <div className="flex-1 space-y-3">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="h-24 animate-pulse rounded-xl border border-line bg-white" />
+          ))}
+        </div>
+        <div className="w-full space-y-4 lg:w-[300px]">
+          <div className="h-48 animate-pulse rounded-xl border border-line bg-white" />
+          <div className="h-52 animate-pulse rounded-xl bg-pesisir/30" />
+        </div>
+      </div>
+    );
+  }
+
+  if (distError) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <p className="mb-4 text-error">Koneksi terputus. Coba lagi?</p>
+        <Button
+          className="gap-2 bg-sawah text-white hover:bg-sawah/90"
+          onClick={() => window.location.reload()}
+        >
+          <RefreshCw className="h-4 w-4" />
+          Coba Lagi
+        </Button>
+      </div>
+    );
+  }
+
   const input: QuizInput = {
     personaId,
     budget,
@@ -383,8 +423,6 @@ function ResultContent() {
     environmentPreference: environment,
   };
 
-  const districts = seedData.districts as District[];
-  const scores = seedData.scores as DistrictScore[];
   const ranked = rankDistricts(input, districts, scores);
 
   if (ranked.length === 0) {
