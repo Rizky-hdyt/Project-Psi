@@ -1,9 +1,107 @@
 import Link from "next/link";
-import { MapPin, Zap, Shield, User, ArrowRight, Wifi, Wallet, Users, Leaf, ChevronRight } from "lucide-react";
+import { MapPin, Zap, Shield, User, ArrowRight, Wifi, Wallet, Users, Leaf, Sigma, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/shared/Navbar";
 import { DISTRICT_VISUALS } from "@/data/districts.visuals";
 import { DistrictPreviewSection } from "@/components/landing/DistrictPreviewSection";
+
+// Mini preview bobot tiap persona — data statis untuk teaser
+const PERSONA_WEIGHTS = [
+  { label: "Tech", color: "#1F5C73", internet: 40, cost: 25, community: 20, environment: 15 },
+  { label: "Creative", color: "#B5562F", internet: 20, cost: 25, community: 25, environment: 30 },
+  { label: "Student", color: "#2F6F4E", internet: 20, cost: 45, community: 20, environment: 15 },
+  { label: "Nomad", color: "#7B6040", internet: 30, cost: 25, community: 25, environment: 20 },
+];
+
+function AlgorithmTeaser() {
+  return (
+    <section className="border-y border-line bg-white">
+      <div className="mx-auto max-w-[1120px] px-4 py-12 sm:px-6 lg:py-14">
+        <div className="grid gap-10 lg:grid-cols-[1fr_420px] lg:items-center">
+          {/* Kiri — teks */}
+          <div>
+            <p className="mb-2 font-mono text-xs font-medium uppercase tracking-widest text-sawah">
+              Transparansi · Cara Kerja
+            </p>
+            <h2 className="font-display text-2xl font-bold text-ink sm:text-3xl">
+              Mengapa rekomendasi Anda <br className="hidden sm:block" />
+              berbeda dari orang lain?
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
+              Sistem ini tidak punya satu bobot tunggal yang berlaku untuk semua orang.
+              Setiap profil freelancer mendapat komposisi bobot yang berbeda — karena
+              kebutuhan tiap orang memang tidak bisa disamakan.
+            </p>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              Pelajari formula scoring, tabel bobot per persona, sumber data, dan validasinya
+              di halaman Cara Kerja Algoritma.
+            </p>
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              <Link
+                href="/algoritma"
+                className="flex items-center gap-2 rounded-xl border-2 border-sawah bg-sawah px-5 py-2.5 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(47,111,78,0.30)] transition-all hover:bg-sawah/90"
+              >
+                <Sigma className="h-4 w-4" />
+                Pelajari Cara Kerja
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link
+                href="/quiz"
+                className="flex items-center gap-2 rounded-xl border border-line px-5 py-2.5 text-sm font-medium text-ink transition-all hover:bg-paper hover:border-sawah/40"
+              >
+                Langsung Coba Quiz
+              </Link>
+            </div>
+          </div>
+
+          {/* Kanan — mini visualisasi perbedaan bobot */}
+          <div className="rounded-2xl border border-line bg-paper p-5 shadow-[0_2px_12px_rgba(28,37,33,0.07)]">
+            <p className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Contoh perbedaan bobot · Internet vs Biaya Hidup
+            </p>
+            <div className="space-y-4">
+              {PERSONA_WEIGHTS.map(({ label, color, internet, cost }) => (
+                <div key={label}>
+                  <div className="mb-1.5 flex items-center justify-between">
+                    <span className="text-xs font-semibold text-ink">{label}</span>
+                    <span className="font-mono text-[10px] text-muted-foreground">
+                      Internet {internet}% · Biaya {cost}%
+                    </span>
+                  </div>
+                  <div className="flex h-2.5 overflow-hidden rounded-full bg-line">
+                    {/* Internet bar */}
+                    <div
+                      className="h-full transition-all"
+                      style={{ width: `${internet}%`, backgroundColor: color }}
+                    />
+                    {/* Cost bar (different opacity) */}
+                    <div
+                      className="h-full transition-all"
+                      style={{ width: `${cost}%`, backgroundColor: `${color}60` }}
+                    />
+                  </div>
+                  <div className="mt-1 flex gap-3">
+                    <span className="flex items-center gap-1 font-mono text-[9px] text-muted-foreground">
+                      <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: color }} />
+                      Internet
+                    </span>
+                    <span className="flex items-center gap-1 font-mono text-[9px] text-muted-foreground">
+                      <span className="inline-block h-2 w-2 rounded-sm" style={{ backgroundColor: `${color}60` }} />
+                      Biaya Hidup
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="mt-4 border-t border-line pt-3 font-mono text-[10px] text-muted-foreground">
+              Student prioritaskan Biaya (45%) · Tech prioritaskan Internet (40%)
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 const SAMPLE_RESULTS = [
   { id: "sleman",           nama: "Sleman",           skor: 79.2, bar: 79 },
@@ -202,6 +300,9 @@ export default function LandingPage() {
 
       {/* ── 5 Distrik Preview ─────────────────────────────────────── */}
       <DistrictPreviewSection />
+
+      {/* ── Teaser Cara Kerja Algoritma ──────────────────────────── */}
+      <AlgorithmTeaser />
 
       {/* ── 4 Indikator ───────────────────────────────────────────── */}
       <section className="mx-auto max-w-[1120px] px-4 py-14 sm:px-6 lg:py-16">

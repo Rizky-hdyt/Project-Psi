@@ -13,6 +13,7 @@ interface NavbarProps {
 
 const links = [
   { href: "/", label: "Beranda" },
+  { href: "/algoritma", label: "Algoritma" },
   { href: "/result", label: "Hasil & Distrik" },
   { href: "/admin/login", label: "Admin" },
 ];
@@ -27,6 +28,9 @@ export function Navbar({ showStartQuiz = true }: NavbarProps) {
     }
     if (href === "/admin/login") {
       return pathname?.startsWith("/admin");
+    }
+    if (href === "/algoritma") {
+      return pathname?.startsWith("/algoritma");
     }
     return pathname === href;
   }

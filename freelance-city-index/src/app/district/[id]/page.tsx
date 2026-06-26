@@ -6,6 +6,7 @@ import { ArrowLeft, Wifi, Home, Wallet, Users, Award, Info } from "lucide-react"
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/shared/Navbar";
 import { WhyThisMatch } from "@/components/shared/WhyThisMatch";
+import { SuggestedPlaces } from "@/components/district/SuggestedPlaces";
 import { rankDistricts } from "@/lib/scoring/rank";
 import { generateWhyText } from "@/lib/scoring/whyThisMatch";
 import { useDistricts } from "@/hooks/useDistricts";
@@ -265,6 +266,15 @@ export default function DistrictDetailPage() {
             />
           </section>
         )}
+
+        {/* Suggested Places */}
+        <SuggestedPlaces
+          districtId={district.id}
+          districtNama={district.nama}
+          environmentPreference={input.environmentPreference as "cafe" | "quiet" | "coworking" | "flexible"}
+          personaId={input.personaId as "tech-professional" | "creative-professional" | "student-fresh-graduate" | "digital-nomad"}
+          accentColor={visual.gradientFrom}
+        />
 
       </div>
     </div>
