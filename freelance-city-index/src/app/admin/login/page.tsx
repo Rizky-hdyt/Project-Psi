@@ -19,13 +19,18 @@ export default function AdminLoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Redirect harus di dalam useEffect, bukan saat render
+  // Satu-satunya tempat redirect — useEffect memantau isAuthenticated
+  // Tidak boleh ada router.push/replace lain untuk /admin agar tidak double navigate
   useEffect(() => {
     if (state.isAuthenticated) {
       router.replace("/admin");
     }
   }, [state.isAuthenticated, router]);
 
+  // Saat cek session masih berjalan — jangan tampil form dulu (cegah flash)
+  if (state.checking) return null;
+
+  // Sudah login — tunggu useEffect redirect, jangan render form
   if (state.isAuthenticated) return null;
 
   async function handleSubmit(e: FormEvent) {
@@ -45,9 +50,9 @@ export default function AdminLoginPage() {
     const result = await login(username.trim(), password);
     setLoading(false);
 
-    if (result.ok) {
-      router.push("/admin");
-    } else {
+    // Jangan router.push di sini — useEffect sudah handle redirect saat
+    // state.isAuthenticated berubah jadi true setelah login() berhasil
+    if (!result.ok) {
       setError(result.error ?? "Username atau password salah");
     }
   }
