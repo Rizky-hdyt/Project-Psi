@@ -275,12 +275,14 @@ function DistrictRankCard({
                 Best Match
               </Badge>
             )}
-            <Badge
-              variant="outline"
-              className="border-pesisir/30 px-2 py-0.5 text-[10px] text-pesisir"
-            >
-              Best for: {PERSONA_DISPLAY[bestPersona] ?? bestPersona}
-            </Badge>
+            {isBest && (
+              <Badge
+                variant="outline"
+                className="border-pesisir/30 px-2 py-0.5 text-[10px] text-pesisir"
+              >
+                Best for: {PERSONA_DISPLAY[bestPersona] ?? bestPersona}
+              </Badge>
+            )}
             {secondaryBadge && (
               <Badge
                 variant="outline"
