@@ -27,8 +27,15 @@ export default function AdminLoginPage() {
     }
   }, [state.isAuthenticated, router]);
 
-  // Saat cek session masih berjalan — jangan tampil form dulu (cegah flash)
-  if (state.checking) return null;
+  // Saat cek session masih berjalan — tampil blank halus, bukan null
+  // agar tidak ada flash konten saat checking → done
+  if (state.checking) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-line border-t-sawah" />
+      </div>
+    );
+  }
 
   // Sudah login — tunggu useEffect redirect, jangan render form
   if (state.isAuthenticated) return null;

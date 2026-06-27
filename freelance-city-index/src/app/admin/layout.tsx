@@ -21,11 +21,14 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
   const isLoginPage = pathname === "/admin/login";
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // Tunggu session check selesai dulu (!state.checking) sebelum redirect
+  // Tanpa ini, redirect tembak saat isAuthenticated masih false sementara (checking)
+  // yang menyebabkan gerak bolak-balik login ↔ admin
   useEffect(() => {
-    if (!state.isAuthenticated && !isLoginPage) {
+    if (!state.checking && !state.isAuthenticated && !isLoginPage) {
       router.replace("/admin/login");
     }
-  }, [state.isAuthenticated, isLoginPage, router]);
+  }, [state.checking, state.isAuthenticated, isLoginPage, router]);
 
   // Close sidebar on route change
   useEffect(() => {
