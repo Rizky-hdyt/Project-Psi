@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
-import { Footer } from "@/components/shared/Footer";
+import { ConditionalFooter } from "@/components/shared/ConditionalFooter";
 import { PageTransition } from "@/components/shared/PageTransition";
 
 const fraunces = Fraunces({
@@ -43,7 +43,7 @@ export default function RootLayout({
         <PageTransition className="flex-1">
           {children}
         </PageTransition>
-        <Footer />
+        <ConditionalFooter />
       </body>
     </html>
   );
