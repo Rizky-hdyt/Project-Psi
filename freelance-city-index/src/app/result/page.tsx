@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Suspense } from "react";
 import Link from "next/link";
@@ -22,46 +22,11 @@ import { Navbar } from "@/components/shared/Navbar";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { rankDistricts } from "@/lib/scoring/rank";
 import { generateWhyText } from "@/lib/scoring/whyThisMatch";
-import { BASE_WEIGHTS } from "@/lib/scoring/weights";
 import { useDistricts } from "@/hooks/useDistricts";
 import { getDistrictVisual } from "@/data/districts.visuals";
 import type { QuizInput } from "@/types/quiz";
 import type { District } from "@/types/district";
 import type { IndicatorId, RankedDistrict } from "@/types/recommendation";
-
-// ── Best For helper ──────────────────────────────────────────────────────────
-const PERSONA_DISPLAY: Record<string, string> = {
-  "tech-professional": "Tech Professional",
-  "creative-professional": "Creative",
-  "student-fresh-graduate": "Student",
-  "digital-nomad": "Digital Nomad",
-};
-
-function getBestPersonaForDistrict(
-  districtId: string,
-  scores: Array<{ districtId: string; indicatorId: string; skor: number }>
-): string {
-  const scoreMap: Record<string, number> = {};
-  scores
-    .filter((s) => s.districtId === districtId)
-    .forEach((s) => { scoreMap[s.indicatorId] = s.skor; });
-
-  let bestPersona = "tech-professional";
-  let bestScore = -1;
-
-  for (const [personaId, weights] of Object.entries(BASE_WEIGHTS)) {
-    const score = (Object.entries(weights) as [string, number][]).reduce(
-      (sum, [ind, w]) => sum + (scoreMap[ind] ?? 0) * w,
-      0
-    );
-    if (score > bestScore) {
-      bestScore = score;
-      bestPersona = personaId;
-    }
-  }
-
-  return bestPersona;
-}
 
 // ── District metadata ────────────────────────────────────────────────────────
 const DISTRICT_SECONDARY_BADGE: Record<string, string> = {
@@ -214,7 +179,6 @@ function DistrictRankCard({
   onToggle,
   whyText,
   resultUrl,
-  bestPersona,
 }: {
   ranked: RankedDistrict;
   district: District;
@@ -223,7 +187,6 @@ function DistrictRankCard({
   onToggle: () => void;
   whyText: string;
   resultUrl: string;
-  bestPersona: string;
 }) {
   const displayScore = (ranked.skorTotal / 10).toFixed(1);
   const secondaryBadge = DISTRICT_SECONDARY_BADGE[district.id];
@@ -273,14 +236,6 @@ function DistrictRankCard({
               <Badge className="gap-1 bg-sawah text-white hover:bg-sawah px-2 py-0.5 text-[10px]">
                 <Star className="h-2.5 w-2.5" />
                 Best Match
-              </Badge>
-            )}
-            {isBest && (
-              <Badge
-                variant="outline"
-                className="border-pesisir/30 px-2 py-0.5 text-[10px] text-pesisir"
-              >
-                Best for: {PERSONA_DISPLAY[bestPersona] ?? bestPersona}
               </Badge>
             )}
             {secondaryBadge && (
@@ -415,15 +370,6 @@ function ResultContent() {
   const [hasInteracted, setHasInteracted] = useState(false);
   const { districts, scores, loading: distLoading, error: distError } = useDistricts();
 
-  // WAJIB di sini — sebelum early return apapun (Rules of Hooks)
-  const bestPersonaByDistrict = useMemo(() => {
-    const result: Record<string, string> = {};
-    districts.forEach((d) => {
-      result[d.id] = getBestPersonaForDistrict(d.id, scores);
-    });
-    return result;
-  }, [districts, scores]);
-
   if (!personaId) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
@@ -510,7 +456,6 @@ function ResultContent() {
               }}
               whyText={generateWhyText(r, d.nama)}
               resultUrl={resultUrl}
-              bestPersona={bestPersonaByDistrict[r.districtId] ?? "tech-professional"}
             />
           );
         })}

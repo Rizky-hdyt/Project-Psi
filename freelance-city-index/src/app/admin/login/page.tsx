@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, useEffect, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff, LogIn, ArrowLeft } from "lucide-react";
@@ -19,10 +19,14 @@ export default function AdminLoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  if (state.isAuthenticated) {
-    router.replace("/admin");
-    return null;
-  }
+  // Redirect harus di dalam useEffect, bukan saat render
+  useEffect(() => {
+    if (state.isAuthenticated) {
+      router.replace("/admin");
+    }
+  }, [state.isAuthenticated, router]);
+
+  if (state.isAuthenticated) return null;
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();

@@ -5,9 +5,9 @@ export function Footer() {
   return (
     <footer className="border-t border-line bg-white">
       <div className="mx-auto max-w-[1120px] px-4 py-8 sm:px-6">
-        <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
           {/* Brand */}
-          <div className="col-span-2 sm:col-span-1 flex flex-col gap-2.5">
+          <div className="flex flex-col gap-2.5">
             <Link href="/" className="flex items-center gap-2 w-fit">
               <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-sawah shadow-[0_2px_6px_rgba(47,111,78,0.30)]">
                 <MapPin className="h-3.5 w-3.5 text-white" />
@@ -20,28 +20,6 @@ export function Footer() {
             <p className="font-mono text-[10px] text-muted-foreground/50">
               Yogyakarta Edition · V1 · 2026
             </p>
-          </div>
-
-          {/* Navigasi */}
-          <div className="flex flex-col gap-2">
-            <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground/50">
-              Navigasi
-            </p>
-            {[
-              { href: "/", label: "Beranda" },
-              { href: "/algoritma", label: "Cara Kerja" },
-              { href: "/quiz", label: "Mulai Quiz" },
-              { href: "/result", label: "Hasil & Distrik" },
-              { href: "/admin/login", label: "Admin" },
-            ].map(({ href, label }) => (
-              <Link
-                key={href}
-                href={href}
-                className="w-fit text-sm text-muted-foreground transition-colors hover:text-ink"
-              >
-                {label}
-              </Link>
-            ))}
           </div>
 
           {/* Sumber Data */}
