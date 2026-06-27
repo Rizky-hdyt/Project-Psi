@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { Footer } from "@/components/shared/Footer";
+import { PageTransition } from "@/components/shared/PageTransition";
 
 const fraunces = Fraunces({
   variable: "--font-fraunces",
@@ -37,8 +39,11 @@ export default function RootLayout({
       lang="id"
       className={`${fraunces.variable} ${inter.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-paper text-ink">
-        {children}
+      <body className="flex min-h-screen flex-col bg-paper text-ink">
+        <PageTransition className="flex-1">
+          {children}
+        </PageTransition>
+        <Footer />
       </body>
     </html>
   );

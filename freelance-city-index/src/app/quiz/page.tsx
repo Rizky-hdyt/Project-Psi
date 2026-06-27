@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Sparkles, Loader2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Navbar } from "@/components/shared/Navbar";
@@ -18,10 +18,19 @@ import { WeightBarChart } from "@/components/quiz/WeightBarChart";
 import { FormulaExample } from "@/components/quiz/FormulaExample";
 import type { IndicatorId } from "@/types/recommendation";
 
+const PERSONA_NAMES: Record<string, string> = {
+  "tech-professional": "Tech Professional",
+  "creative-professional": "Creative Professional",
+  "student-fresh-graduate": "Student & Fresh Graduate",
+  "digital-nomad": "Digital Nomad",
+};
+
 export default function QuizPage() {
   const router = useRouter();
   const quiz = useQuizState();
   const { scores: allScores } = useDistricts();
+  const [isCalculating, setIsCalculating] = useState(false);
+  const [calcStep, setCalcStep] = useState(0);
 
   const adjustedWeights =
     quiz.completeInput
@@ -43,14 +52,120 @@ export default function QuizPage() {
 
   function handleSeeResults() {
     if (!quiz.completeInput) return;
-    const p = new URLSearchParams({
-      persona:     quiz.completeInput.personaId,
-      budget:      String(quiz.completeInput.budget),
-      internet:    quiz.completeInput.internetPriority,
-      community:   quiz.completeInput.communityPriority,
-      environment: quiz.completeInput.environmentPreference,
+
+    setIsCalculating(true);
+    setCalcStep(1);
+
+    const stepDelays = [600, 1200, 1800];
+    stepDelays.forEach((delay, i) => {
+      setTimeout(() => setCalcStep(i + 2), delay);
     });
-    router.push(`/result?${p.toString()}`);
+
+    setTimeout(() => {
+      const p = new URLSearchParams({
+        persona:     quiz.completeInput!.personaId,
+        budget:      String(quiz.completeInput!.budget),
+        internet:    quiz.completeInput!.internetPriority,
+        community:   quiz.completeInput!.communityPriority,
+        environment: quiz.completeInput!.environmentPreference,
+      });
+      router.push(`/result?${p.toString()}`);
+    }, 2500);
+  }
+
+  const personaName = quiz.input.personaId
+    ? (PERSONA_NAMES[quiz.input.personaId] ?? "Anda")
+    : "Anda";
+
+  const calcSteps = [
+    "Menganalisis preferensi Anda...",
+    `Menerapkan bobot ${personaName}...`,
+    "Menghitung skor 5 distrik DIY...",
+    "Merangking berdasarkan skor akhir...",
+  ];
+
+  if (isCalculating) {
+    return (
+      <div className="flex min-h-screen flex-col bg-paper">
+        <Navbar showStartQuiz={false} />
+        <div className="flex flex-1 items-center justify-center px-4 py-16">
+          <div className="w-full max-w-[360px]">
+            {/* Spinner icon */}
+            <div className="mb-8 flex justify-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-sawah shadow-[0_8px_24px_rgba(47,111,78,0.35)]">
+                <Loader2 className="h-8 w-8 animate-spin text-white" />
+              </div>
+            </div>
+
+            <h2 className="mb-7 text-center font-display text-xl font-bold text-ink">
+              Menghitung hasil Anda...
+            </h2>
+
+            {/* Steps */}
+            <div className="mb-7 space-y-4">
+              {calcSteps.map((step, i) => {
+                const stepNum = i + 1;
+                const isDone = calcStep > stepNum;
+                const isCurrent = calcStep === stepNum;
+                const isVisible = calcStep >= stepNum;
+
+                return (
+                  <div
+                    key={i}
+                    className="flex items-center gap-3 transition-all duration-500"
+                    style={{
+                      opacity: isVisible ? 1 : 0,
+                      transform: isVisible ? "translateY(0)" : "translateY(6px)",
+                    }}
+                  >
+                    <div
+                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-all duration-300"
+                      style={{
+                        backgroundColor: isDone
+                          ? "#2F6F4E"
+                          : isCurrent
+                          ? "transparent"
+                          : "#D8D3C4",
+                        border: isCurrent ? "2px solid #2F6F4E" : "none",
+                      }}
+                    >
+                      {isDone && <Check className="h-3.5 w-3.5 text-white" />}
+                      {isCurrent && (
+                        <Loader2 className="h-3 w-3 animate-spin text-sawah" />
+                      )}
+                    </div>
+                    <span
+                      className="text-sm transition-all duration-300"
+                      style={{
+                        color: isDone
+                          ? "#6B7570"
+                          : isCurrent
+                          ? "#1C2521"
+                          : "#D8D3C4",
+                        fontWeight: isCurrent ? 600 : 400,
+                      }}
+                    >
+                      {step}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Progress bar */}
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-line">
+              <div
+                className="h-full rounded-full bg-sawah transition-all duration-500 ease-out"
+                style={{ width: `${((calcStep - 1) / 4) * 100}%` }}
+              />
+            </div>
+            <p className="mt-2 text-right font-mono text-xs text-muted-foreground">
+              {Math.round(((calcStep - 1) / 4) * 100)}%
+            </p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
