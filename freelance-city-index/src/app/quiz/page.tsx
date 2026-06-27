@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, Sparkles, Loader2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -31,6 +31,14 @@ export default function QuizPage() {
   const { scores: allScores } = useDistricts();
   const [isCalculating, setIsCalculating] = useState(false);
   const [calcStep, setCalcStep] = useState(0);
+  const timeoutRefs = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  // Cleanup semua timeout saat komponen unmount (cegah memory leak)
+  useEffect(() => {
+    return () => {
+      timeoutRefs.current.forEach(clearTimeout);
+    };
+  }, []);
 
   const adjustedWeights =
     quiz.completeInput
@@ -51,26 +59,29 @@ export default function QuizPage() {
   }
 
   function handleSeeResults() {
-    if (!quiz.completeInput) return;
+    // Capture input sekarang — jangan pakai quiz.completeInput di dalam setTimeout
+    // karena closure bisa stale jika state berubah sebelum timeout fire
+    const input = quiz.completeInput;
+    if (!input) return;
 
     setIsCalculating(true);
     setCalcStep(1);
 
-    const stepDelays = [600, 1200, 1800];
-    stepDelays.forEach((delay, i) => {
-      setTimeout(() => setCalcStep(i + 2), delay);
-    });
-
-    setTimeout(() => {
+    const t1 = setTimeout(() => setCalcStep(2), 600);
+    const t2 = setTimeout(() => setCalcStep(3), 1200);
+    const t3 = setTimeout(() => setCalcStep(4), 1800);
+    const t4 = setTimeout(() => {
       const p = new URLSearchParams({
-        persona:     quiz.completeInput!.personaId,
-        budget:      String(quiz.completeInput!.budget),
-        internet:    quiz.completeInput!.internetPriority,
-        community:   quiz.completeInput!.communityPriority,
-        environment: quiz.completeInput!.environmentPreference,
+        persona:     input.personaId,
+        budget:      String(input.budget),
+        internet:    input.internetPriority,
+        community:   input.communityPriority,
+        environment: input.environmentPreference,
       });
       router.push(`/result?${p.toString()}`);
     }, 2500);
+
+    timeoutRefs.current = [t1, t2, t3, t4];
   }
 
   const personaName = quiz.input.personaId
@@ -156,11 +167,11 @@ export default function QuizPage() {
             <div className="h-1.5 w-full overflow-hidden rounded-full bg-line">
               <div
                 className="h-full rounded-full bg-sawah transition-all duration-500 ease-out"
-                style={{ width: `${((calcStep - 1) / 4) * 100}%` }}
+                style={{ width: `${(calcStep / 4) * 100}%` }}
               />
             </div>
             <p className="mt-2 text-right font-mono text-xs text-muted-foreground">
-              {Math.round(((calcStep - 1) / 4) * 100)}%
+              {Math.round((calcStep / 4) * 100)}%
             </p>
           </div>
         </div>
