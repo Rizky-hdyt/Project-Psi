@@ -413,6 +413,15 @@ function ResultContent() {
   const [hasInteracted, setHasInteracted] = useState(false);
   const { districts, scores, loading: distLoading, error: distError } = useDistricts();
 
+  // WAJIB di sini — sebelum early return apapun (Rules of Hooks)
+  const bestPersonaByDistrict = useMemo(() => {
+    const result: Record<string, string> = {};
+    districts.forEach((d) => {
+      result[d.id] = getBestPersonaForDistrict(d.id, scores);
+    });
+    return result;
+  }, [districts, scores]);
+
   if (!personaId) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
@@ -475,15 +484,6 @@ function ResultContent() {
   const districtMap = Object.fromEntries(districts.map((d) => [d.id, d]));
 
   const resultUrl = `/result?persona=${personaId}&budget=${budget}&internet=${internet}&community=${community}&environment=${environment}`;
-
-  // Computed best persona per district (base weights only, independent of current user input)
-  const bestPersonaByDistrict = useMemo(() => {
-    const result: Record<string, string> = {};
-    districts.forEach((d) => {
-      result[d.id] = getBestPersonaForDistrict(d.id, scores);
-    });
-    return result;
-  }, [districts, scores]);
 
   // First card open by default until user interacts
   const effectiveOpenId = hasInteracted ? openCardId : ranked[0]?.districtId;
