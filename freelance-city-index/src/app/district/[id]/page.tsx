@@ -268,13 +268,15 @@ export default function DistrictDetailPage() {
         )}
 
         {/* Suggested Places */}
-        <SuggestedPlaces
-          districtId={district.id}
-          districtNama={district.nama}
-          environmentPreference={input.environmentPreference as "cafe" | "quiet" | "coworking" | "flexible"}
-          personaId={input.personaId as "tech-professional" | "creative-professional" | "student-fresh-graduate" | "digital-nomad"}
-          accentColor={visual.gradientFrom}
-        />
+        <div className="mt-6">
+          <SuggestedPlaces
+            districtId={district.id}
+            districtNama={district.nama}
+            environmentPreference={input.environmentPreference as "cafe" | "quiet" | "coworking" | "flexible"}
+            personaId={input.personaId as "tech-professional" | "creative-professional" | "student-fresh-graduate" | "digital-nomad"}
+            accentColor={visual.gradientFrom}
+          />
+        </div>
 
       </div>
     </div>
