@@ -12,6 +12,113 @@
 
 ---
 
+### 2026-06-27 — Fix Mobile: Touch Response + Hydration Error + Survey Popup Redesign
+
+**Konteks:** Testing di HP via WiFi lokal (192.168.1.2:3000) — ditemukan beberapa tombol tidak merespons di mobile.
+
+**Root cause yang ditemukan (dari dev log):**
+- `ReferenceError: IndicatorCard is not defined` — sisa cache `.next` dari kode lama, menyebabkan React gagal hydrate → semua `onClick` handler tidak jalan, hanya link `<a href>` yang berfungsi
+- `Blocked cross-origin request /_next/webpack-hmr from 192.168.1.2` — HMR WebSocket diblokir dari IP luar WiFi
+
+**Fix yang dilakukan:**
+
+1. **RelevanceSurvey redesign → floating popup** (`src/components/shared/RelevanceSurvey.tsx`)
+   - Dari: section besar di bawah halaman result
+   - Jadi: popup kecil fixed `bottom-6 right-6 z-50 w-72`, muncul otomatis setelah 3.5 detik
+   - Rating: ikon bintang (fill on select), lebih compact dari tombol angka
+   - Komentar: hidden default, muncul saat klik "+ Tambah masukan teks"
+   - Tutup: tombol ×, atau link "Lewati", atau auto-close 2.5s setelah submit
+   - Animasi: `slide-in-from-bottom-4 fade-in 300ms`
+
+2. **Touch fixes global** (`src/app/globals.css`)
+   - Tambah `touch-action: manipulation` untuk semua `button`, `a`, `[role="button"]`, dll
+   - Eliminasi 300ms tap delay di iOS/Android
+
+3. **Persona card hover fix** (`src/components/quiz/PersonaCardSelector.tsx`)
+   - Wrap `hover:-translate-y-0.5` dalam `@media(hover:hover)` → iOS tidak lagi butuh dua tap
+   - Tambah `active:scale-[0.98]` sebagai visual feedback saat tap
+
+4. **Slider thumb touch target** (`src/components/ui/slider.tsx`)
+   - Thumb: `size-3` → `size-4` (lebih besar)
+   - Touch area: `after:-inset-2` → `after:-inset-5` (total ~42px, mendekati minimum 44px)
+
+5. **allowedDevOrigins** (`next.config.ts`)
+   - Tambah `192.168.1.2` agar HMR WebSocket tidak diblokir saat akses dari HP via WiFi lokal
+
+6. **Cache .next dihapus + server restart**
+   - Eliminasi `IndicatorCard is not defined` dari cache lama
+   - Compile ulang dari nol
+
+**Hasil:** Semua tombol di HP berfungsi normal setelah hard refresh.
+
+---
+
+### 2026-06-27 — Fitur: Survei Relevansi & Kepuasan (Relevance Score)
+
+**Konteks:** Memenuhi PRD §3 Success Metrics + materi kuliah P20 (Satisfaction Score). Satu-satunya item yang PRD janjikan tapi belum ada di kode.
+
+**File baru:**
+- `src/components/shared/RelevanceSurvey.tsx` — komponen survei di akhir halaman `/result`
+
+**File diubah:**
+- `src/app/result/page.tsx` — import + render `<RelevanceSurvey />` di bawah area kartu/sidebar
+
+**Isi survei (ringkas, fokus aplikasi):**
+1. Relevansi rekomendasi (1–5) — metrik inti DSS: "Seberapa sesuai rekomendasi distrik ini dengan kebutuhan Anda?"
+2. Kemudahan penggunaan aplikasi (1–5) — usability web
+3. Masukan tambahan (opsional, maks 300 char) — data kualitatif pelengkap
+
+**Perilaku:**
+- Tombol "Kirim Penilaian" disabled sampai kedua rating diisi
+- Setelah kirim → state "Terima kasih" (CheckCircle2, hijau sawah)
+- A11y: `radiogroup`/`radio`, aria-label per nilai, focus ring
+
+**Keputusan teknis:**
+- **V1 efemeral** — jawaban TIDAK disimpan (sesuai permintaan user: "buat sementara dulu")
+- Disiapkan untuk persistensi nanti: tipe `SurveyResponse` + fungsi `persistResponse()` placeholder dengan TODO(db) — tinggal colok fetch ke API route saat siap
+- Token desain on-brand (sawah, line, mono untuk angka); TypeScript 0 error; build clean 18 routes
+
+---
+
+### 2026-06-27 — Fitur V2: Compare District (redesign → dedicated page)
+
+**File baru:**
+- `src/app/compare/page.tsx` — halaman `/compare` khusus untuk perbandingan detail
+
+**File diubah:**
+- `src/app/result/page.tsx` — tombol "Bandingkan" di header → buka Dialog, navigasi ke `/compare`
+- `src/components/ui/dialog.tsx` — shadcn Dialog, baru diinstall
+
+**Alur UX:**
+1. Di result page, klik tombol **"Bandingkan"** (BarChart3 icon) di pojok kanan atas
+2. Dialog pop-up muncul: 5 kartu distrik dengan checkbox, rank, dan skor
+3. Pilih 2–3 distrik → tombol "Bandingkan (n)" aktif
+4. Klik → navigasi ke `/compare?districts=id1,id2&persona=...&budget=...&...`
+5. Halaman `/compare` menampilkan side-by-side column per distrik:
+   - Header kolom: gradient card dengan emoji, nama, rank, skor besar
+   - Indikator bars: 4 baris (Internet/Biaya/Komunitas/Lingkungan), highlight hijau = terbaik
+   - Data mentah: UMK, coworking count, internet Mbps, tipe wilayah
+   - Karakteristik: teks ringkasan per distrik
+   - Why This Match: teks alasan cocok (hanya muncul jika quiz context tersedia)
+   - Tombol "Lihat Detail" per kolom → `/district/:id`
+
+**Teknis:**
+- URL `/compare` menyertakan quiz params → shareable link
+- Dialog reset pilihan (`useEffect` + `selected = []`) saat ditutup
+- TypeScript 0 error setelah install shadcn Dialog
+
+**Redesign compare page (visual):**
+- Bukan tabel kaku — diganti section-per-indikator yang responsif
+- Header: gradient cards per distrik (`grid-cols-1 sm:grid-cols-2/3`)
+- Indikator: 4 kartu terpisah (Internet/Biaya/Komunitas/Lingkungan), tiap distrik = satu baris dengan bar tebal (h-3), highlight hijau = terbaik
+- Data Mentah: fact cards per distrik (emoji mini-header + 4 baris data)
+- Karakteristik: deskripsi per distrik dalam card
+- Why This Match: kartu hijau muted, hanya muncul jika ada quiz context
+- Action buttons: grid responsif → "Detail [Nama]" per distrik
+- Semua section: `grid-cols-1` mobile, `sm:grid-cols-2/3` desktop — tidak ada horizontal scroll
+
+---
+
 ### 2026-06-27 — Bug Fix: Admin Gerak Otomatis
 
 **Masalah:** Halaman admin login dan admin dashboard bergerak bolak-balik secara otomatis.

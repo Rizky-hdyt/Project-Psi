@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Suspense } from "react";
 import Link from "next/link";
@@ -15,15 +15,26 @@ import {
   Leaf,
   ArrowRight,
   MapPin,
+  BarChart3,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Navbar } from "@/components/shared/Navbar";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { RelevanceSurvey } from "@/components/shared/RelevanceSurvey";
 import { rankDistricts } from "@/lib/scoring/rank";
 import { generateWhyText } from "@/lib/scoring/whyThisMatch";
 import { useDistricts } from "@/hooks/useDistricts";
 import { getDistrictVisual } from "@/data/districts.visuals";
+import { cn } from "@/lib/utils";
 import type { QuizInput } from "@/types/quiz";
 import type { District } from "@/types/district";
 import type { IndicatorId, RankedDistrict } from "@/types/recommendation";
@@ -54,12 +65,23 @@ function formatRupiah(n: number) {
 }
 
 // ── District Avatar ──────────────────────────────────────────────────────────
-function DistrictAvatar({ districtId, nama }: { districtId: string; nama: string }) {
+function DistrictAvatar({
+  districtId,
+  size = "md",
+}: {
+  districtId: string;
+  size?: "sm" | "md";
+}) {
   const visual = getDistrictVisual(districtId);
+  const cls =
+    size === "sm"
+      ? "flex h-7 w-7 shrink-0 items-center justify-center rounded-full font-mono text-xs font-bold text-white"
+      : "flex h-9 w-9 shrink-0 items-center justify-center rounded-full font-mono text-sm font-bold text-white";
   return (
     <div
-      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full font-mono text-sm font-bold text-white"
+      className={cls}
       style={{ background: `linear-gradient(135deg, ${visual.gradientFrom}, ${visual.gradientTo})` }}
+      aria-hidden="true"
     >
       {visual.emoji}
     </div>
@@ -137,7 +159,7 @@ function TopRecommendationCard({
         </span>
       </div>
       <div className="mb-1 flex items-center gap-2">
-        <span className="text-2xl">{topVisual.emoji}</span>
+        <span className="text-2xl">{getDistrictVisual(top.districtId).emoji}</span>
         <h3 className="font-display text-xl font-bold">{d.nama}</h3>
       </div>
       <p className="mb-4 text-sm opacity-75 leading-relaxed line-clamp-2">
@@ -146,9 +168,7 @@ function TopRecommendationCard({
 
       <div className="mb-4 grid grid-cols-2 gap-3">
         <div className="rounded-lg bg-white/15 p-3">
-          <p className="font-mono text-2xl font-bold">
-            {(top.skorTotal / 10).toFixed(1)}
-          </p>
+          <p className="font-mono text-2xl font-bold">{(top.skorTotal / 10).toFixed(1)}</p>
           <p className="text-xs opacity-75">Match Score</p>
         </div>
         <div className="rounded-lg bg-white/15 p-3">
@@ -167,6 +187,134 @@ function TopRecommendationCard({
         </Button>
       </Link>
     </div>
+  );
+}
+
+// ── Compare Dialog ────────────────────────────────────────────────────────────
+function CompareDialog({
+  open,
+  onClose,
+  ranked,
+  districts,
+  quizParams,
+}: {
+  open: boolean;
+  onClose: () => void;
+  ranked: RankedDistrict[];
+  districts: District[];
+  quizParams: string;
+}) {
+  const router = useRouter();
+  const districtMap = Object.fromEntries(districts.map((d) => [d.id, d]));
+  const [selected, setSelected] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!open) setSelected([]);
+  }, [open]);
+
+  function toggle(id: string) {
+    setSelected((prev) => {
+      if (prev.includes(id)) return prev.filter((x) => x !== id);
+      if (prev.length >= 3) return prev;
+      return [...prev, id];
+    });
+  }
+
+  function handleCompare() {
+    if (selected.length < 2) return;
+    router.push(`/compare?districts=${selected.join(",")}&${quizParams}`);
+    onClose();
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 text-ink">
+            <BarChart3 className="h-4 w-4 text-sawah" />
+            Bandingkan Distrik
+          </DialogTitle>
+          <DialogDescription>
+            Pilih 2–3 distrik untuk dibandingkan secara detail. Skor berdasarkan preferensi quiz Anda.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-2 py-2">
+          {ranked.map((r) => {
+            const d = districtMap[r.districtId];
+            if (!d) return null;
+            const isSelected = selected.includes(r.districtId);
+            const isDisabled = !isSelected && selected.length >= 3;
+            return (
+              <button
+                key={r.districtId}
+                onClick={() => toggle(r.districtId)}
+                disabled={isDisabled}
+                className={cn(
+                  "flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  isSelected
+                    ? "border-sawah bg-sawah/6 shadow-sm"
+                    : isDisabled
+                      ? "cursor-not-allowed border-line opacity-40"
+                      : "border-line hover:border-sawah/40 hover:bg-muted/50"
+                )}
+              >
+                {/* Checkbox visual */}
+                <div
+                  className={cn(
+                    "flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors",
+                    isSelected
+                      ? "border-sawah bg-sawah text-white"
+                      : "border-line bg-white"
+                  )}
+                >
+                  {isSelected && (
+                    <svg className="h-3 w-3" viewBox="0 0 12 12" fill="none">
+                      <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
+                </div>
+
+                <DistrictAvatar districtId={r.districtId} size="sm" />
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className={cn("text-sm font-semibold", isSelected ? "text-ink" : "text-ink/80")}>
+                      {d.nama}
+                    </span>
+                    {r.rank === 1 && (
+                      <Badge className="gap-1 bg-sawah px-1.5 py-0 text-[9px] text-white hover:bg-sawah">
+                        <Star className="h-2 w-2" />
+                        Best
+                      </Badge>
+                    )}
+                  </div>
+                  <span className="text-xs text-muted-foreground">Rank #{r.rank}</span>
+                </div>
+
+                <span className="font-mono text-lg font-bold text-ink">
+                  {(r.skorTotal / 10).toFixed(1)}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        <DialogFooter className="gap-2 sm:gap-2">
+          <Button variant="outline" onClick={onClose} className="border-line">
+            Batalkan
+          </Button>
+          <Button
+            disabled={selected.length < 2}
+            onClick={handleCompare}
+            className="gap-2 bg-sawah text-white hover:bg-sawah/90 disabled:opacity-40"
+          >
+            <BarChart3 className="h-4 w-4" />
+            Bandingkan{selected.length >= 2 ? ` (${selected.length})` : ""}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -201,22 +349,19 @@ function DistrictRankCard({
           : "rounded-xl border border-line bg-white shadow-[0_1px_3px_rgba(28,37,33,0.06)] overflow-hidden"
       }
     >
-      {/* Gradient strip header */}
+      {/* Gradient strip */}
       <div
         className="h-1.5 w-full"
-        style={{
-          background: `linear-gradient(90deg, ${visual.gradientFrom}, ${visual.gradientTo})`,
-        }}
+        style={{ background: `linear-gradient(90deg, ${visual.gradientFrom}, ${visual.gradientTo})` }}
       />
 
-      {/* Card header — always visible */}
+      {/* Card header */}
       <button
         className="flex w-full items-start gap-3 p-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-t-xl"
         onClick={onToggle}
         aria-expanded={isOpen}
         aria-label={`${isOpen ? "Tutup" : "Buka"} detail ${district.nama}`}
       >
-        {/* Rank badge */}
         <span
           className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full font-mono text-xs font-bold ${
             isBest ? "bg-sawah text-white" : "bg-line text-muted-foreground"
@@ -225,10 +370,8 @@ function DistrictRankCard({
           #{ranked.rank}
         </span>
 
-        {/* District avatar */}
-        <DistrictAvatar districtId={district.id} nama={district.nama} />
+        <DistrictAvatar districtId={district.id} />
 
-        {/* Name + badges */}
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-semibold text-ink">{district.nama}</span>
@@ -239,10 +382,7 @@ function DistrictRankCard({
               </Badge>
             )}
             {secondaryBadge && (
-              <Badge
-                variant="outline"
-                className="border-line text-muted-foreground px-2 py-0.5 text-[10px]"
-              >
+              <Badge variant="outline" className="border-line text-muted-foreground px-2 py-0.5 text-[10px]">
                 {secondaryBadge}
               </Badge>
             )}
@@ -254,7 +394,6 @@ function DistrictRankCard({
           )}
         </div>
 
-        {/* Score + chevron */}
         <div className="flex shrink-0 items-center gap-2">
           <span className="font-mono text-2xl font-bold text-ink">{displayScore}</span>
           {isOpen ? (
@@ -265,7 +404,7 @@ function DistrictRankCard({
         </div>
       </button>
 
-      {/* Score progress bar (always visible) */}
+      {/* Score bar */}
       <div className="mx-4 mb-3 h-1.5 w-[calc(100%-2rem)] overflow-hidden rounded-full bg-line">
         <div
           className={`h-full rounded-full motion-safe:transition-all motion-safe:duration-500 ${isBest ? "bg-sawah" : "bg-pesisir/50"}`}
@@ -273,28 +412,26 @@ function DistrictRankCard({
         />
       </div>
 
-      {/* Mini stats row (always visible) */}
+      {/* Mini stats */}
       <div className="mx-4 mb-3 flex flex-wrap gap-x-4 gap-y-1">
         {INDICATORS.map(({ id, shortLabel, icon: Icon }) => (
-          <span
-            key={id}
-            className="flex items-center gap-1 text-xs text-muted-foreground"
-          >
+          <span key={id} className="flex items-center gap-1 text-xs text-muted-foreground">
             <Icon className="h-3 w-3" />
-            {shortLabel}: <span className="font-mono font-semibold text-ink ml-0.5">{Math.round(ranked.skorPerIndikator[id] / 10)}</span>
+            {shortLabel}:{" "}
+            <span className="font-mono font-semibold text-ink ml-0.5">
+              {Math.round(ranked.skorPerIndikator[id] / 10)}
+            </span>
           </span>
         ))}
       </div>
 
-      {/* Expandable section */}
+      {/* Expandable */}
       {isOpen && (
         <div className="border-t border-line px-4 pb-4 pt-4">
-          {/* Description */}
           <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
             {district.ringkasanKarakteristik}
           </p>
 
-          {/* Indicator bars */}
           <div className="mb-4 space-y-2.5">
             {INDICATORS.map(({ id, label }) => {
               const rawSkor = ranked.skorPerIndikator[id];
@@ -318,7 +455,6 @@ function DistrictRankCard({
             })}
           </div>
 
-          {/* Raw data chips */}
           <div className="mb-4 flex flex-wrap gap-2 text-xs">
             <span className="rounded border border-line px-2 py-1 font-mono text-muted-foreground">
               UMK {formatRupiah(district.umk)}/bln
@@ -331,24 +467,17 @@ function DistrictRankCard({
             </span>
           </div>
 
-          {/* Why This Match */}
           <div className="mb-4 rounded-lg bg-sawah/6 p-3">
             <p className="mb-1.5 text-xs font-semibold text-sawah">Mengapa cocok untuk Anda</p>
             <p className="text-xs leading-relaxed text-muted-foreground">{whyText}</p>
           </div>
 
-          {/* Actions */}
-          <div className="flex gap-2">
-            <Link href={`/district/${district.id}?${resultUrl.split("?")[1] ?? ""}`} className="flex-1">
-              <Button
-                className="w-full gap-1.5 bg-sawah text-white hover:bg-sawah/90 min-h-[40px]"
-                size="sm"
-              >
-                <MapPin className="h-3.5 w-3.5" />
-                View District Details
-              </Button>
-            </Link>
-          </div>
+          <Link href={`/district/${district.id}?${resultUrl.split("?")[1] ?? ""}`}>
+            <Button className="w-full gap-1.5 bg-sawah text-white hover:bg-sawah/90 min-h-[40px]" size="sm">
+              <MapPin className="h-3.5 w-3.5" />
+              View District Details
+            </Button>
+          </Link>
         </div>
       )}
     </div>
@@ -368,6 +497,8 @@ function ResultContent() {
 
   const [openCardId, setOpenCardId] = useState<string | null>(null);
   const [hasInteracted, setHasInteracted] = useState(false);
+  const [compareOpen, setCompareOpen] = useState(false);
+
   const { districts, scores, loading: distLoading, error: distError } = useDistricts();
 
   if (!personaId) {
@@ -404,10 +535,7 @@ function ResultContent() {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
         <p className="mb-4 text-error">Koneksi terputus. Coba lagi?</p>
-        <Button
-          className="gap-2 bg-sawah text-white hover:bg-sawah/90"
-          onClick={() => window.location.reload()}
-        >
+        <Button className="gap-2 bg-sawah text-white hover:bg-sawah/90" onClick={() => window.location.reload()}>
           <RefreshCw className="h-4 w-4" />
           Coba Lagi
         </Button>
@@ -430,89 +558,102 @@ function ResultContent() {
   }
 
   const districtMap = Object.fromEntries(districts.map((d) => [d.id, d]));
-
   const resultUrl = `/result?persona=${personaId}&budget=${budget}&internet=${internet}&community=${community}&environment=${environment}`;
+  const quizParams = `persona=${personaId}&budget=${budget}&internet=${internet}&community=${community}&environment=${environment}`;
 
-  // First card open by default until user interacts
   const effectiveOpenId = hasInteracted ? openCardId : ranked[0]?.districtId;
 
   return (
-    <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-      {/* ── Left column: District cards ───────────────────────── */}
-      <div className="min-w-0 flex-1 space-y-3">
-        {ranked.map((r) => {
-          const d = districtMap[r.districtId];
-          const isOpen = effectiveOpenId === r.districtId;
-          return (
-            <DistrictRankCard
-              key={r.districtId}
-              ranked={r}
-              district={d}
-              isBest={r.rank === 1}
-              isOpen={isOpen}
-              onToggle={() => {
-                setHasInteracted(true);
-                setOpenCardId(isOpen ? null : r.districtId);
-              }}
-              whyText={generateWhyText(r, d.nama)}
-              resultUrl={resultUrl}
-            />
-          );
-        })}
-      </div>
-
-      {/* ── Right sidebar ─────────────────────────────────────── */}
-      <div className="w-full space-y-4 lg:w-[300px] lg:shrink-0 lg:sticky lg:top-[64px]">
-        <ScoreComparisonChart ranked={ranked} districts={districts} />
-        <TopRecommendationCard
-          ranked={ranked}
-          districts={districts}
-          resultUrl={resultUrl}
-        />
-      </div>
-    </div>
-  );
-}
-
-// ── Page ─────────────────────────────────────────────────────────────────────
-export default function ResultPage() {
-  const router = useRouter();
-
-  return (
-    <div className="min-h-screen bg-[#F8F9FA]">
-      <Navbar />
-
-      <div className="mx-auto max-w-[1120px] px-4 py-8 sm:px-6 sm:py-10">
-        {/* Title area */}
-        <div className="mb-6 flex items-start justify-between gap-4">
-          <div>
-            <h1 className="font-display text-2xl font-bold text-ink sm:text-3xl">
-              Your District Ranking
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Based on your preferences — personalized match scores below
-            </p>
-          </div>
+    <>
+      {/* Page header */}
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="font-display text-2xl font-bold text-ink sm:text-3xl">
+            Your District Ranking
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Based on your preferences — personalized match scores below
+          </p>
+        </div>
+        <div className="flex shrink-0 flex-wrap gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCompareOpen(true)}
+            className="gap-1.5 border-line text-muted-foreground hover:border-sawah hover:text-sawah"
+          >
+            <BarChart3 className="h-3.5 w-3.5" />
+            Bandingkan
+          </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={() => router.push("/quiz")}
-            className="shrink-0 gap-1.5 border-line text-muted-foreground hover:text-ink"
+            className="gap-1.5 border-line text-muted-foreground hover:text-ink"
           >
             <RefreshCw className="h-3.5 w-3.5" />
             Retake Quiz
           </Button>
         </div>
+      </div>
 
+      {/* Cards + sidebar */}
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+        <div className="min-w-0 flex-1 space-y-3">
+          {ranked.map((r) => {
+            const d = districtMap[r.districtId];
+            const isOpen = effectiveOpenId === r.districtId;
+            return (
+              <DistrictRankCard
+                key={r.districtId}
+                ranked={r}
+                district={d}
+                isBest={r.rank === 1}
+                isOpen={isOpen}
+                onToggle={() => {
+                  setHasInteracted(true);
+                  setOpenCardId(isOpen ? null : r.districtId);
+                }}
+                whyText={generateWhyText(r, d.nama)}
+                resultUrl={resultUrl}
+              />
+            );
+          })}
+        </div>
+
+        <div className="w-full space-y-4 lg:w-[300px] lg:shrink-0 lg:sticky lg:top-[64px]">
+          <ScoreComparisonChart ranked={ranked} districts={districts} />
+          <TopRecommendationCard ranked={ranked} districts={districts} resultUrl={resultUrl} />
+        </div>
+      </div>
+
+      {/* Survey popup — fixed bottom-right, muncul otomatis setelah 3.5 detik */}
+      <RelevanceSurvey personaId={personaId} />
+
+      {/* Compare dialog */}
+      <CompareDialog
+        open={compareOpen}
+        onClose={() => setCompareOpen(false)}
+        ranked={ranked}
+        districts={districts}
+        quizParams={quizParams}
+      />
+    </>
+  );
+}
+
+// ── Page ─────────────────────────────────────────────────────────────────────
+export default function ResultPage() {
+  return (
+    <div className="min-h-screen bg-[#F8F9FA]">
+      <Navbar />
+      <div className="mx-auto max-w-[1120px] px-4 py-8 sm:px-6 sm:py-10">
         <Suspense
           fallback={
             <div className="flex flex-col gap-6 lg:flex-row">
               <div className="flex-1 space-y-3">
                 {[...Array(5)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="h-24 animate-pulse rounded-xl border border-line bg-white"
-                  />
+                  <div key={i} className="h-24 animate-pulse rounded-xl border border-line bg-white" />
                 ))}
               </div>
               <div className="w-full space-y-4 lg:w-[300px]">

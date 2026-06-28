@@ -100,7 +100,7 @@ export function PersonaCardSelector({ selected, onSelect, showError }: Props) {
                 "group flex items-start gap-3 rounded-xl border p-4 text-left transition-all duration-200",
                 isActive
                   ? "border-transparent"
-                  : "border-line bg-white shadow-[0_1px_2px_rgba(28,37,33,0.05)] hover:shadow-[0_4px_12px_rgba(28,37,33,0.10)] hover:border-line/80 hover:-translate-y-0.5"
+                  : "border-line bg-white shadow-[0_1px_2px_rgba(28,37,33,0.05)] [@media(hover:hover)]:hover:shadow-[0_4px_12px_rgba(28,37,33,0.10)] [@media(hover:hover)]:hover:border-line/80 [@media(hover:hover)]:hover:-translate-y-0.5 active:scale-[0.98]"
               )}
             >
               <div
