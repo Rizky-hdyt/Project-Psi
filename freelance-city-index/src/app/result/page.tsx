@@ -566,16 +566,14 @@ function ResultContent() {
   return (
     <>
       {/* Page header */}
-      <div className="mb-6 flex items-start justify-between gap-4">
-        <div>
-          <h1 className="font-display text-2xl font-bold text-ink sm:text-3xl">
-            Your District Ranking
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Based on your preferences — personalized match scores below
-          </p>
-        </div>
-        <div className="flex shrink-0 flex-wrap gap-2">
+      <div className="mb-6">
+        <h1 className="font-display text-xl font-bold text-ink sm:text-2xl">
+          Your District Ranking
+        </h1>
+        <p className="mt-0.5 text-sm text-muted-foreground">
+          Based on your preferences — personalized match scores below
+        </p>
+        <div className="mt-3 flex gap-2">
           <Button
             variant="outline"
             size="sm"
