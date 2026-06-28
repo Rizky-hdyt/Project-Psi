@@ -3,6 +3,9 @@ Referensi ui/
 screenshots/
 freelance-city-index/screenshots/
 
+# Dokumen internal (tidak perlu di repo)
+PANDUAN_KODE.md
+
 # PDF & dokumen
 *.pdf
 

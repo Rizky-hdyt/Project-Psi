@@ -4,8 +4,9 @@
 > Dibuat agar bisa dibaca/di-upload ke Claude web, Claude Desktop, atau dibagikan ke tim/dosen
 > tanpa perlu membuka seluruh kode.
 >
-> **Tanggal dibuat:** 27 Juni 2026
-> **Status:** MVP V1 selesai + fitur tambahan + 1 fitur V2 (Compare District). Belum deploy.
+> **Tanggal dibuat:** 27 Juni 2026 (diperbarui 28 Juni 2026)
+> **Status:** MVP V1 selesai + fitur tambahan + 1 fitur V2 (Compare District). ✅ **SUDAH DEPLOY ke Vercel.**
+> **URL live:** https://project-psi-gamma.vercel.app/
 
 ---
 
@@ -277,7 +278,7 @@ freelance-city-index/
 ### Ada di PRD
 | Item | Lokasi PRD | Status | Prioritas |
 |---|---|---|---|
-| **Survei Relevance Score** (rating 1–5 di halaman hasil) | §3 Success Metrics | Success Metric (bukan FR) | 🔴 Tinggi — alat ukur keberhasilan, belum ada |
+| ~~Survei Relevance Score~~ ✅ SUDAH DIBUAT (efemeral) | §3 Success Metrics | `RelevanceSurvey.tsx` di /result — popup rating + komentar | 🟡 Lanjutan: persist ke DB (tabel Survey + API) |
 | Halaman 403 admin | Admin Decision Points | belum (cuma redirect login) | 🟢 Rendah |
 | Optimistic locking (konflik 2 admin) | Admin Edge Cases | belum | 🟢 Rendah |
 
@@ -288,8 +289,9 @@ freelance-city-index/
 | Password hashing + rate-limit login | Dok 2 NFR05 | 🟡 Sedang |
 
 ### Tahapan project
-- **Fase 9: Deploy ke Vercel** — belum (perlu set env vars: DATABASE_URL, ADMIN_USERNAME, ADMIN_PASSWORD, JWT_SECRET)
-- Favicon branded + OG meta tags — disarankan sebelum deploy
+- ✅ **Fase 9: Deploy ke Vercel SELESAI** — live di https://project-psi-gamma.vercel.app/ (env vars sudah diset, auto-deploy tiap git push)
+- Favicon branded + OG meta tags — disarankan (opsional)
+- Dokumen pengujian P20 (cross-browser, Lighthouse, heuristic, usability test) — belum
 
 ---
 

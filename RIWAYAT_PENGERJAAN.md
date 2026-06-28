@@ -12,6 +12,28 @@
 
 ---
 
+### 2026-06-28 — Deploy ke Vercel + Fix Layout + Bersih-bersih Repo
+
+**Konteks:** Project di-deploy agar bisa diakses dari HP/jaringan mana pun (sebelumnya hanya WiFi lokal).
+
+**1. Deploy ke Vercel (live: https://project-psi-gamma.vercel.app/)**
+- `package.json`: ubah build script jadi `prisma generate && next build` — wajib agar Prisma client ter-generate di server Vercel (folder `src/generated/prisma` ada di .gitignore, jadi tidak ikut ke repo).
+- `src/lib/db.ts`: tambah `neonConfig.webSocketConstructor = ws` + import `ws` — Node.js 18 di Vercel tidak punya WebSocket native, koneksi Neon butuh ini. Tanpa ini API error 500.
+- Env vars diset manual di Vercel dashboard: DATABASE_URL, ADMIN_USERNAME, ADMIN_PASSWORD, JWT_SECRET.
+- Auto-deploy aktif: tiap `git push` ke main → Vercel build ulang otomatis.
+
+**2. Fix layout (dari screenshot HP user)**
+- `src/app/result/page.tsx`: header diubah — judul "Your District Ranking" + subtitle di atas memanjang horizontal, tombol Bandingkan & Retake Quiz dipindah ke bawah (sebelumnya judul kiri besar + tombol kanan bikin judul wrap 3 baris di HP). Judul dikecilkan `text-2xl→text-xl` di mobile.
+- `src/app/district/[id]/page.tsx`: tambah `mt-6` antara WhyThisMatch dan SuggestedPlaces — sebelumnya dua kartu putih nempel tanpa jarak terlihat seperti area kosong aneh.
+
+**3. Bersih-bersih repo**
+- Buat `.gitignore` di root `C:\Project psi\` (sebelumnya belum ada) — ignore PDF, video, gambar, folder Referensi ui/, screenshots/.
+- `git rm --cached` 9 file gambar (`Referensi ui/frames/` + `freelance-city-index/screenshots/`) — hapus dari repo, file lokal tetap ada.
+- `PANDUAN_KODE.md` (dokumen penjelasan kode untuk user, dibuat sesi ini) sengaja di-gitignore — tidak masuk repo.
+- Update `PROJECT_SUMMARY.md`: status jadi "sudah deploy" + URL, survei relevance ditandai sudah dibuat.
+
+---
+
 ### 2026-06-27 — Fix Mobile: Touch Response + Hydration Error + Survey Popup Redesign
 
 **Konteks:** Testing di HP via WiFi lokal (192.168.1.2:3000) — ditemukan beberapa tombol tidak merespons di mobile.
