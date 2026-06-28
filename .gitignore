@@ -1,0 +1,17 @@
+# Referensi dan aset non-kode
+Referensi ui/
+screenshots/
+freelance-city-index/screenshots/
+
+# PDF & dokumen
+*.pdf
+
+# Video
+*.mp4
+*.mov
+*.avi
+
+# Screenshot WhatsApp / foto
+*.jpeg
+*.jpg
+*.png
