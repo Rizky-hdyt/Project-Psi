@@ -40,7 +40,7 @@ export function Navbar({ showStartQuiz = true }: NavbarProps) {
       <div className="mx-auto flex max-w-[1120px] items-center justify-between px-4 py-3 sm:px-6">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-sawah shadow-[0_2px_6px_rgba(47,111,78,0.35)] transition-all group-hover:shadow-[0_4px_10px_rgba(47,111,78,0.45)]">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-sawah shadow-[0_2px_6px_rgba(194,65,12,0.35)] transition-all group-hover:shadow-[0_4px_10px_rgba(194,65,12,0.45)]">
             <MapPin className="h-4 w-4 text-white" />
           </div>
           <div className="leading-tight">
@@ -77,7 +77,7 @@ export function Navbar({ showStartQuiz = true }: NavbarProps) {
             <Link href="/quiz">
               <Button
                 size="sm"
-                className="min-h-[36px] gap-1.5 bg-sawah text-white shadow-[0_2px_6px_rgba(47,111,78,0.30)] hover:bg-sawah/90 hover:shadow-[0_4px_10px_rgba(47,111,78,0.40)] transition-all"
+                className="min-h-[36px] gap-1.5 bg-sawah text-white shadow-[0_2px_6px_rgba(194,65,12,0.30)] hover:bg-sawah/90 hover:shadow-[0_4px_10px_rgba(194,65,12,0.40)] transition-all"
               >
                 Mulai Quiz
                 <ArrowRight className="h-3.5 w-3.5" />

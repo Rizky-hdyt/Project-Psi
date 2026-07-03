@@ -43,7 +43,7 @@ export function BudgetSlider({ value, onChange }: Props) {
         {belowUMK && (
           <span
             className="rounded-full px-2.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-wide"
-            style={{ backgroundColor: "#FBF3DA", color: "#B8860B" }}
+            style={{ backgroundColor: "#FEF3C7", color: "#B45309" }}
           >
             Di bawah UMK
           </span>

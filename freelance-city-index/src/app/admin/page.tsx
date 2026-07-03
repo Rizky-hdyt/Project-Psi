@@ -103,7 +103,7 @@ export default function AdminDashboardPage() {
 
       {/* Scores table */}
       {!loading && !error && (
-        <div className="overflow-hidden rounded-lg border border-line bg-white">
+        <div className="overflow-x-auto rounded-lg border border-line bg-white">
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/40">
@@ -125,7 +125,7 @@ export default function AdminDashboardPage() {
                 return (
                   <TableRow
                     key={district.id}
-                    className={hasStale ? "bg-warning-bg" : ""}
+                    className={hasStale ? "bg-warning-bg hover:bg-warning-bg/70" : "hover:bg-muted/30"}
                   >
                     <TableCell className="font-medium text-ink">
                       <div className="flex flex-col">
@@ -149,7 +149,7 @@ export default function AdminDashboardPage() {
                               {entry.skor}
                             </span>
                           ) : (
-                            <span className="text-xs text-muted-foreground">—</span>
+                            <span className="text-xs text-muted-foreground">-</span>
                           )}
                         </TableCell>
                       );

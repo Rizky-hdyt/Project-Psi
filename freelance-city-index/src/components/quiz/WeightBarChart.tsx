@@ -9,10 +9,10 @@ const INDICATOR_META: Record<IndicatorId, {
   color: string;
   gradientId: string;
 }> = {
-  internet:    { label: "Internet",     icon: Wifi,     color: "#1F5C73", gradientId: "g-internet"    },
-  cost:        { label: "Biaya Hidup",  icon: Wallet,   color: "#2F6F4E", gradientId: "g-cost"        },
-  community:   { label: "Komunitas",    icon: Users,    color: "#7B6040", gradientId: "g-community"   },
-  environment: { label: "Lingkungan",   icon: TreePine, color: "#3A6E5C", gradientId: "g-environment" },
+  internet:    { label: "Internet",     icon: Wifi,     color: "#0E7490", gradientId: "g-internet"    },
+  cost:        { label: "Biaya Hidup",  icon: Wallet,   color: "#C2410C", gradientId: "g-cost"        },
+  community:   { label: "Komunitas",    icon: Users,    color: "#4D7C0F", gradientId: "g-community"   },
+  environment: { label: "Lingkungan",   icon: TreePine, color: "#475569", gradientId: "g-environment" },
 };
 
 interface Props {
@@ -60,7 +60,7 @@ export function WeightBarChart({ weights }: Props) {
             </div>
             <div
               className="h-2.5 w-full overflow-hidden rounded-full"
-              style={{ backgroundColor: "#D8D3C4" }}
+              style={{ backgroundColor: "#E2E8F0" }}
               role="progressbar"
               aria-valuenow={pct}
               aria-valuemin={0}

@@ -6,7 +6,9 @@ Project memory permanen untuk Claude Code. Baca file ini secara penuh sebelum me
 
 ## 0. Skill yang Terinstall — Wajib Dipanggil Sesuai Konteks
 
-Empat skill berikut sudah terinstall di Claude Code untuk project ini. **Jangan membuat keputusan yang seharusnya dijawab skill tanpa memanggilnya dulu.**
+Skill berikut sudah terinstall di Claude Code untuk project ini. **Jangan membuat keputusan yang seharusnya dijawab skill tanpa memanggilnya dulu.**
+
+### Skill inti (dipakai hampir setiap task)
 
 | Skill | Kapan dipanggil | Apa yang dicegahnya kalau dilewati |
 |---|---|---|
@@ -15,7 +17,19 @@ Empat skill berikut sudah terinstall di Claude Code untuk project ini. **Jangan 
 | **`vercel-react-best-practices`** | Setiap kali menyusun struktur komponen, data fetching, code-splitting, atau menyiapkan build untuk deploy. | Pola React yang tidak idiomatic untuk Next.js 15/React 19 modern, struktur file yang sulit di-maintain, perf issue yang baru ketahuan saat deploy. |
 | **`find-skills`** | Saat menghadapi task yang terasa butuh skill spesifik tapi tidak yakin yang mana (mis. testing, accessibility audit, animasi kompleks). Panggil sebelum mengasumsikan "tidak ada skill yang cocok". | Reinventing the wheel untuk hal yang sebenarnya sudah ada panduannya. |
 
-**Urutan kerja yang disarankan untuk task UI baru:** `find-skills` (kalau ragu) → `frontend-design` (tentukan arah visual/copy) → `tailwind-v4-shadcn` (implementasi styling) → `vercel-react-best-practices` (struktur & performa) → build.
+### Skill desain UI/UX tambahan (pilih sesuai jenis task, jangan panggil semuanya sekaligus)
+
+| Skill | Kapan dipanggil | Catatan pemakaian di project ini |
+|---|---|---|
+| **`ui-ux-pro-max`** | Task desain yang butuh referensi sistematis: pilih style/palet/font pairing, guideline UX spesifik (form, table, chart, accessibility), atau review UI terhadap best practice. | Palet & tipografi project sudah dikunci di §9 — pakai skill ini untuk guideline UX & pola komponen, **bukan** untuk mengganti token warna/font yang sudah baku. |
+| **`impeccable`** | Audit/polish UI yang sudah ada: hierarchy, spacing, interaction states, micro-interactions, error/empty states, responsive behavior. | Cocok untuk pass "rapikan" setelah fitur jadi — mis. konsistensi states di tabel §11. |
+| **`design-taste-frontend`** | Redesign halaman atau landing page ketika hasil terasa templated/AI-generated dan butuh arah desain yang lebih kuat. | Overlap dengan `frontend-design` — pakai salah satu per sesi, jangan dua-duanya. |
+| **`redesign-existing-projects`** | Upgrade menyeluruh halaman existing tanpa merombak fungsionalitas (audit dulu, baru apply). | Wajib tetap patuh token §9.1–9.4; hasil audit yang menyarankan ganti palet global = tolak. |
+| **`image-to-code`** | Mengimplementasikan UI dari gambar/screenshot referensi (mis. folder `Referensi ui/`). | Referensi = acuan pola layout, bukan copy verbatim — konten & warna tetap ikut CLAUDE.md. |
+
+**Urutan kerja yang disarankan untuk task UI baru:** `find-skills` (kalau ragu) → `frontend-design` **atau** `design-taste-frontend` (tentukan arah visual/copy) → `tailwind-v4-shadcn` (implementasi styling) → `vercel-react-best-practices` (struktur & performa) → build → `impeccable` (polish pass, opsional).
+
+**Aturan konflik:** semua skill desain di atas bersifat *advisory*. Kalau saran skill bertentangan dengan token desain §9 (warna, font, radius) atau aturan §11 (states/error), **CLAUDE.md menang** — skill hanya boleh memperkaya, bukan mengganti keputusan yang sudah dikunci.
 
 ---
 

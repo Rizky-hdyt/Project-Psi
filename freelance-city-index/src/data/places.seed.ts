@@ -483,8 +483,8 @@ export const CATEGORY_LABEL: Record<PlaceCategory, string> = {
 };
 
 export const CATEGORY_COLOR: Record<PlaceCategory, { bg: string; text: string; border: string }> = {
-  cafe:      { bg: "#FAF0EA", text: "#B5562F", border: "#B5562F30" },
-  coworking: { bg: "#EEF4F8", text: "#1F5C73", border: "#1F5C7330" },
-  quiet:     { bg: "#EDF5F1", text: "#2F6F4E", border: "#2F6F4E30" },
-  library:   { bg: "#F5F0E8", text: "#7B6040", border: "#7B604030" },
+  cafe:      { bg: "#FFE4E6", text: "#9F1239", border: "#9F123930" },
+  coworking: { bg: "#CFFAFE", text: "#0E7490", border: "#0E749030" },
+  quiet:     { bg: "#FFEDD5", text: "#C2410C", border: "#C2410C30" },
+  library:   { bg: "#ECFCCB", text: "#4D7C0F", border: "#4D7C0F30" },
 };

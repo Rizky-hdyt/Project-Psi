@@ -19,8 +19,8 @@ function ActivityDots({ count, active }: { count: number; active: boolean }) {
           className={cn("rounded-full transition-all", dot <= count ? "h-2 w-2" : "h-1.5 w-1.5")}
           style={{
             backgroundColor: dot <= count
-              ? (active ? "#fff" : "#7B6040")
-              : (active ? "rgba(255,255,255,0.3)" : "#D8D3C4"),
+              ? (active ? "#fff" : "#4D7C0F")
+              : (active ? "rgba(255,255,255,0.3)" : "#E2E8F0"),
           }}
         />
       ))}
@@ -37,7 +37,7 @@ export function CommunityPrioritySelect({ value, onChange }: Props) {
   return (
     <div>
       <div className="mb-3 flex items-center gap-2">
-        <Users className="h-4 w-4" style={{ color: "#7B6040" }} />
+        <Users className="h-4 w-4" style={{ color: "#4D7C0F" }} />
         <label className="text-sm font-semibold text-ink">
           Seberapa penting komunitas &amp; coworking aktif?
         </label>
@@ -52,15 +52,15 @@ export function CommunityPrioritySelect({ value, onChange }: Props) {
               onClick={() => onChange(opt.value)}
               aria-pressed={isActive}
               style={isActive ? {
-                backgroundColor: "#7B6040",
-                borderColor: "#7B6040",
-                boxShadow: "0 2px 8px rgba(123,96,64,0.35)",
+                backgroundColor: "#4D7C0F",
+                borderColor: "#4D7C0F",
+                boxShadow: "0 2px 8px rgba(77,124,15,0.35)",
               } : undefined}
               className={cn(
                 "flex min-h-[44px] flex-1 flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2.5 transition-all duration-200",
                 isActive
                   ? "border-transparent text-white"
-                  : "border-line bg-white text-ink hover:border-[#7B6040]/40 hover:shadow-sm"
+                  : "border-line bg-white text-ink hover:border-[#4D7C0F]/40 hover:shadow-sm"
               )}
             >
               <ActivityDots count={opt.dots} active={isActive} />

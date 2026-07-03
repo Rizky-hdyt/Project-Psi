@@ -98,7 +98,7 @@ export default function AuditLogPage() {
 
       {!loading && !error && logs.length > 0 && (
         <>
-          <div className="overflow-hidden rounded-lg border border-line bg-white">
+          <div className="overflow-x-auto rounded-lg border border-line bg-white">
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/40">
@@ -115,7 +115,7 @@ export default function AuditLogPage() {
                   const changed = entry.newValue !== entry.oldValue;
                   const increased = entry.newValue > entry.oldValue;
                   return (
-                    <TableRow key={entry.id}>
+                    <TableRow key={entry.id} className="hover:bg-muted/30">
                       <TableCell className="font-mono text-xs text-muted-foreground whitespace-nowrap">
                         {formatTimestamp(entry.createdAt)}
                       </TableCell>
@@ -135,7 +135,7 @@ export default function AuditLogPage() {
                               ? "text-muted-foreground"
                               : increased
                               ? "text-sawah"
-                              : "text-error"
+                              : "text-pesisir"
                           }`}
                         >
                           {entry.newValue}

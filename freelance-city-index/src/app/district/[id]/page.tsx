@@ -71,7 +71,7 @@ export default function DistrictDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F8F9FA]">
+      <div className="min-h-screen bg-paper">
         <Navbar />
         <div className="mx-auto max-w-[1120px] px-4 py-8 sm:px-6 sm:py-10 space-y-4">
           <div className="h-8 w-48 animate-pulse rounded-lg bg-muted" />
@@ -226,14 +226,14 @@ export default function DistrictDetailPage() {
       <div className="mx-auto max-w-[1120px] px-4 py-8 sm:px-6 sm:py-10">
         {/* District Snapshot */}
         <section className="mb-8">
-          <p className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <p className="mb-4 text-sm font-semibold text-ink">
             District Snapshot
           </p>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {SNAPSHOT.map(({ icon: Icon, label, value, sub }) => (
               <div
                 key={label}
-                className="flex gap-3 rounded-xl border border-line bg-white p-4 shadow-[0_1px_2px_rgba(28,37,33,0.06)]"
+                className="flex gap-3 rounded-xl border border-line bg-white p-4 shadow-[0_1px_2px_rgba(15,23,42,0.06)]"
               >
                 <div
                   className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
@@ -255,9 +255,9 @@ export default function DistrictDetailPage() {
 
         {/* Why This Match (reuse) */}
         {rankedEntry && (
-          <section className="rounded-xl border border-line bg-white p-5 shadow-[0_1px_2px_rgba(28,37,33,0.06)]">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Why This Match — untuk profil Anda
+          <section className="rounded-xl border border-line bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.06)]">
+            <p className="mb-3 text-sm font-semibold text-ink">
+              Why This Match, untuk profil Anda
             </p>
             <WhyThisMatch
               ranked={rankedEntry}

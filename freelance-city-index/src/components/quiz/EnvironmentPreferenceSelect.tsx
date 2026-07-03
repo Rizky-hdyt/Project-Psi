@@ -12,10 +12,10 @@ const OPTIONS: {
   color: string;
   bg: string;
 }[] = [
-  { value: "quiet",     label: "Quiet",     sub: "Tenang & fokus",       icon: Volume1,   color: "#2F6F4E", bg: "#EDF5F1" },
-  { value: "cafe",      label: "Cafe",      sub: "Suasana cafe hangat",  icon: Coffee,    color: "#B5562F", bg: "#FAF0EA" },
-  { value: "coworking", label: "Coworking", sub: "Ruang kerja kolaboratif", icon: Building2, color: "#1F5C73", bg: "#EEF4F8" },
-  { value: "flexible",  label: "Flexible",  sub: "Semua cocok",          icon: Shuffle,   color: "#7B6040", bg: "#F5F0E8" },
+  { value: "quiet",     label: "Quiet",     sub: "Tenang & fokus",       icon: Volume1,   color: "#C2410C", bg: "#FFEDD5" },
+  { value: "cafe",      label: "Cafe",      sub: "Suasana cafe hangat",  icon: Coffee,    color: "#9F1239", bg: "#FFE4E6" },
+  { value: "coworking", label: "Coworking", sub: "Ruang kerja kolaboratif", icon: Building2, color: "#0E7490", bg: "#CFFAFE" },
+  { value: "flexible",  label: "Flexible",  sub: "Semua cocok",          icon: Shuffle,   color: "#4D7C0F", bg: "#ECFCCB" },
 ];
 
 interface Props {
@@ -47,7 +47,7 @@ export function EnvironmentPreferenceSelect({ value, onChange }: Props) {
                 "flex min-h-[60px] flex-col items-start gap-2 rounded-xl border p-3.5 text-left transition-all duration-200",
                 isActive
                   ? "border-transparent"
-                  : "border-line bg-white shadow-[0_1px_2px_rgba(28,37,33,0.05)] hover:shadow-[0_4px_10px_rgba(28,37,33,0.09)] hover:-translate-y-0.5"
+                  : "border-line bg-white shadow-[0_1px_2px_rgba(15,23,42,0.05)] hover:shadow-[0_4px_10px_rgba(15,23,42,0.09)] hover:-translate-y-0.5"
               )}
             >
               <div
@@ -64,7 +64,7 @@ export function EnvironmentPreferenceSelect({ value, onChange }: Props) {
               <div>
                 <p
                   className="text-xs font-semibold"
-                  style={{ color: isActive ? color : "#1C2521" }}
+                  style={{ color: isActive ? color : "#0F172A" }}
                 >
                   {label}
                 </p>

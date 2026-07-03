@@ -158,7 +158,7 @@ function IndicatorComparisonTable({
     <div>
       <SectionLabel icon={BarChart3} label="Perbandingan Indikator" />
       {/* overflow-x-auto so mobile can scroll if 3 districts */}
-      <div className="overflow-x-auto rounded-xl border border-line bg-white shadow-[0_1px_3px_rgba(28,37,33,0.05)]">
+      <div className="overflow-x-auto rounded-xl border border-line bg-white shadow-[0_1px_3px_rgba(15,23,42,0.05)]">
         <div style={{ minWidth: n === 3 ? "520px" : "360px" }}>
 
           {/* Header row: district names as columns */}
@@ -270,7 +270,7 @@ function DataSnapshotGrid({ selectedDistricts }: { selectedDistricts: District[]
           return (
             <div
               key={d.id}
-              className="overflow-hidden rounded-xl border border-line bg-white shadow-[0_1px_3px_rgba(28,37,33,0.05)]"
+              className="overflow-hidden rounded-xl border border-line bg-white shadow-[0_1px_3px_rgba(15,23,42,0.05)]"
             >
               {/* Mini header */}
               <div
@@ -319,7 +319,7 @@ function KarakteristikSection({ selectedDistricts }: { selectedDistricts: Distri
           return (
             <div
               key={d.id}
-              className="rounded-xl border border-line bg-white p-5 shadow-[0_1px_3px_rgba(28,37,33,0.05)]"
+              className="rounded-xl border border-line bg-white p-5 shadow-[0_1px_3px_rgba(15,23,42,0.05)]"
             >
               <div className="mb-2.5 flex items-center gap-2">
                 <span className="text-lg" aria-hidden="true">
@@ -527,7 +527,7 @@ function CompareContent() {
         bestId={bestId}
       />
 
-      {/* 2. Indicator comparison — compact table, columns = districts */}
+      {/* 2. Indicator comparison, compact table, columns = districts */}
       <IndicatorComparisonTable
         selectedDistricts={selectedDistricts}
         selectedRanked={selectedRanked}
@@ -590,7 +590,7 @@ export default function ComparePage() {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA]">
+    <div className="min-h-screen bg-[#F8FAFC]">
       <Navbar />
 
       <div className="mx-auto max-w-[1120px] px-4 py-8 sm:px-6 sm:py-10">

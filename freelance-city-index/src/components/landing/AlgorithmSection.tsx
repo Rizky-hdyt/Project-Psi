@@ -35,40 +35,40 @@ const PERSONAS: {
     label: "Tech Professional",
     shortLabel: "Tech",
     icon: Laptop,
-    color: "#1F5C73",
-    bg: "#EEF4F8",
+    color: "#0E7490",
+    bg: "#CFFAFE",
     weights: { internet: 40, cost: 25, community: 20, environment: 15 },
-    tagline: "Internet jadi prioritas utama — koneksi stabil adalah syarat kerja.",
+    tagline: "Internet jadi prioritas utama, koneksi stabil adalah syarat kerja.",
   },
   {
     id: "creative",
     label: "Creative Professional",
     shortLabel: "Creative",
     icon: Palette,
-    color: "#B5562F",
-    bg: "#FAF0EA",
+    color: "#9F1239",
+    bg: "#FFE4E6",
     weights: { internet: 20, cost: 25, community: 25, environment: 30 },
-    tagline: "Lingkungan & komunitas sama pentingnya — inspirasi datang dari suasana.",
+    tagline: "Lingkungan & komunitas sama pentingnya, inspirasi datang dari suasana.",
   },
   {
     id: "student",
     label: "Student & Fresh Grad",
     shortLabel: "Student",
     icon: GraduationCap,
-    color: "#2F6F4E",
-    bg: "#EDF5F1",
+    color: "#C2410C",
+    bg: "#FFEDD5",
     weights: { internet: 20, cost: 45, community: 20, environment: 15 },
-    tagline: "Biaya hidup adalah penentu utama — efisiensi anggaran nomor satu.",
+    tagline: "Biaya hidup adalah penentu utama, efisiensi anggaran nomor satu.",
   },
   {
     id: "nomad",
     label: "Digital Nomad",
     shortLabel: "Nomad",
     icon: Globe,
-    color: "#7B6040",
-    bg: "#F5F0E8",
+    color: "#4D7C0F",
+    bg: "#ECFCCB",
     weights: { internet: 30, cost: 25, community: 25, environment: 20 },
-    tagline: "Profil paling seimbang — semua indikator relevan, tidak ada yang diabaikan.",
+    tagline: "Profil paling seimbang, semua indikator relevan, tidak ada yang diabaikan.",
   },
 ];
 
@@ -78,10 +78,10 @@ const INDICATORS: {
   icon: React.ElementType;
   color: string;
 }[] = [
-  { key: "internet",    label: "Internet",    icon: Wifi,     color: "#1F5C73" },
-  { key: "cost",        label: "Biaya Hidup", icon: Wallet,   color: "#2F6F4E" },
-  { key: "community",   label: "Komunitas",   icon: Users,    color: "#7B6040" },
-  { key: "environment", label: "Lingkungan",  icon: TreePine, color: "#3A6E5C" },
+  { key: "internet",    label: "Internet",    icon: Wifi,     color: "#0E7490" },
+  { key: "cost",        label: "Biaya Hidup", icon: Wallet,   color: "#C2410C" },
+  { key: "community",   label: "Komunitas",   icon: Users,    color: "#4D7C0F" },
+  { key: "environment", label: "Lingkungan",  icon: TreePine, color: "#475569" },
 ];
 
 const DATA_SOURCES = [
@@ -100,9 +100,9 @@ function TabCaraKerja() {
       {/* 3 metric boxes */}
       <div className="grid grid-cols-3 gap-3">
         {[
-          { val: "4", label: "Indikator Penilaian", color: "#1F5C73", bg: "#EEF4F8" },
-          { val: "4", label: "Profil Pengguna", color: "#2F6F4E", bg: "#EDF5F1" },
-          { val: "100", label: "Skor Maksimum", color: "#7B6040", bg: "#F5F0E8" },
+          { val: "4", label: "Indikator Penilaian", color: "#0E7490", bg: "#CFFAFE" },
+          { val: "4", label: "Profil Pengguna", color: "#C2410C", bg: "#FFEDD5" },
+          { val: "100", label: "Skor Maksimum", color: "#4D7C0F", bg: "#ECFCCB" },
         ].map(({ val, label, color, bg }) => (
           <div key={label} className="rounded-xl border border-line p-4 text-center" style={{ backgroundColor: bg }}>
             <p className="font-mono text-2xl font-bold sm:text-3xl" style={{ color }}>{val}</p>
@@ -116,7 +116,7 @@ function TabCaraKerja() {
         {[
           { icon: Shield,     judul: "Deterministik",   desc: "Input yang sama selalu menghasilkan output yang sama. Bukan AI yang hasilnya bisa berubah." },
           { icon: Users,      judul: "Personalisasi",   desc: "Bobot indikator disesuaikan otomatis berdasarkan profil dan 4 preferensi masing-masing pengguna." },
-          { icon: Sigma,      judul: "Transparan",       desc: "Setiap komponen skor ditampilkan terbuka — Anda tahu persis mengapa suatu distrik direkomendasikan." },
+          { icon: Sigma,      judul: "Transparan",       desc: "Setiap komponen skor ditampilkan terbuka, Anda tahu persis mengapa suatu distrik direkomendasikan." },
           { icon: RefreshCw,  judul: "Validasi Rutin",  desc: "Data distrik diperbarui secara berkala dari survei lapangan dan sumber data resmi." },
         ].map(({ icon: Icon, judul, desc }) => (
           <div key={judul} className="flex gap-3 rounded-xl border border-line bg-paper p-4">
@@ -143,7 +143,7 @@ function TabBobot() {
       {/* Kalimat kunci */}
       <div className="rounded-xl border border-sawah/20 bg-sawah/5 px-4 py-3">
         <p className="text-sm font-medium text-ink">
-          Bobot kriteria <span className="font-bold text-sawah">tidak bisa sama untuk semua orang</span> — karena setiap freelancer punya prioritas yang berbeda.
+          Bobot kriteria <span className="font-bold text-sawah">tidak bisa sama untuk semua orang</span>, karena setiap freelancer punya prioritas yang berbeda.
         </p>
         <p className="mt-1 text-xs text-muted-foreground">
           Klik persona di bawah untuk melihat bagaimana bobot berubah secara otomatis.
@@ -167,9 +167,9 @@ function TabBobot() {
                 color: p.color,
                 boxShadow: `0 2px 8px ${p.color}30`,
               } : {
-                borderColor: "#D8D3C4",
+                borderColor: "#E2E8F0",
                 backgroundColor: "#fff",
-                color: "#6B7570",
+                color: "#64748B",
               }}
             >
               <Icon className="h-4 w-4" />
@@ -203,7 +203,7 @@ function TabBobot() {
               </div>
               <div
                 className="h-3 overflow-hidden rounded-full"
-                style={{ backgroundColor: "#D8D3C4" }}
+                style={{ backgroundColor: "#E2E8F0" }}
                 role="progressbar"
                 aria-valuenow={pct}
                 aria-valuemin={0}
@@ -250,7 +250,7 @@ function TabBobot() {
                           className="inline-block rounded-md px-2 py-0.5 font-mono font-bold"
                           style={isHighest
                             ? { backgroundColor: p.bg, color: p.color }
-                            : { color: "#6B7570" }}
+                            : { color: "#64748B" }}
                         >
                           {pct}%
                         </span>
@@ -290,11 +290,11 @@ function TabFormula() {
 
   return (
     <div className="space-y-5">
-      <div className="rounded-xl bg-[#1C2521] p-5 font-mono text-sm">
-        <p className="mb-3 text-[#7EC8A0] text-xs font-bold uppercase tracking-widest">// Formula Weighted Scoring</p>
-        <p className="text-[#F7F5EF]">
+      <div className="rounded-xl bg-[#0F172A] p-5 font-mono text-sm">
+        <p className="mb-3 text-[#FDBA74] text-xs font-bold uppercase tracking-widest">// Formula Weighted Scoring</p>
+        <p className="text-[#F8FAFC]">
           Skor_distrik{" "}
-          <span className="text-[#7EC8A0]">=</span>
+          <span className="text-[#FDBA74]">=</span>
           {" Σ (skor_indikator × bobot_persona)"}
         </p>
         <div className="mt-4 border-t border-white/10 pt-4 text-xs text-white/50">
@@ -316,7 +316,7 @@ function TabFormula() {
                 onClick={() => setActivePersona(p.id)}
                 className="flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-all"
                 style={isActive ? { borderColor: p.color, backgroundColor: p.bg, color: p.color }
-                  : { borderColor: "#D8D3C4", color: "#6B7570" }}
+                  : { borderColor: "#E2E8F0", color: "#64748B" }}
               >
                 <Icon className="h-3 w-3" />
                 {p.shortLabel}
@@ -384,7 +384,7 @@ function TabData() {
             </div>
             <span
               className="shrink-0 rounded-full px-2.5 py-1 font-mono text-[10px] font-semibold"
-              style={{ backgroundColor: "#EDF5F1", color: "#2F6F4E" }}
+              style={{ backgroundColor: "#FFEDD5", color: "#C2410C" }}
             >
               {frekuensi}
             </span>
@@ -426,7 +426,7 @@ export function AlgorithmSection({ standalone = false }: AlgorithmSectionProps) 
           )}
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
             Sistem ini tidak punya satu bobot tunggal yang berlaku untuk semua orang.
-            Setiap persona mendapat bobot yang berbeda — karena kebutuhan freelancer memang tidak sama.
+            Setiap persona mendapat bobot yang berbeda, karena kebutuhan freelancer memang tidak sama.
           </p>
         </div>
 
@@ -439,11 +439,11 @@ export function AlgorithmSection({ standalone = false }: AlgorithmSectionProps) 
               onClick={() => setActiveTab(id)}
               className="flex-1 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200"
               style={activeTab === id ? {
-                backgroundColor: standalone ? "#F7F5EF" : "#fff",
-                color: "#1C2521",
-                boxShadow: "0 1px 3px rgba(28,37,33,0.10)",
+                backgroundColor: standalone ? "#F8FAFC" : "#fff",
+                color: "#0F172A",
+                boxShadow: "0 1px 3px rgba(15,23,42,0.10)",
               } : {
-                color: "#6B7570",
+                color: "#64748B",
               }}
             >
               {label}
@@ -466,7 +466,7 @@ export function AlgorithmSection({ standalone = false }: AlgorithmSectionProps) 
           </p>
           <Link
             href="/quiz"
-            className="flex items-center gap-1.5 rounded-xl bg-sawah px-4 py-2.5 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(47,111,78,0.30)] transition-all hover:bg-sawah/90 hover:shadow-[0_6px_16px_rgba(47,111,78,0.40)]"
+            className="flex items-center gap-1.5 rounded-xl bg-sawah px-4 py-2.5 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(194,65,12,0.30)] transition-all hover:bg-sawah/90 hover:shadow-[0_6px_16px_rgba(194,65,12,0.40)]"
           >
             Hitung bobot saya
             <ArrowRight className="h-4 w-4" />

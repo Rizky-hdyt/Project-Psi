@@ -21,49 +21,49 @@ const PERSONAS: PersonaCard[] = [
   {
     id: "tech-professional",
     nama: "Tech Professional",
-    deskripsi: "Developer, DevOps, Data — prioritas internet kencang & stabil.",
+    deskripsi: "Developer, DevOps, Data, prioritas internet kencang & stabil.",
     icon: Laptop,
-    iconBg: "#EEF4F8",
-    iconColor: "#1F5C73",
-    activeBorder: "#1F5C73",
-    activeBg: "#F0F6FA",
-    activeRing: "#1F5C7340",
+    iconBg: "#CFFAFE",
+    iconColor: "#0E7490",
+    activeBorder: "#0E7490",
+    activeBg: "#ECFEFF",
+    activeRing: "#0E749040",
     tag: "Koneksi · Data",
   },
   {
     id: "creative-professional",
     nama: "Creative Professional",
-    deskripsi: "Desainer, videografer, penulis — butuh inspirasi & komunitas kreatif.",
+    deskripsi: "Desainer, videografer, penulis, butuh inspirasi & komunitas kreatif.",
     icon: Palette,
-    iconBg: "#FAF0EA",
-    iconColor: "#B5562F",
-    activeBorder: "#B5562F",
-    activeBg: "#FDF5F0",
-    activeRing: "#B5562F40",
+    iconBg: "#FFE4E6",
+    iconColor: "#9F1239",
+    activeBorder: "#9F1239",
+    activeBg: "#FFF1F2",
+    activeRing: "#9F123940",
     tag: "Kreatif · Komunitas",
   },
   {
     id: "student-fresh-graduate",
     nama: "Student & Fresh Graduate",
-    deskripsi: "Mahasiswa & fresh grad — biaya hidup terjangkau adalah prioritas utama.",
+    deskripsi: "Mahasiswa & fresh grad, biaya hidup terjangkau adalah prioritas utama.",
     icon: GraduationCap,
-    iconBg: "#EDF5F1",
-    iconColor: "#2F6F4E",
-    activeBorder: "#2F6F4E",
-    activeBg: "#EFF7F3",
-    activeRing: "#2F6F4E40",
+    iconBg: "#FFEDD5",
+    iconColor: "#C2410C",
+    activeBorder: "#C2410C",
+    activeBg: "#FFF7ED",
+    activeRing: "#C2410C40",
     tag: "Budget · Aksesibilitas",
   },
   {
     id: "digital-nomad",
     nama: "Digital Nomad",
-    deskripsi: "Remote worker yang berpindah — profil paling seimbang antar indikator.",
+    deskripsi: "Remote worker yang berpindah, profil paling seimbang antar indikator.",
     icon: Globe,
-    iconBg: "#F5F0E8",
-    iconColor: "#7B6040",
-    activeBorder: "#7B6040",
-    activeBg: "#F7F2EA",
-    activeRing: "#7B604040",
+    iconBg: "#ECFCCB",
+    iconColor: "#4D7C0F",
+    activeBorder: "#4D7C0F",
+    activeBg: "#F7FEE7",
+    activeRing: "#4D7C0F40",
     tag: "Fleksibel · Seimbang",
   },
 ];
@@ -100,7 +100,7 @@ export function PersonaCardSelector({ selected, onSelect, showError }: Props) {
                 "group flex items-start gap-3 rounded-xl border p-4 text-left transition-all duration-200",
                 isActive
                   ? "border-transparent"
-                  : "border-line bg-white shadow-[0_1px_2px_rgba(28,37,33,0.05)] [@media(hover:hover)]:hover:shadow-[0_4px_12px_rgba(28,37,33,0.10)] [@media(hover:hover)]:hover:border-line/80 [@media(hover:hover)]:hover:-translate-y-0.5 active:scale-[0.98]"
+                  : "border-line bg-white shadow-[0_1px_2px_rgba(15,23,42,0.05)] [@media(hover:hover)]:hover:shadow-[0_4px_12px_rgba(15,23,42,0.10)] [@media(hover:hover)]:hover:border-line/80 [@media(hover:hover)]:hover:-translate-y-0.5 active:scale-[0.98]"
               )}
             >
               <div
@@ -118,7 +118,7 @@ export function PersonaCardSelector({ selected, onSelect, showError }: Props) {
                 <div className="flex items-start justify-between gap-2">
                   <p
                     className="text-sm font-semibold leading-tight"
-                    style={{ color: isActive ? activeBorder : "#1C2521" }}
+                    style={{ color: isActive ? activeBorder : "#0F172A" }}
                   >
                     {nama}
                   </p>
@@ -135,7 +135,7 @@ export function PersonaCardSelector({ selected, onSelect, showError }: Props) {
                 </div>
                 <p
                   className="mt-0.5 font-mono text-[10px] font-medium uppercase tracking-wider"
-                  style={{ color: isActive ? `${activeBorder}99` : "#9CA8A5" }}
+                  style={{ color: isActive ? `${activeBorder}99` : "#94A3B8" }}
                 >
                   {tag}
                 </p>

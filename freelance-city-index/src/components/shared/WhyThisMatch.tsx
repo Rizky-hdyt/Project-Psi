@@ -9,10 +9,10 @@ const LABEL: Record<IndicatorId, string> = {
 };
 
 const INDICATOR_COLOR: Record<IndicatorId, string> = {
-  internet:    "#1F5C73",
-  cost:        "#2F6F4E",
-  community:   "#7B6040",
-  environment: "#3A6E5C",
+  internet:    "#0E7490",
+  cost:        "#C2410C",
+  community:   "#4D7C0F",
+  environment: "#475569",
 };
 
 interface Props {
@@ -30,7 +30,7 @@ export function WhyThisMatch({ ranked, whyText }: Props) {
     <div className="space-y-4">
       {/* Kekuatan utama */}
       <div>
-        <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <p className="mb-2 text-xs font-semibold text-muted-foreground">
           Keunggulan utama
         </p>
         <div className="flex flex-wrap gap-2">
@@ -65,7 +65,7 @@ export function WhyThisMatch({ ranked, whyText }: Props) {
       {/* Trade-off */}
       {weakest && (
         <div>
-          <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          <p className="mb-2 text-xs font-semibold text-muted-foreground">
             Trade-off
           </p>
           <div className="flex items-center gap-2 rounded-lg border border-line bg-paper px-3 py-2 w-fit">

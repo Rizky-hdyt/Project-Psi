@@ -44,7 +44,7 @@ function StarRating({ rating }: { rating: number }) {
             key={i}
             className="h-3 w-3"
             fill={i < full ? "#F59E0B" : i === full && half ? "url(#half)" : "none"}
-            stroke={i < full || (i === full && half) ? "#F59E0B" : "#D1D5DB"}
+            stroke={i < full || (i === full && half) ? "#F59E0B" : "#CBD5E1"}
             strokeWidth={1.5}
           />
         ))}
@@ -70,7 +70,7 @@ function PlaceCard({ place, accentColor }: { place: SuggestedPlace; accentColor:
     : `https://maps.google.com/?q=${encodeURIComponent(place.nama + " " + place.alamat)}`;
 
   return (
-    <div className="flex flex-col rounded-xl border border-line bg-white p-4 shadow-[0_1px_4px_rgba(28,37,33,0.06)] transition-all duration-200 hover:shadow-[0_4px_14px_rgba(28,37,33,0.12)] hover:-translate-y-0.5">
+    <div className="flex flex-col rounded-xl border border-line bg-white p-4 shadow-[0_1px_4px_rgba(15,23,42,0.06)] transition-all duration-200 hover:shadow-[0_4px_14px_rgba(15,23,42,0.12)] hover:-translate-y-0.5">
       {/* Header: ikon kategori + nama + badge */}
       <div className="mb-3 flex items-start justify-between gap-2">
         <div className="flex items-start gap-2">
@@ -152,7 +152,7 @@ export function SuggestedPlaces({ districtId, districtNama, environmentPreferenc
   const subtitle = `Rekomendasi untuk ${PERSONA_LABEL[personaId]} di ${districtNama}`;
 
   return (
-    <section className="rounded-2xl border border-line bg-white p-6 shadow-[0_2px_12px_rgba(28,37,33,0.07)]">
+    <section className="rounded-2xl border border-line bg-white p-6 shadow-[0_2px_12px_rgba(15,23,42,0.07)]">
       {/* Header */}
       <div className="mb-5">
         <div className="flex items-center gap-2">
@@ -163,8 +163,8 @@ export function SuggestedPlaces({ districtId, districtNama, environmentPreferenc
             {CATEGORY_ICON[environmentPreference === "quiet" ? "quiet" : environmentPreference === "coworking" ? "coworking" : environmentPreference === "cafe" ? "cafe" : "coworking"]}
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Tempat yang Disarankan
+            <p className="text-xs font-medium text-muted-foreground">
+              Tempat yang disarankan
             </p>
             <h2 className="text-base font-bold text-ink">{sectionTitle}</h2>
           </div>

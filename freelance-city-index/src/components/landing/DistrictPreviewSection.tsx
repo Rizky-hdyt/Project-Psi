@@ -29,7 +29,7 @@ const DISTRICTS: District[] = [
     tipe: "Kabupaten",
     sub: "Paling seimbang",
     deskripsi:
-      "Wilayah paling seimbang di DIY — menggabungkan koneksi internet kencang, biaya hidup terjangkau, dan komunitas yang aktif. Kawasan Seturan, Condongcatur, dan Depok menjadi pusat co-working dan kafe kerja. Berbatasan langsung dengan Kota Yogyakarta di selatan dan Gunung Merapi di utara, menjadikannya pilihan populer bagi tech professional dan digital nomad.",
+      "Wilayah paling seimbang di DIY, menggabungkan koneksi internet kencang, biaya hidup terjangkau, dan komunitas yang aktif. Kawasan Seturan, Condongcatur, dan Depok menjadi pusat co-working dan kafe kerja. Berbatasan langsung dengan Kota Yogyakarta di selatan dan Gunung Merapi di utara, menjadikannya pilihan populer bagi tech professional dan digital nomad.",
   },
   {
     id: "bantul",
@@ -37,7 +37,7 @@ const DISTRICTS: District[] = [
     tipe: "Kabupaten",
     sub: "Terbaik untuk kreatif",
     deskripsi:
-      "Sisi selatan DIY yang berbatasan dengan Pantai Parangtritis. Suasana lebih tenang dan kreatif — banyak seniman, desainer, dan pekerja kreatif memilih Bantul karena biaya hidup terjangkau dan suasana yang menginspirasi. Infrastruktur internet berkembang pesat beberapa tahun terakhir. Cocok untuk creative professional yang ingin produktif jauh dari hiruk-pikuk kota.",
+      "Sisi selatan DIY yang berbatasan dengan Pantai Parangtritis. Suasana lebih tenang dan kreatif, banyak seniman, desainer, dan pekerja kreatif memilih Bantul karena biaya hidup terjangkau dan suasana yang menginspirasi. Infrastruktur internet berkembang pesat beberapa tahun terakhir. Cocok untuk creative professional yang ingin produktif jauh dari hiruk-pikuk kota.",
   },
   {
     id: "gunungkidul",
@@ -45,7 +45,7 @@ const DISTRICTS: District[] = [
     tipe: "Kabupaten",
     sub: "Biaya hidup terendah",
     deskripsi:
-      "Kabupaten paling timur DIY dengan lanskap karst yang ikonik. Biaya hidup terendah di DIY — kost dan kebutuhan harian jauh lebih murah dibanding wilayah lain. Suasana sangat tenang, cocok untuk deep work tanpa gangguan. Internet sudah tersedia di ibu kota kabupaten (Wonosari), pilihan ideal bagi freelancer yang mengutamakan efisiensi pengeluaran bulanan.",
+      "Kabupaten paling timur DIY dengan lanskap karst yang ikonik. Biaya hidup terendah di DIY, kost dan kebutuhan harian jauh lebih murah dibanding wilayah lain. Suasana sangat tenang, cocok untuk deep work tanpa gangguan. Internet sudah tersedia di ibu kota kabupaten (Wonosari), pilihan ideal bagi freelancer yang mengutamakan efisiensi pengeluaran bulanan.",
   },
   {
     id: "kulon-progo",
@@ -94,7 +94,7 @@ export function DistrictPreviewSection() {
                   boxShadow: `0 0 0 2px ${v.gradientFrom}, 0 4px 16px ${v.gradientFrom}30`,
                   transform: "translateY(-2px)",
                 } : {
-                  borderColor: "#D8D3C4",
+                  borderColor: "#E2E8F0",
                   opacity: selectedId && !isActive ? 0.65 : 1,
                 }}
               >
@@ -131,14 +131,14 @@ export function DistrictPreviewSection() {
           })}
         </div>
 
-        {/* Expand panel — smooth height transition via CSS grid trick */}
+        {/* Expand panel, smooth height transition via CSS grid trick */}
         <div
           className="grid transition-all duration-400 ease-in-out"
           style={{ gridTemplateRows: selected ? "1fr" : "0fr" }}
         >
           <div className="overflow-hidden">
             {selected && visual && (
-              <div className="mt-4 overflow-hidden rounded-2xl shadow-[0_4px_24px_rgba(28,37,33,0.15)]">
+              <div className="mt-4 overflow-hidden rounded-2xl shadow-[0_4px_24px_rgba(15,23,42,0.15)]">
                 {/* Photo + gradient hero */}
                 <div className="relative h-52 sm:h-64 overflow-hidden">
                   {/* Background image */}

@@ -19,7 +19,7 @@ export default function AdminLoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Satu-satunya tempat redirect — useEffect memantau isAuthenticated
+  // Satu-satunya tempat redirect, useEffect memantau isAuthenticated
   // Tidak boleh ada router.push/replace lain untuk /admin agar tidak double navigate
   useEffect(() => {
     if (state.isAuthenticated) {
@@ -27,7 +27,7 @@ export default function AdminLoginPage() {
     }
   }, [state.isAuthenticated, router]);
 
-  // Saat cek session masih berjalan — tampil blank halus, bukan null
+  // Saat cek session masih berjalan, tampil blank halus, bukan null
   // agar tidak ada flash konten saat checking → done
   if (state.checking) {
     return (
@@ -37,7 +37,7 @@ export default function AdminLoginPage() {
     );
   }
 
-  // Sudah login — tunggu useEffect redirect, jangan render form
+  // Sudah login, tunggu useEffect redirect, jangan render form
   if (state.isAuthenticated) return null;
 
   async function handleSubmit(e: FormEvent) {
@@ -57,7 +57,7 @@ export default function AdminLoginPage() {
     const result = await login(username.trim(), password);
     setLoading(false);
 
-    // Jangan router.push di sini — useEffect sudah handle redirect saat
+    // Jangan router.push di sini, useEffect sudah handle redirect saat
     // state.isAuthenticated berubah jadi true setelah login() berhasil
     if (!result.ok) {
       setError(result.error ?? "Username atau password salah");
@@ -83,7 +83,7 @@ export default function AdminLoginPage() {
             <span className="font-mono text-lg font-bold text-white">F</span>
           </div>
           <h1 className="text-xl font-semibold text-ink">Admin Panel</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Freelance City Index — Yogyakarta</p>
+          <p className="mt-1 text-sm text-muted-foreground">Freelance City Index, Yogyakarta</p>
         </div>
 
         {/* Form */}
@@ -142,7 +142,7 @@ export default function AdminLoginPage() {
           </div>
 
           {error && (
-            <p role="alert" className="text-sm text-error">
+            <p role="alert" className="rounded-lg border border-error/20 bg-error-bg px-3 py-2 text-sm text-error">
               {error}
             </p>
           )}

@@ -94,9 +94,9 @@ function ScoreComparisonChart({ ranked, districts }: { ranked: RankedDistrict[];
   const maxScore = ranked[0]?.skorTotal ?? 100;
 
   return (
-    <div className="rounded-xl border border-line bg-white p-5 shadow-[0_1px_2px_rgba(28,37,33,0.06)]">
-      <p className="mb-0.5 text-sm font-semibold text-ink">Score Comparison</p>
-      <p className="mb-4 text-xs text-muted-foreground">All {ranked.length} districts ranked</p>
+    <div className="rounded-xl border border-line bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.06)]">
+      <p className="mb-0.5 text-sm font-semibold text-ink">Perbandingan Skor</p>
+      <p className="mb-4 text-xs text-muted-foreground">{ranked.length} distrik diurutkan berdasarkan skor</p>
       <div className="space-y-2.5">
         {ranked.map((r) => {
           const d = districtMap[r.districtId];
@@ -155,7 +155,7 @@ function TopRecommendationCard({
       <div className="mb-3 flex items-center gap-1.5">
         <MapPin className="h-3.5 w-3.5 opacity-80" />
         <span className="text-xs font-semibold uppercase tracking-wider opacity-80">
-          Top Recommendation
+          Rekomendasi Teratas
         </span>
       </div>
       <div className="mb-1 flex items-center gap-2">
@@ -169,11 +169,11 @@ function TopRecommendationCard({
       <div className="mb-4 grid grid-cols-2 gap-3">
         <div className="rounded-lg bg-white/15 p-3">
           <p className="font-mono text-2xl font-bold">{(top.skorTotal / 10).toFixed(1)}</p>
-          <p className="text-xs opacity-75">Match Score</p>
+          <p className="text-xs opacity-75">Skor Kecocokan</p>
         </div>
         <div className="rounded-lg bg-white/15 p-3">
           <p className="font-mono text-2xl font-bold">{d.coworkingCount}</p>
-          <p className="text-xs opacity-75">Coworking Spaces</p>
+          <p className="text-xs opacity-75">Ruang Coworking</p>
         </div>
       </div>
 
@@ -182,7 +182,7 @@ function TopRecommendationCard({
           className="w-full gap-1.5 bg-white text-sawah hover:bg-white/90 font-semibold"
           size="sm"
         >
-          Explore {d.nama}
+          Jelajahi {d.nama}
           <ArrowRight className="h-3.5 w-3.5" />
         </Button>
       </Link>
@@ -345,8 +345,8 @@ function DistrictRankCard({
     <div
       className={
         isBest
-          ? "rounded-xl border-2 border-sawah bg-white shadow-[0_4px_16px_rgba(47,111,78,0.15)] overflow-hidden"
-          : "rounded-xl border border-line bg-white shadow-[0_1px_3px_rgba(28,37,33,0.06)] overflow-hidden"
+          ? "rounded-xl border-2 border-sawah bg-white overflow-hidden"
+          : "rounded-xl border border-line bg-white shadow-[0_1px_3px_rgba(15,23,42,0.06)] overflow-hidden"
       }
     >
       {/* Gradient strip */}
@@ -475,7 +475,7 @@ function DistrictRankCard({
           <Link href={`/district/${district.id}?${resultUrl.split("?")[1] ?? ""}`}>
             <Button className="w-full gap-1.5 bg-sawah text-white hover:bg-sawah/90 min-h-[40px]" size="sm">
               <MapPin className="h-3.5 w-3.5" />
-              View District Details
+              Lihat Detail Distrik
             </Button>
           </Link>
         </div>
@@ -568,10 +568,10 @@ function ResultContent() {
       {/* Page header */}
       <div className="mb-6">
         <h1 className="font-display text-xl font-bold text-ink sm:text-2xl">
-          Your District Ranking
+          Peringkat Distrik Anda
         </h1>
         <p className="mt-0.5 text-sm text-muted-foreground">
-          Based on your preferences — personalized match scores below
+          Berdasarkan profil &amp; preferensi Anda, skor kecocokan personal, bukan generik
         </p>
         <div className="mt-3 flex gap-2">
           <Button
@@ -590,7 +590,7 @@ function ResultContent() {
             className="gap-1.5 border-line text-muted-foreground hover:text-ink"
           >
             <RefreshCw className="h-3.5 w-3.5" />
-            Retake Quiz
+            Ulangi Quiz
           </Button>
         </div>
       </div>
@@ -625,7 +625,7 @@ function ResultContent() {
         </div>
       </div>
 
-      {/* Survey popup — fixed bottom-right, muncul otomatis setelah 3.5 detik */}
+      {/* Survey popup, fixed bottom-right, muncul otomatis setelah 3.5 detik */}
       <RelevanceSurvey personaId={personaId} />
 
       {/* Compare dialog */}
@@ -643,7 +643,7 @@ function ResultContent() {
 // ── Page ─────────────────────────────────────────────────────────────────────
 export default function ResultPage() {
   return (
-    <div className="min-h-screen bg-[#F8F9FA]">
+    <div className="min-h-screen bg-paper">
       <Navbar />
       <div className="mx-auto max-w-[1120px] px-4 py-8 sm:px-6 sm:py-10">
         <Suspense

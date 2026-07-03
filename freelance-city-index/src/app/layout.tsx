@@ -1,32 +1,28 @@
 import type { Metadata } from "next";
-import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
+import { Space_Grotesk, Space_Mono } from "next/font/google";
 import "./globals.css";
 import { ConditionalFooter } from "@/components/shared/ConditionalFooter";
 import { PageTransition } from "@/components/shared/PageTransition";
 
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
+// Space Grotesk (display+UI) / Space Mono (angka & data),
+// satu keluarga desain dengan karakter teknis-hangat
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const spaceMono = Space_Mono({
+  variable: "--font-space-mono",
   subsets: ["latin"],
   weight: ["400", "700"],
   display: "swap",
 });
 
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
-  subsets: ["latin"],
-  display: "swap",
-});
-
 export const metadata: Metadata = {
-  title: "Freelance City Index — Yogyakarta Edition",
+  title: "Freelance City Index, Yogyakarta Edition",
   description:
-    "Temukan distrik terbaik di DIY untuk kerja freelance & remote — berdasarkan data, bukan asumsi.",
+    "Temukan distrik terbaik di DIY untuk kerja freelance & remote, berdasarkan data, bukan asumsi.",
 };
 
 export default function RootLayout({
@@ -37,7 +33,7 @@ export default function RootLayout({
   return (
     <html
       lang="id"
-      className={`${fraunces.variable} ${inter.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      className={`${spaceGrotesk.variable} ${spaceMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-screen flex-col bg-paper text-ink">
         <PageTransition className="flex-1">

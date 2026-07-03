@@ -48,10 +48,10 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  /* Typography */
-  --font-display: var(--font-fraunces);
-  --font-sans: var(--font-inter);
-  --font-mono: var(--font-jetbrains-mono);
+  /* Typography — Space Grotesk (display+body) / Space Mono (data) */
+  --font-display: var(--font-space-grotesk);
+  --font-sans: var(--font-space-grotesk);
+  --font-mono: var(--font-space-mono);
 
   /* Border radius (CLAUDE.md §9.3: 0.5rem kartu/tombol, 9999px badge) */
   --radius-sm: calc(var(--radius) * 0.5);
@@ -65,78 +65,81 @@
    CLAUDE.md §9.1
    ============================================================ */
 :root {
-  /* Brand palette — CLAUDE.md §9.1 "Field Notes dari Lapangan" */
-  --ink: #1C2521;
-  --paper: #F7F5EF;
-  --sawah: #2F6F4E;
-  --pesisir: #1F5C73;
-  --genteng: #B5562F;
-  --line: #D8D3C4;
-  --warning: #B8860B;
-  --warning-bg: #FBF3DA;
-  --error: #B3261E;
-  --error-bg: #FBEAE9;
+  /* Palet "Terracotta + Slate" — aksen bata bakar (atap Yogyakarta)
+     di atas netral slate dingin; satu aksen utama, kategorikal
+     untuk data. Nama token lama dipertahankan agar seluruh
+     komponen ter-remap otomatis. */
+  --ink: #0F172A;
+  --paper: #F8FAFC;
+  --sawah: #C2410C;
+  --pesisir: #0E7490;
+  --genteng: #9F1239;
+  --line: #E2E8F0;
+  --warning: #B45309;
+  --warning-bg: #FEF3C7;
+  --error: #DC2626;
+  --error-bg: #FEE2E2;
 
-  /* shadcn semantic tokens — dipetakan ke brand palette */
-  --background: #F7F5EF;
-  --foreground: #1C2521;
+  /* shadcn semantic tokens — dipetakan ke palet baru */
+  --background: #F8FAFC;
+  --foreground: #0F172A;
   --card: #FFFFFF;
-  --card-foreground: #1C2521;
+  --card-foreground: #0F172A;
   --popover: #FFFFFF;
-  --popover-foreground: #1C2521;
-  --primary: #2F6F4E;
+  --popover-foreground: #0F172A;
+  --primary: #C2410C;
   --primary-foreground: #FFFFFF;
-  --secondary: #EDE9DF;
-  --secondary-foreground: #1C2521;
-  --muted: #EDE9DF;
-  --muted-foreground: #6B7570;
-  --accent: #1F5C73;
+  --secondary: #EEF2F7;
+  --secondary-foreground: #0F172A;
+  --muted: #EEF2F7;
+  --muted-foreground: #64748B;
+  --accent: #0E7490;
   --accent-foreground: #FFFFFF;
-  --destructive: #B3261E;
-  --border: #D8D3C4;
-  --input: #D8D3C4;
-  --ring: #2F6F4E;
+  --destructive: #DC2626;
+  --border: #E2E8F0;
+  --input: #E2E8F0;
+  --ring: #C2410C;
   --radius: 0.5rem;
 
   /* Sidebar (admin panel) */
-  --sidebar: #F7F5EF;
-  --sidebar-foreground: #1C2521;
-  --sidebar-primary: #2F6F4E;
-  --sidebar-primary-foreground: #F7F5EF;
-  --sidebar-accent: #EDE9DF;
-  --sidebar-accent-foreground: #1C2521;
-  --sidebar-border: #D8D3C4;
-  --sidebar-ring: #2F6F4E;
+  --sidebar: #F8FAFC;
+  --sidebar-foreground: #0F172A;
+  --sidebar-primary: #C2410C;
+  --sidebar-primary-foreground: #F8FAFC;
+  --sidebar-accent: #EEF2F7;
+  --sidebar-accent-foreground: #0F172A;
+  --sidebar-border: #E2E8F0;
+  --sidebar-ring: #C2410C;
 }
 
 /* V1 tidak ada dark mode — dark class tidak dipakai */
 .dark {
-  --background: #1C2521;
-  --foreground: #F7F5EF;
-  --card: #243028;
-  --card-foreground: #F7F5EF;
-  --popover: #243028;
-  --popover-foreground: #F7F5EF;
-  --primary: #4A9B6F;
-  --primary-foreground: #1C2521;
-  --secondary: #2C3830;
-  --secondary-foreground: #F7F5EF;
-  --muted: #2C3830;
-  --muted-foreground: #9CA8A5;
-  --accent: #2A7A9A;
-  --accent-foreground: #F7F5EF;
-  --destructive: #CF4C45;
-  --border: #334039;
-  --input: #334039;
-  --ring: #4A9B6F;
-  --sidebar: #1C2521;
-  --sidebar-foreground: #F7F5EF;
-  --sidebar-primary: #4A9B6F;
-  --sidebar-primary-foreground: #1C2521;
-  --sidebar-accent: #2C3830;
-  --sidebar-accent-foreground: #F7F5EF;
-  --sidebar-border: #334039;
-  --sidebar-ring: #4A9B6F;
+  --background: #0F172A;
+  --foreground: #F8FAFC;
+  --card: #1E293B;
+  --card-foreground: #F8FAFC;
+  --popover: #1E293B;
+  --popover-foreground: #F8FAFC;
+  --primary: #60A5FA;
+  --primary-foreground: #0F172A;
+  --secondary: #1E293B;
+  --secondary-foreground: #F8FAFC;
+  --muted: #1E293B;
+  --muted-foreground: #94A3B8;
+  --accent: #38BDF8;
+  --accent-foreground: #0F172A;
+  --destructive: #F87171;
+  --border: #334155;
+  --input: #334155;
+  --ring: #60A5FA;
+  --sidebar: #0F172A;
+  --sidebar-foreground: #F8FAFC;
+  --sidebar-primary: #60A5FA;
+  --sidebar-primary-foreground: #0F172A;
+  --sidebar-accent: #1E293B;
+  --sidebar-accent-foreground: #F8FAFC;
+  --sidebar-border: #334155;
+  --sidebar-ring: #60A5FA;
 }
 
 /* ============================================================
@@ -173,7 +176,7 @@
   body {
     background-color: var(--background);
     color: var(--foreground);
-    font-family: var(--font-inter), system-ui, sans-serif;
+    font-family: var(--font-space-grotesk), system-ui, sans-serif;
   }
 
   /* Eliminasi 300ms tap delay di mobile & pastikan tap langsung merespons */

@@ -10,7 +10,7 @@ export default function NotFound() {
 
       <div className="flex flex-col items-center justify-center px-4 py-24 text-center">
         {/* Icon */}
-        <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl border-2 border-line bg-white shadow-[0_4px_16px_rgba(28,37,33,0.08)]">
+        <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl border-2 border-line bg-white">
           <MapPinOff className="h-9 w-9 text-muted-foreground" />
         </div>
 
@@ -28,7 +28,7 @@ export default function NotFound() {
         {/* Actions */}
         <div className="flex flex-col gap-3 sm:flex-row">
           <Link href="/">
-            <Button className="min-h-[44px] gap-2 bg-sawah text-white hover:bg-sawah/90 shadow-[0_4px_12px_rgba(47,111,78,0.30)]">
+            <Button className="min-h-[44px] gap-2 bg-sawah text-white hover:bg-sawah/90 shadow-[0_4px_12px_rgba(194,65,12,0.30)]">
               <Home className="h-4 w-4" />
               Kembali ke Beranda
             </Button>

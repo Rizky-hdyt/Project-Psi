@@ -13,7 +13,7 @@ export function EmptyState({ onRetry }: EmptyStateProps) {
       </div>
       <h3 className="mb-2 font-semibold text-ink">Data sedang diperbarui</h3>
       <p className="mb-6 max-w-sm text-sm text-muted-foreground">
-        Data semua wilayah sedang diperbarui — silakan coba lagi nanti.
+        Data semua wilayah sedang diperbarui, silakan coba lagi nanti.
       </p>
       {onRetry && (
         <Button

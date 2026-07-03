@@ -21,8 +21,8 @@ function SignalBars({ count, active }: { count: number; active: boolean }) {
           style={{
             height: `${bar * 25}%`,
             backgroundColor: bar <= count
-              ? (active ? "#fff" : "#1F5C73")
-              : (active ? "rgba(255,255,255,0.3)" : "#D8D3C4"),
+              ? (active ? "#fff" : "#0E7490")
+              : (active ? "rgba(255,255,255,0.3)" : "#E2E8F0"),
           }}
         />
       ))}
@@ -54,9 +54,9 @@ export function InternetPrioritySelect({ value, onChange }: Props) {
               onClick={() => onChange(opt.value)}
               aria-pressed={isActive}
               style={isActive ? {
-                backgroundColor: "#1F5C73",
-                borderColor: "#1F5C73",
-                boxShadow: "0 2px 8px rgba(31,92,115,0.35)",
+                backgroundColor: "#0E7490",
+                borderColor: "#0E7490",
+                boxShadow: "0 2px 8px rgba(14,116,144,0.35)",
               } : undefined}
               className={cn(
                 "flex min-h-[44px] flex-1 flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2.5 transition-all duration-200",

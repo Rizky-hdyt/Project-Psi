@@ -16,7 +16,7 @@ export interface SurveyResponse {
 
 // TODO(db): ganti dengan `await fetch("/api/survey", { method: "POST", body: JSON.stringify(r) })`
 async function persistResponse(_r: SurveyResponse): Promise<void> {
-  // Sengaja kosong di V1 — jawaban tidak disimpan.
+  // Sengaja kosong di V1, jawaban tidak disimpan.
 }
 
 function RatingRow({
@@ -70,7 +70,7 @@ export function RelevanceSurvey({
   const [submitting, setSubmitting] = useState(false);
   const [showKomentar, setShowKomentar] = useState(false);
 
-  // Muncul otomatis setelah 3.5 detik — user sudah sempat melihat hasil
+  // Muncul otomatis setelah 3.5 detik, user sudah sempat melihat hasil
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 3500);
     return () => clearTimeout(t);
@@ -105,7 +105,7 @@ export function RelevanceSurvey({
   return (
     <div
       className={cn(
-        "fixed bottom-6 right-6 z-50 w-72 rounded-xl border border-line bg-white shadow-[0_4px_24px_rgba(28,37,33,0.12)]",
+        "fixed bottom-6 right-6 z-50 w-72 rounded-xl border border-line bg-white shadow-[0_2px_8px_rgba(15,23,42,0.10)]",
         "animate-in slide-in-from-bottom-4 fade-in duration-300"
       )}
       role="dialog"
@@ -163,7 +163,7 @@ export function RelevanceSurvey({
             />
           </div>
 
-          {/* Komentar opsional — toggle */}
+          {/* Komentar opsional, toggle */}
           {showKomentar ? (
             <textarea
               value={komentar}

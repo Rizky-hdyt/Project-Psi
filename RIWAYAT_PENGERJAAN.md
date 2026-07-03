@@ -12,6 +12,98 @@
 
 ---
 
+### 2026-07-03 (sesi lanjutan 3) — Redesign "Terracotta + Slate" pakai 5 skill sekaligus — BELUM DI-COMMIT
+
+**Konteks:** User minta desain ulang lagi (beda dari tema biru) pakai 5 skill: `design-taste-frontend`, `image-to-code`, `impeccable`, `redesign-existing-projects`, `ui-ux-pro-max`. Aturan CLAUDE.md dilepas sementara; fitur tetap utuh.
+
+**Arah desain (design read):** "Terracotta + Slate", aksen bata bakar `#C2410C` (atap Yogyakarta) di atas netral slate; keluarga palet yang direkomendasikan design-taste-frontend §4.2 sebagai alternatif anti-default. Font: **Space Grotesk + Space Mono** (menggantikan Fira). Warna kategorikal distrik/persona: terracotta, berry `#9F1239`, cyan `#0E7490`, moss `#4D7C0F`, slate `#475569`.
+
+**De-slop besar-besaran (temuan audit gabungan 5 skill):**
+- Hapus SEMUA em-dash (—) dari copy di 15 file (banned total, design-taste §9.G).
+- Hapus eyebrow uppercase-tracking dari hampir semua section (budget: maks 1 per 3 section); label "Pertanyaan N" quiz jadi "Pertanyaan N dari 5" sentence-case (penomoran urutan asli boleh).
+- Hapus **stat strip** 4 angka di landing ("hero-metric template" = klise SaaS terlarang).
+- Hapus tagline kecil di bawah CTA hero (hero stack max 4 elemen).
+- Hapus semua dekorasi dot-grid & diagonal hatch ("decorative grid backgrounds" = Codex tell).
+- Panel CTA penutup jadi permukaan terracotta penuh (strategi warna "committed"), radius turun 24px→16px.
+- Perbaiki pola "ghost-card" (border + shadow lebar ≥16px) di 5 komponen.
+- Satukan intent CTA: "Mulai Quiz" untuk semua tombol quiz, "Lihat Cara Kerja" untuk semua tombol algoritma (No Duplicate CTA Intent).
+
+**File utama:** `globals.css` (token), `layout.tsx` (font), `page.tsx` (landing), `quiz/page.tsx`, `result/page.tsx`, `district/[id]/page.tsx`, `WhyThisMatch.tsx`, `SuggestedPlaces.tsx`, + sweep sed di seluruh `src/`.
+
+**Verifikasi:** tsc bersih; Playwright: landing/quiz/result/district render kohesif tanpa console error.
+
+**Revert semua UI hari ini:** `git checkout -- freelance-city-index/src/` + hapus `CapabilityShowcase.tsx`.
+
+---
+
+### 2026-07-03 (sesi lanjutan 2) — REBRAND TOTAL ikut saran skill `ui-ux-pro-max` — BELUM DI-COMMIT
+
+**Konteks:** User eksplisit minta LEPAS aturan desain CLAUDE.md (kecuali aturan pakai skill) dan ikuti penuh rekomendasi skill: tampilan boleh berubah total asal fitur tetap sama.
+
+**Design system baru (output `ui-ux-pro-max --design-system` untuk produk DSS/data tool):**
+- Style: **"Data-Dense Dashboard"** — biru data + aksen amber.
+- Palet: primary `#1E40AF`, secondary/data `#0284C7`, accent `#D97706`, bg `#F8FAFC`, fg `#0F172A`, border `#E2E8F0`.
+- Tipografi: **Fira Sans** (display+body) / **Fira Code** (angka/mono) — menggantikan Fraunces/Inter/JetBrains Mono.
+
+**Cara implementasi (fitur 100% utuh):**
+- `globals.css`: nilai semua CSS variable di-remap ke palet baru (nama token lama `--sawah`/`--pesisir`/dll. dipertahankan → seluruh komponen ikut berubah otomatis). Dark mode vars ikut diperbarui.
+- `layout.tsx`: ganti Google Fonts ke Fira Sans + Fira Code (variable `--font-fira-sans`/`--font-fira-code`).
+- Sapu `sed` di seluruh `src/` untuk ±30 hex hardcoded: hijau sawah→biru `#1E40AF`, pesisir→sky `#0284C7`, genteng→amber `#D97706`, coklat nomad→violet `#7C3AED`, kulon progo→teal `#0D9488`, ink→slate-900, paper→`#F8FAFC`, line→slate-200, plus semua tint/gradient/rgba shadow.
+- Warna 5 distrik tetap distinct: Sleman biru, Kota Yogyakarta amber, Bantul sky, Gunungkidul violet, Kulon Progo teal.
+
+**Verifikasi:** tsc bersih; Playwright: landing, quiz, result, district — semua render kohesif dengan tema baru, tanpa console error.
+
+**Revert:** `git checkout -- freelance-city-index/src/` (semua perubahan UI hari ini masih uncommitted, termasuk redesign landing & polish halaman).
+
+---
+
+### 2026-07-03 (sesi lanjutan) — Redesign Semua Halaman pakai skill `ui-ux-pro-max` — BELUM DI-COMMIT
+
+**Konteks:** User minta semua halaman dipoles pakai skill `ui-ux-pro-max` yang baru diinstall, tanpa mengubah fitur. Saran palet/font dari skill (biru + Fira) DITOLAK sesuai aturan konflik CLAUDE.md §0 — token Field Notes §9 tetap dipakai; yang diambil hanya guideline UX & struktur.
+
+**Perubahan per halaman:**
+- `/quiz` (`src/app/quiz/page.tsx`): form flat dengan separator → 5 kartu pertanyaan bernomor ("Pertanyaan 1 · Profil" dst., urutan = FR-001–005), header lebih ringan, hint langkah berikutnya di bawah CTA. Komponen input tidak diubah.
+- `/result` (`src/app/result/page.tsx`): background off-token `#F8F9FA` → `bg-paper`; eyebrow "Hasil Rekomendasi"; semua copy Inggris → Indonesia sesuai §12 ("Your District Ranking"→"Peringkat Distrik Anda", "Score Comparison"→"Perbandingan Skor", "Top Recommendation"→"Rekomendasi Teratas", "Match Score"→"Skor Kecocokan", "Retake Quiz"→"Ulangi Quiz", "View District Details"→"Lihat Detail Distrik", "Explore"→"Jelajahi").
+- `/district/:id`: skeleton loading `#F8F9FA` → `bg-paper`.
+- `/algoritma`: tidak diubah (reuse AlgorithmSection yang sudah bagus).
+- `/admin/login`: pesan error jadi kotak `--color-error-bg` (bukan teks polos).
+- `/admin` dashboard & `/admin/audit`: tabel `overflow-hidden` → `overflow-x-auto` (mobile), row hover state; audit log nilai turun `text-error` → `text-pesisir` (merah hanya untuk error sesungguhnya, §11).
+- `/admin/data`: shadow off-token slate → ink.
+
+**Verifikasi:** `tsc --noEmit` bersih; Playwright headless: /quiz (step 1+2), /result, /district/sleman, /admin/login — desktop 1440px + mobile 360px, tanpa console error.
+
+**Revert semua (landing + halaman lain):** `git checkout -- freelance-city-index/src/` lalu `rm src/components/landing/CapabilityShowcase.tsx`.
+
+---
+
+### 2026-07-03 — Redesign Landing Page (ala referensi) + Skill UI/UX Baru — BELUM DI-COMMIT
+
+**Konteks:** User minta tampilan landing page diubah mengikuti pola visual screenshot referensi di `Referensi ui/ui landing page/` (landing page SaaS "Lynqet"), tapi konten tetap sesuai fitur produk. **Sengaja tidak di-commit dulu** agar bisa dibandingkan/dikembalikan.
+
+**1. Redesign `src/app/page.tsx`**
+- Hero: dari gradasi hijau gelap penuh → latar terang (paper) dengan eyebrow pill hijau, headline gelap, dual CTA (Mulai Sekarang + Lihat Cara Kerja), dot-grid halus di sudut.
+- Stat strip baru: 5 Distrik · 4 Indikator · 16 Kombinasi bobot · <60s, dengan pembatas garis vertikal.
+- Section transparansi: gabungan teaser algoritma + 3 keunggulan jadi pola checklist icon-circle (kanan) + visual bobot (kiri).
+- Section Cara Kerja: ditambah aksen garis diagonal (hatch) tipis kiri-kanan.
+- CTA penutup: dari banner hijau gelap → kartu rounded gradasi teal muda, teks gelap, dot-grid pattern.
+- Fix bonus: footer inline duplikat dihapus (sebelumnya landing render 2 footer bertumpuk).
+
+**2. Komponen baru `src/components/landing/CapabilityShowcase.tsx`**
+- 4 kartu indikator interaktif: kartu aktif berubah gelap (ink) + terangkat, bar detail bobot di bawah update sesuai kartu, dot pagination. Meniru pola carousel kapabilitas di referensi.
+
+**3. Verifikasi**
+- `tsc --noEmit` bersih; dites via Playwright headless: desktop 1440px, mobile 360px, interaksi klik kartu — semua render benar tanpa console error.
+
+**4. Cara kembali ke versi lama (kalau hasil kurang bagus):**
+```
+git checkout -- src/app/page.tsx
+rm src/components/landing/CapabilityShowcase.tsx
+```
+
+**5. Skill UI/UX baru diinstall user:** `ui-ux-pro-max`, `impeccable`, `design-taste-frontend`, `redesign-existing-projects`, `image-to-code`. `CLAUDE.md` §0 diperbarui: tabel skill dipecah "inti" vs "desain tambahan" + aturan konflik (token desain §9 selalu menang atas saran skill).
+
+---
+
 ### 2026-06-28 — Deploy ke Vercel + Fix Layout + Bersih-bersih Repo
 
 **Konteks:** Project di-deploy agar bisa diakses dari HP/jaringan mana pun (sebelumnya hanya WiFi lokal).
