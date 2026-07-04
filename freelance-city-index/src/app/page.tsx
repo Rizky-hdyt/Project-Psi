@@ -1,314 +1,305 @@
 import Link from "next/link";
-import { MapPin, Zap, Shield, User, ArrowRight, Sigma } from "lucide-react";
-import { Navbar } from "@/components/shared/Navbar";
-import { DISTRICT_VISUALS } from "@/data/districts.visuals";
+import {
+  ArrowRight, CheckCircle2, ChevronDown, Wifi, Wallet, Users, Leaf, Quote,
+  Target, BarChart3, Compass, ClipboardEdit, Calculator, ListOrdered, Eye,
+} from "lucide-react";
+import { GlassNavbar } from "@/components/landing/GlassNavbar";
+import { LandingBackground } from "@/components/landing/LandingBackground";
+import { LandingFooter } from "@/components/landing/LandingFooter";
+import { HeroBackgroundSlideshow } from "@/components/landing/HeroBackgroundSlideshow";
+import { ScrollReveal } from "@/components/landing/ScrollReveal";
 import { DistrictPreviewSection } from "@/components/landing/DistrictPreviewSection";
 import { CapabilityShowcase } from "@/components/landing/CapabilityShowcase";
 
-// Mini preview bobot tiap persona, data statis untuk teaser
-const PERSONA_WEIGHTS = [
-  { label: "Tech", color: "#0E7490", internet: 40, cost: 25, community: 20, environment: 15 },
-  { label: "Creative", color: "#9F1239", internet: 20, cost: 25, community: 25, environment: 30 },
-  { label: "Student", color: "#C2410C", internet: 20, cost: 45, community: 20, environment: 15 },
-  { label: "Nomad", color: "#4D7C0F", internet: 30, cost: 25, community: 25, environment: 20 },
+const FEATURE_BADGES = [
+  { icon: Wifi, label: "Internet" },
+  { icon: Wallet, label: "Cost of Living" },
+  { icon: Users, label: "Community" },
+  { icon: Leaf, label: "Environment" },
 ];
 
-const SAMPLE_RESULTS = [
-  { id: "sleman",           nama: "Sleman",           skor: 79.2, bar: 79 },
-  { id: "kota-yogyakarta",  nama: "Kota Yogyakarta",  skor: 77.4, bar: 77 },
-  { id: "bantul",           nama: "Bantul",            skor: 72.1, bar: 72 },
-  { id: "kulon-progo",      nama: "Kulon Progo",       skor: 61.3, bar: 61 },
-  { id: "gunungkidul",      nama: "Gunungkidul",       skor: 54.8, bar: 55 },
+const STATS = [
+  { value: "5", label: "Districts" },
+  { value: "4", label: "Indicators" },
+  { value: "SAW", label: "Metode Perhitungan" },
+  { value: "100%", label: "Transparent Recommendation" },
 ];
 
-const KEUNGGULAN = [
+const CHECKLIST = [
+  "Rekomendasi personal",
+  "Perhitungan transparan",
+  "Mudah dibandingkan",
+  "Fokus khusus DIY",
+];
+
+const WHY_CARDS = [
   {
-    icon: Shield,
-    judul: "Transparan",
-    deskripsi: "Setiap rekomendasi menampilkan bobot indikator dan kontribusi masing-masing, Anda tahu persis alasannya.",
+    icon: Target,
+    title: "Rekomendasi Objektif",
+    desc: "Ranking dihasilkan dari perhitungan skor, bukan opini atau iklan berbayar.",
   },
   {
-    icon: Zap,
-    judul: "Deterministik",
-    deskripsi: "Input sama selalu menghasilkan output sama. Bukan AI yang bisa berubah jawaban tiap sesi.",
+    icon: BarChart3,
+    title: "Skor Transparan",
+    desc: "Setiap komponen skor dan bobotnya ditampilkan terbuka, bisa dicek ulang kapan saja.",
   },
   {
-    icon: User,
-    judul: "Personal",
-    deskripsi: "Bobot disesuaikan profil dan 4 preferensi Anda, bukan peringkat generik untuk semua orang.",
+    icon: Compass,
+    title: "Fokus DIY",
+    desc: "Dirancang khusus untuk 5 wilayah di Daerah Istimewa Yogyakarta, bukan rekomendasi nasional yang generik.",
   },
 ];
 
-const STEPS = [
-  {
-    num: "01",
-    judul: "Pilih profil freelancer Anda",
-    deskripsi: "Tech Professional, Creative, Student, atau Digital Nomad, bobot indikator menyesuaikan profil Anda secara otomatis.",
-  },
-  {
-    num: "02",
-    judul: "Lihat algoritma bekerja",
-    deskripsi: "Sebelum hasil muncul, kami tunjukkan bobot dan formula yang digunakan, bukan kotak hitam.",
-  },
-  {
-    num: "03",
-    judul: "Dapatkan ranking beralasan",
-    deskripsi: "5 distrik diurutkan berdasarkan skor, lengkap dengan penjelasan mengapa distrik teratas cocok untuk Anda.",
-  },
+const HOW_STEPS = [
+  { icon: ClipboardEdit, num: "1", title: "Isi Preferensi", desc: "Pilih persona kerja dan 4 sinyal preferensi Anda." },
+  { icon: Calculator, num: "2", title: "Perhitungan SAW", desc: "Sistem menghitung skor tiap distrik dengan metode SAW." },
+  { icon: ListOrdered, num: "3", title: "Ranking Distrik", desc: "5 distrik diurutkan berdasarkan skor kecocokan Anda." },
+  { icon: Eye, num: "4", title: "Lihat Hasil", desc: "Lihat rekomendasi terbaik lengkap dengan alasannya." },
 ];
 
 export default function LandingPage() {
   return (
-    <main className="flex-1">
-      <Navbar />
+    <main className="relative flex-1">
+      <LandingBackground />
+      <GlassNavbar />
 
-      {/* ── Hero ──────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-paper">
-        <div className="relative mx-auto max-w-[1120px] px-4 pb-14 pt-14 sm:px-6 sm:pb-16 sm:pt-20 lg:grid lg:grid-cols-[1fr_440px] lg:items-center lg:gap-14 lg:pb-24 lg:pt-24">
-          {/* Copy & CTA */}
-          <div>
-            <span className="inline-flex w-fit items-center gap-2 rounded-full border border-sawah/25 bg-sawah/8 px-3 py-1">
-              <MapPin className="h-3 w-3 text-sawah" />
-              <span className="font-mono text-xs font-medium uppercase tracking-wide text-sawah">
-                Decision Support System · DIY
-              </span>
-            </span>
+      {/* ── SECTION 2: Hero ──────────────────────────────────────────── */}
+      <section id="beranda" className="relative isolate overflow-hidden">
+        <div className="relative min-h-[820px] px-4 pb-16 pt-8 sm:min-h-[760px] sm:px-6 sm:pt-10 lg:px-10">
+          <HeroBackgroundSlideshow />
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(115deg, rgba(246,245,250,0.92) 0%, rgba(246,245,250,0.55) 42%, rgba(246,245,250,0.15) 68%, rgba(246,245,250,0.4) 100%)",
+            }}
+            aria-hidden="true"
+          />
 
-            <h1 className="mb-5 mt-5 font-display text-4xl font-bold leading-[1.1] text-ink sm:text-5xl lg:text-[3.4rem]">
-              Distrik mana di <span className="text-sawah">Yogyakarta</span>{" "}
-              paling cocok untuk kerjamu?
-            </h1>
-
-            <p className="mb-8 max-w-lg text-base leading-relaxed text-muted-foreground sm:text-lg">
-              Temukan distrik terbaik untuk kerja freelance &amp; remote berdasarkan
-              data, bukan asumsi. Transparan, deterministik, dan personal untuk profil Anda.
-            </p>
-
-            <div className="flex flex-wrap items-center gap-3">
-              <Link
-                href="/quiz"
-                className="flex min-h-[48px] items-center gap-2 rounded-xl bg-sawah px-7 text-sm font-semibold text-white transition-all hover:bg-sawah/90 active:translate-y-px"
-              >
-                Mulai Quiz
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-              <Link
-                href="/algoritma"
-                className="flex min-h-[48px] items-center gap-2 rounded-xl border border-line bg-white px-6 text-sm font-medium text-ink transition-all hover:border-sawah/40 hover:bg-paper active:translate-y-px"
-              >
-                Lihat Cara Kerja
-              </Link>
-            </div>
-          </div>
-
-          {/* Sample result preview */}
-          <div className="mt-12 lg:mt-0">
-            <div className="rounded-2xl border border-line bg-white p-5 shadow-[0_2px_8px_rgba(15,23,42,0.06)]">
-              <div className="mb-4 flex items-center justify-between">
-                <p className="text-xs font-medium text-muted-foreground">
-                  Contoh hasil · Tech Professional
-                </p>
-                <span className="rounded-full bg-sawah/10 px-2 py-0.5 font-mono text-xs font-semibold text-sawah">
-                  Preview
-                </span>
-              </div>
-
-              <div className="space-y-3">
-                {SAMPLE_RESULTS.map((d, i) => {
-                  const visual = DISTRICT_VISUALS[d.id];
-                  return (
-                    <div key={d.nama} className="flex items-center gap-3">
-                      <span
-                        className={`w-5 shrink-0 text-right font-mono text-xs font-semibold ${
-                          i === 0 ? "text-sawah" : "text-muted-foreground"
-                        }`}
-                      >
-                        {i + 1}
-                      </span>
-                      {/* District color dot */}
-                      <div
-                        className="h-5 w-5 shrink-0 rounded-full"
-                        style={{ background: `linear-gradient(135deg, ${visual?.gradientFrom}, ${visual?.gradientTo})` }}
-                      />
-                      <div className="min-w-0 flex-1">
-                        <div className="mb-1 flex items-center justify-between gap-2">
-                          <span className={`truncate text-sm ${i === 0 ? "font-semibold text-ink" : "text-ink/80"}`}>
-                            {d.nama}
-                          </span>
-                          <span className="shrink-0 font-mono text-xs font-semibold text-ink">
-                            {d.skor}
-                          </span>
-                        </div>
-                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-line">
-                          <div
-                            className="h-full rounded-full transition-all duration-500"
-                            style={{
-                              width: `${d.bar}%`,
-                              background: i === 0
-                                ? `linear-gradient(90deg, ${visual?.gradientFrom}, ${visual?.gradientTo})`
-                                : "#E2E8F0",
-                            }}
-                          />
-                        </div>
-                      </div>
-                      {i === 0 && (
-                        <span className="shrink-0 rounded-full bg-sawah px-2 py-0.5 text-[10px] font-semibold text-white">
-                          Best Match
-                        </span>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-
-              <p className="mt-4 border-t border-line pt-3 text-xs text-muted-foreground">
-                Sleman unggul karena internet kuat (85/100) dan biaya terjangkau (70/100).
-                Ubah profil → ranking berubah seketika.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── 5 Distrik Preview ─────────────────────────────────────── */}
-      <DistrictPreviewSection />
-
-      {/* ── Transparansi: visual bobot + checklist keunggulan ───────── */}
-      <section className="bg-white">
-        <div className="mx-auto max-w-[1120px] px-4 py-16 sm:px-6 lg:py-20">
-          <div className="grid gap-10 lg:grid-cols-[420px_1fr] lg:items-center">
-            {/* Kiri, mini visualisasi perbedaan bobot */}
-            <div className="order-2 rounded-2xl border border-line bg-paper p-5 shadow-[0_2px_12px_rgba(15,23,42,0.07)] lg:order-1">
-              <p className="mb-4 text-sm font-semibold text-ink">
-                Contoh perbedaan bobot: Internet vs Biaya Hidup
-              </p>
-              <div className="space-y-4">
-                {PERSONA_WEIGHTS.map(({ label, color, internet, cost }) => (
-                  <div key={label}>
-                    <div className="mb-1.5 flex items-center justify-between">
-                      <span className="text-xs font-semibold text-ink">{label}</span>
-                      <span className="font-mono text-[10px] text-muted-foreground">
-                        Internet {internet}% · Biaya {cost}%
-                      </span>
-                    </div>
-                    <div className="flex h-2.5 overflow-hidden rounded-full bg-line">
-                      <div
-                        className="h-full transition-all"
-                        style={{ width: `${internet}%`, backgroundColor: color }}
-                      />
-                      <div
-                        className="h-full transition-all"
-                        style={{ width: `${cost}%`, backgroundColor: `${color}60` }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <p className="mt-4 border-t border-line pt-3 font-mono text-[10px] text-muted-foreground">
-                Student prioritaskan Biaya (45%) · Tech prioritaskan Internet (40%)
-              </p>
-            </div>
-
-            {/* Kanan, headline + checklist */}
-            <div className="order-1 lg:order-2">
-              <h2 className="font-display text-2xl font-bold leading-tight text-ink sm:text-3xl">
-                Mengapa rekomendasi Anda berbeda dari orang lain?
-              </h2>
-              <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
-                Sistem ini tidak punya satu bobot tunggal yang berlaku untuk semua orang.
-                Setiap profil freelancer mendapat komposisi bobot yang berbeda, karena
-                kebutuhan tiap orang memang tidak bisa disamakan.
+          <div className="relative mx-auto grid max-w-[1280px] gap-10 lg:grid-cols-[55fr_45fr] lg:items-center">
+            {/* Hero Left */}
+            <div className="stagger-in pt-4">
+              <h1 className="max-w-lg text-3xl font-bold leading-[1.15] tracking-tight text-ink sm:text-4xl lg:text-[2.6rem]">
+                Temukan distrik terbaik di Daerah Istimewa Yogyakarta{" "}
+                <span className="text-sawah">untuk gaya kerja Anda</span>
+              </h1>
+              <p className="mt-4 max-w-md text-sm leading-relaxed text-ink/70 sm:text-base">
+                Sistem rekomendasi berbasis data yang membandingkan 5 distrik di DIY lewat
+                4 indikator utama, dengan perhitungan yang sepenuhnya transparan.
               </p>
 
-              <div className="mt-6 space-y-3">
-                {KEUNGGULAN.map(({ icon: Icon, judul, deskripsi }) => (
-                  <div
-                    key={judul}
-                    className="flex items-start gap-3 rounded-xl border border-line bg-white px-4 py-3"
+              {/* Feature Badges — 4 pill terpisah */}
+              <div className="mt-6 flex flex-wrap gap-2">
+                {FEATURE_BADGES.map(({ icon: Icon, label }) => (
+                  <span
+                    key={label}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-line bg-white px-3.5 py-2 text-xs font-medium text-ink"
                   >
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sawah/10">
-                      <Icon className="h-4 w-4 text-sawah" />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-ink">{judul}</p>
-                      <p className="text-sm leading-relaxed text-muted-foreground">{deskripsi}</p>
-                    </div>
-                  </div>
+                    <Icon className="h-3.5 w-3.5 text-sawah" />
+                    {label}
+                  </span>
                 ))}
               </div>
 
-              <div className="mt-6 flex flex-wrap items-center gap-3">
+              {/* CTA Group */}
+              <div className="mt-8 flex flex-wrap items-center gap-3">
                 <Link
-                  href="/algoritma"
-                  className="flex items-center gap-2 rounded-xl border-2 border-sawah bg-sawah px-5 py-2.5 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(194,65,12,0.30)] transition-all hover:bg-sawah/90"
+                  href="/quiz"
+                  className="group inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-sawah to-[#F0384F] px-6 text-sm font-medium text-white shadow-[0_10px_25px_rgba(220,35,64,0.3)] transition-transform duration-[180ms] hover:-translate-y-0.5 active:scale-[0.98] sm:min-h-13"
                 >
-                  <Sigma className="h-4 w-4" />
-                  Lihat Cara Kerja
-                  <ArrowRight className="h-4 w-4" />
+                  Mulai Rekomendasi
+                  <ArrowRight className="h-4 w-4 transition-transform duration-[180ms] group-hover:translate-x-0.5" />
+                </Link>
+                <Link
+                  href="#cara-kerja"
+                  className="inline-flex min-h-12 items-center justify-center rounded-full border border-line bg-white px-6 text-sm font-medium text-ink transition-colors duration-[180ms] hover:border-ink/30 active:scale-[0.98] sm:min-h-13"
+                >
+                  Pelajari Cara Kerja
                 </Link>
               </div>
+
+              {/* Statistics Cards — 4, ukuran identik, hover lift */}
+              <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {STATS.map(({ value, label }) => (
+                  <div
+                    key={label}
+                    className="rounded-2xl border border-line bg-white p-3.5 transition-transform duration-[180ms] hover:-translate-y-1 hover:shadow-md"
+                  >
+                    <p className="font-mono text-xl font-bold text-ink sm:text-2xl">{value}</p>
+                    <p className="mt-1 text-[11px] leading-snug text-muted-foreground">{label}</p>
+                  </div>
+                ))}
+              </div>
             </div>
+
+            {/* Hero Right — Floating Recommendation Card */}
+            <div className="relative lg:justify-self-end">
+              {/* Floating decorative shapes */}
+              <div className="pointer-events-none absolute -left-8 -top-8 h-24 w-24 rounded-full bg-sawah/20 blur-2xl motion-safe:animate-[float_7s_ease-in-out_infinite]" />
+              <div className="pointer-events-none absolute -bottom-10 -right-6 h-32 w-32 rounded-full bg-positive/20 blur-3xl motion-safe:animate-[float_9s_ease-in-out_infinite_reverse]" />
+
+              <div className="relative w-full max-w-[340px] rounded-2xl border border-line bg-white p-5 shadow-[0_20px_50px_rgba(23,21,26,0.14)]">
+                <p className="text-sm font-semibold text-ink">Rekomendasi personal untuk Anda</p>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                  Sekali isi preferensi, sistem menunjukkan distrik paling cocok lengkap dengan alasannya.
+                </p>
+
+                <ul className="mt-4 space-y-2.5">
+                  {CHECKLIST.map((point) => (
+                    <li key={point} className="flex items-start gap-2.5 text-xs leading-snug text-ink/75">
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-positive-bg">
+                        <CheckCircle2 className="h-3 w-3 text-positive" />
+                      </span>
+                      {point}
+                    </li>
+                  ))}
+                </ul>
+
+                {/* Information Card */}
+                <div className="mt-4 rounded-xl border border-line bg-secondary p-3.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5">
+                      <Quote className="h-3.5 w-3.5 shrink-0 text-sawah" />
+                      <span className="text-xs font-medium text-ink">Contoh: Sleman</span>
+                    </div>
+                    <span className="font-mono text-sm font-bold text-positive">79.2<span className="text-[10px] font-normal text-muted-foreground">/100</span></span>
+                  </div>
+                  <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-line">
+                    <div className="h-full rounded-full bg-positive" style={{ width: "79%" }} />
+                  </div>
+                  <Link
+                    href="/quiz"
+                    className="mt-3 flex min-h-9 w-full items-center justify-center gap-1.5 rounded-full bg-sawah text-xs font-medium text-white transition-colors hover:bg-sawah/90"
+                  >
+                    Mulai Sekarang
+                    <ArrowRight className="h-3 w-3" />
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="pointer-events-none absolute inset-x-0 bottom-6 flex flex-col items-center gap-1.5">
+            <span className="text-xs text-ink/50">Scroll untuk lanjut</span>
+            <ChevronDown className="h-4 w-4 text-ink/40" />
           </div>
         </div>
       </section>
 
-      {/* ── 4 Indikator, kapabilitas ─────────────────────────────── */}
-      <section className="border-y border-line bg-paper">
-        <div className="mx-auto max-w-[1120px] px-4 py-14 sm:px-6 lg:py-16">
-          <h2 className="mb-3 text-center font-display text-2xl font-bold text-ink sm:text-3xl">
-            4 indikator yang menentukan rekomendasi Anda
-          </h2>
-          <p className="mx-auto mb-10 max-w-xl text-center text-sm leading-relaxed text-muted-foreground sm:text-base">
-            Klik salah satu indikator untuk melihat bagaimana bobotnya berbeda antar profil freelancer.
-          </p>
-          <CapabilityShowcase />
-        </div>
-      </section>
+      {/* ── SECTION 3: Why Freelance City Index ─────────────────────── */}
+      <section id="tentang" className="scroll-mt-24 px-4 py-16 sm:px-6 sm:py-24 lg:py-28 lg:px-10">
+        <div className="mx-auto max-w-[1280px]">
+          <ScrollReveal className="mx-auto mb-12 max-w-xl text-center">
+            <h2 className="mb-3 text-3xl font-bold tracking-tight text-ink sm:text-4xl">
+              Mengapa Freelance City Index?
+            </h2>
+            <p className="text-base leading-relaxed text-muted-foreground">
+              Dibangun untuk membantu Anda memutuskan, bukan sekadar menampilkan data mentah.
+            </p>
+          </ScrollReveal>
 
-      {/* ── Cara kerja ──────────────────────────────────────────────── */}
-      <section className="bg-white">
-        <div className="mx-auto max-w-[1120px] px-4 py-14 sm:px-6 lg:py-20">
-          <h2 className="mb-12 text-center font-display text-2xl font-bold text-ink sm:text-3xl">
-            Tiga langkah ke rekomendasi terbaik
-          </h2>
-          <div className="grid gap-8 sm:grid-cols-3">
-            {STEPS.map(({ num, judul, deskripsi }, i) => (
-              <div key={num} className="relative">
-                {i < STEPS.length - 1 && (
-                  <div className="absolute left-[calc(100%+1rem)] top-4 hidden h-px w-8 bg-line lg:block" />
-                )}
-                <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-full bg-sawah text-white">
-                  <span className="font-mono text-sm font-bold">{num}</span>
+          <div className="grid gap-4 sm:grid-cols-3">
+            {WHY_CARDS.map(({ icon: Icon, title, desc }, i) => (
+              <ScrollReveal
+                key={title}
+                delay={i * 80}
+                className="rounded-2xl border border-white/60 bg-white/70 p-6 backdrop-blur-md"
+              >
+                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-sawah/10">
+                  <Icon className="h-5 w-5 text-sawah" />
                 </div>
-                <h3 className="mb-2 font-semibold text-ink">{judul}</h3>
-                <p className="text-sm leading-relaxed text-muted-foreground">{deskripsi}</p>
-              </div>
+                <h3 className="mb-1.5 font-semibold text-ink">{title}</h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">{desc}</p>
+              </ScrollReveal>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── Final CTA, permukaan aksen penuh ───────────────────────── */}
-      <section className="bg-paper px-4 pb-16 pt-4 sm:px-6 lg:pb-20">
-        <div className="mx-auto max-w-[1120px]">
-          <div className="rounded-2xl bg-sawah px-6 py-14 text-center sm:px-10 lg:py-16">
-            <h2 className="mb-4 font-display text-2xl font-bold text-white sm:text-3xl lg:text-4xl">
-              Siap menemukan distrik terbaikmu?
+      {/* ── SECTION 4: How It Works ──────────────────────────────────── */}
+      <section id="cara-kerja" className="scroll-mt-24 px-4 py-16 sm:px-6 sm:py-24 lg:py-28 lg:px-10">
+        <div className="mx-auto max-w-[1280px]">
+          <ScrollReveal className="mx-auto mb-14 max-w-xl text-center">
+            <h2 className="mb-3 text-3xl font-bold tracking-tight text-ink sm:text-4xl">
+              Cara Kerja
             </h2>
-            <p className="mx-auto mb-8 max-w-md text-sm text-white/80 sm:text-base">
-              Jawab 5 pertanyaan, lihat algoritma bekerja, dan dapatkan rekomendasi
-              personal. Gratis, tanpa akun.
+            <p className="text-base leading-relaxed text-muted-foreground">
+              Empat langkah sederhana dari preferensi Anda sampai rekomendasi distrik.
             </p>
-            <Link
-              href="/quiz"
-              className="inline-flex min-h-[48px] items-center gap-2 rounded-xl bg-white px-8 text-sm font-semibold text-sawah transition-all hover:bg-white/90 active:translate-y-px"
-            >
-              Mulai Quiz
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+          </ScrollReveal>
+
+          <div className="relative grid gap-6 sm:grid-cols-4">
+            {/* Connector line, desktop only */}
+            <div className="pointer-events-none absolute left-0 right-0 top-[22px] hidden h-px bg-line sm:block" aria-hidden="true" />
+
+            {HOW_STEPS.map(({ icon: Icon, num, title, desc }, i) => (
+              <ScrollReveal key={num} delay={i * 80} className="relative text-center">
+                <div className="relative z-10 mx-auto mb-4 flex h-11 w-11 items-center justify-center rounded-full bg-sawah font-mono text-sm font-bold text-white shadow-[0_8px_20px_rgba(220,35,64,0.3)]">
+                  {num}
+                </div>
+                <div className="mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-xl bg-white">
+                  <Icon className="h-4 w-4 text-sawah" />
+                </div>
+                <h3 className="mb-1 text-sm font-semibold text-ink">{title}</h3>
+                <p className="text-xs leading-relaxed text-muted-foreground">{desc}</p>
+              </ScrollReveal>
+            ))}
           </div>
         </div>
       </section>
+
+      {/* ── SECTION 5: Indicators ────────────────────────────────────── */}
+      <section id="indikator" className="scroll-mt-24 px-4 py-16 sm:px-6 sm:py-24 lg:py-28 lg:px-10">
+        <div className="mx-auto max-w-[1280px]">
+          <ScrollReveal className="mx-auto mb-12 max-w-xl text-center">
+            <h2 className="mb-3 text-3xl font-bold tracking-tight text-ink sm:text-4xl">
+              4 indikator yang benar-benar menentukan
+            </h2>
+            <p className="text-base leading-relaxed text-muted-foreground">
+              Internet, biaya hidup, komunitas, dan lingkungan kerja — klik salah satu
+              untuk lihat bagaimana bobotnya bergeser antar profil freelancer.
+            </p>
+          </ScrollReveal>
+
+          <ScrollReveal delay={100}>
+            <CapabilityShowcase />
+          </ScrollReveal>
+        </div>
+      </section>
+
+      {/* ── SECTION 6: Supported Districts ───────────────────────────── */}
+      <div id="distrik" className="scroll-mt-24">
+        <DistrictPreviewSection />
+      </div>
+
+      {/* ── SECTION 7: Final CTA ─────────────────────────────────────── */}
+      <section className="px-4 py-14 sm:px-6 sm:py-24 lg:py-28 lg:px-10">
+        <ScrollReveal
+          className="relative mx-auto max-w-[1280px] overflow-hidden rounded-[2rem] px-6 py-14 text-center sm:py-20"
+          style={{
+            background: "linear-gradient(135deg, #DC2340 0%, #F0384F 55%, #FB7B5B 100%)",
+          }}
+        >
+          <h2 className="mx-auto mb-4 max-w-2xl text-2xl font-bold leading-[1.15] tracking-tight text-white sm:mb-5 sm:text-5xl sm:leading-[1.05]">
+            Mulai temukan distrik terbaik untuk gaya kerja Anda.
+          </h2>
+          <p className="mx-auto mb-8 max-w-md text-sm leading-relaxed text-white/80 sm:mb-10 sm:text-base">
+            Tanpa akun, tanpa biaya — hasilnya langsung terlihat begitu kuis selesai.
+          </p>
+          <Link
+            href="/quiz"
+            className="group inline-flex min-h-12 items-center gap-2.5 rounded-full bg-white py-1 pl-6 pr-1 text-sm font-medium text-sawah transition-all duration-[180ms] hover:bg-white/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:scale-[0.98] sm:min-h-14 sm:gap-3 sm:py-1.5 sm:pl-7 sm:pr-1.5 sm:text-base"
+          >
+            Mulai Sekarang
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sawah/10 transition-transform duration-[180ms] group-hover:translate-x-0.5 sm:h-11 sm:w-11">
+              <ArrowRight className="h-4 w-4" />
+            </span>
+          </Link>
+        </ScrollReveal>
+      </section>
+
+      {/* ── SECTION 8: Footer ────────────────────────────────────────── */}
+      <LandingFooter />
     </main>
   );
 }

@@ -18,13 +18,18 @@ const CAPABILITIES: Capability[] = [
   { icon: Leaf, label: "Lingkungan", desc: "Kebisingan & kenyamanan suasana kerja sehari-hari.", weight: "Bobot tertinggi untuk Creative Professional (30%)" },
 ];
 
-export function CapabilityShowcase() {
+interface CapabilityShowcaseProps {
+  variant?: "light" | "dark";
+}
+
+export function CapabilityShowcase({ variant = "light" }: CapabilityShowcaseProps) {
   const [active, setActive] = useState(0);
+  const isDark = variant === "dark";
 
   return (
     <div>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {CAPABILITIES.map(({ icon: Icon, label, desc, weight }, i) => {
+        {CAPABILITIES.map(({ icon: Icon, label, desc }, i) => {
           const isActive = i === active;
           return (
             <button
@@ -33,24 +38,33 @@ export function CapabilityShowcase() {
               onClick={() => setActive(i)}
               aria-pressed={isActive}
               className={cn(
-                "flex flex-col items-start rounded-2xl border p-5 text-left transition-all duration-300",
-                isActive
-                  ? "bg-ink shadow-[0_8px_24px_rgba(15,23,42,0.25)] sm:-translate-y-1"
-                  : "border-line bg-white hover:border-sawah/30 hover:shadow-[0_2px_10px_rgba(15,23,42,0.06)]"
+                "flex flex-col items-start rounded-[var(--radius-md)] border p-5 text-left transition-colors duration-[180ms]",
+                isDark
+                  ? isActive
+                    ? "border-sawah/60 bg-white/[0.1] backdrop-blur-md"
+                    : "border-white/10 bg-white/[0.06] backdrop-blur-md hover:border-white/25"
+                  : isActive
+                    ? "border-ink bg-ink"
+                    : "border-line bg-white hover:border-ink/30"
               )}
             >
               <div
                 className={cn(
-                  "mb-4 flex h-10 w-10 items-center justify-center rounded-lg transition-colors",
-                  isActive ? "bg-white/10" : "bg-sawah/10"
+                  "mb-4 flex h-9 w-9 items-center justify-center rounded-[var(--radius-sm)] transition-colors",
+                  isDark ? "bg-white/10" : isActive ? "bg-white/10" : "bg-sawah/10"
                 )}
               >
-                <Icon className={cn("h-5 w-5", isActive ? "text-[#FDBA74]" : "text-sawah")} />
+                <Icon className={cn("h-4 w-4", isDark || isActive ? "text-white" : "text-sawah")} />
               </div>
-              <p className={cn("mb-1.5 font-semibold", isActive ? "text-white" : "text-ink")}>
+              <p className={cn("mb-1.5 font-semibold", isDark ? "text-white" : isActive ? "text-white" : "text-ink")}>
                 {label}
               </p>
-              <p className={cn("text-sm leading-relaxed", isActive ? "text-white/65" : "text-muted-foreground")}>
+              <p
+                className={cn(
+                  "text-sm leading-relaxed",
+                  isDark ? "text-white/65" : isActive ? "text-white/65" : "text-muted-foreground"
+                )}
+              >
                 {desc}
               </p>
             </button>
@@ -59,8 +73,8 @@ export function CapabilityShowcase() {
       </div>
 
       {/* Detail bar untuk kapabilitas aktif */}
-      <div className="mt-6 flex items-center justify-center gap-3 rounded-xl border border-line bg-paper px-4 py-3">
-        <span className="font-mono text-xs text-muted-foreground">
+      <div className={cn("mt-6 border-t pt-4 text-center", isDark ? "border-white/10" : "border-line")}>
+        <span className={cn("font-mono text-xs", isDark ? "text-white/60" : "text-muted-foreground")}>
           {CAPABILITIES[active].weight}
         </span>
       </div>
@@ -76,7 +90,11 @@ export function CapabilityShowcase() {
             aria-current={i === active}
             className={cn(
               "h-1.5 rounded-full transition-all duration-300",
-              i === active ? "w-6 bg-sawah" : "w-1.5 bg-line hover:bg-sawah/40"
+              i === active
+                ? "w-6 bg-sawah"
+                : isDark
+                  ? "w-1.5 bg-white/20 hover:bg-sawah/50"
+                  : "w-1.5 bg-line hover:bg-sawah/40"
             )}
           />
         ))}

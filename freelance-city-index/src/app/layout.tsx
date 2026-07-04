@@ -1,23 +1,9 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, Space_Mono } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { ConditionalFooter } from "@/components/shared/ConditionalFooter";
 import { PageTransition } from "@/components/shared/PageTransition";
-
-// Space Grotesk (display+UI) / Space Mono (angka & data),
-// satu keluarga desain dengan karakter teknis-hangat
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-space-grotesk",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const spaceMono = Space_Mono({
-  variable: "--font-space-mono",
-  subsets: ["latin"],
-  weight: ["400", "700"],
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "Freelance City Index, Yogyakarta Edition",
@@ -33,7 +19,7 @@ export default function RootLayout({
   return (
     <html
       lang="id"
-      className={`${spaceGrotesk.variable} ${spaceMono.variable} h-full antialiased`}
+      className={`${GeistSans.variable} ${GeistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-screen flex-col bg-paper text-ink">
         <PageTransition className="flex-1">

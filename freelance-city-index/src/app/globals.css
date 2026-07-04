@@ -8,17 +8,22 @@
    @theme inline — semua CSS vars dipetakan ke Tailwind utilities
    ============================================================ */
 @theme inline {
-  /* Project brand palette (CLAUDE.md §9.1) */
+  /* Design system "Almanac" — lihat CLAUDE.md §10 (DEFAULT, Rebuild Mode aktif) */
   --color-ink: var(--ink);
   --color-paper: var(--paper);
-  --color-sawah: var(--sawah);
-  --color-pesisir: var(--pesisir);
-  --color-genteng: var(--genteng);
+  --color-sawah: var(--sawah);       /* signal accent — satu-satunya aksen saturated */
+  --color-pesisir: var(--pesisir);   /* aksen sekunder quiet/desaturated */
+  --color-genteng: var(--genteng);   /* aksen tersier quiet/desaturated */
   --color-line: var(--line);
   --color-warning: var(--warning);
   --color-warning-bg: var(--warning-bg);
   --color-error: var(--error);
   --color-error-bg: var(--error-bg);
+  --color-score-high: var(--score-high);
+  --color-score-mid: var(--score-mid);
+  --color-score-low: var(--score-low);
+  --color-positive: var(--positive);
+  --color-positive-bg: var(--positive-bg);
 
   /* shadcn semantic tokens */
   --color-background: var(--background);
@@ -48,15 +53,15 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  /* Typography — Space Grotesk (display+body) / Space Mono (data) */
-  --font-display: var(--font-space-grotesk);
-  --font-sans: var(--font-space-grotesk);
-  --font-mono: var(--font-space-mono);
+  /* Typography — Geist Sans (display+body) / Geist Mono (setiap angka: skor, bobot, UMK) */
+  --font-display: var(--font-geist-sans);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
 
-  /* Border radius (CLAUDE.md §9.3: 0.5rem kartu/tombol, 9999px badge) */
+  /* Radius — dua nilai saja: sm untuk input/kontrol kecil, md untuk container */
   --radius-sm: calc(var(--radius) * 0.5);
   --radius-md: var(--radius);
-  --radius-lg: calc(var(--radius) * 1.5);
+  --radius-lg: var(--radius);
   --radius-full: 9999px;
 }
 
@@ -65,86 +70,99 @@
    CLAUDE.md §9.1
    ============================================================ */
 :root {
-  /* Palet "Terracotta + Slate" — aksen bata bakar (atap Yogyakarta)
-     di atas netral slate dingin; satu aksen utama, kategorikal
-     untuk data. Nama token lama dipertahankan agar seluruh
-     komponen ter-remap otomatis. */
-  --ink: #0F172A;
-  --paper: #F8FAFC;
-  --sawah: #C2410C;
-  --pesisir: #0E7490;
-  --genteng: #9F1239;
-  --line: #E2E8F0;
+  /* Palet "Almanac" — near-monochrome, satu signal accent (crimson),
+     warna hanya dipakai untuk makna (aksi utama/Best Match/status),
+     tidak untuk dekorasi. Nama token lama dipertahankan supaya
+     seluruh komponen ter-remap otomatis (CLAUDE.md §10). */
+  --ink: #17151A;
+  --paper: #F6F5FA;
+  --sawah: #DC2340;       /* signal — CTA utama, Best Match, focus ring */
+  --pesisir: #4B5966;     /* aksen sekunder quiet (info/data, tidak saturated) */
+  --genteng: #7A6A52;     /* aksen tersier quiet (dipakai sangat terbatas) */
+  --line: #E7E4EF;
   --warning: #B45309;
   --warning-bg: #FEF3C7;
-  --error: #DC2626;
-  --error-bg: #FEE2E2;
+  --error: #DC2340;
+  --error-bg: #FCE7EA;
+  --score-high: #16A34A;
+  --score-mid: #D97706;
+  --score-low: #DC2626;
+  --positive: #0D9488;
+  --positive-bg: #CCFBF1;
 
-  /* shadcn semantic tokens — dipetakan ke palet baru */
-  --background: #F8FAFC;
-  --foreground: #0F172A;
+  /* shadcn semantic tokens */
+  --background: #F6F5FA;
+  --foreground: #17151A;
   --card: #FFFFFF;
-  --card-foreground: #0F172A;
+  --card-foreground: #17151A;
   --popover: #FFFFFF;
-  --popover-foreground: #0F172A;
-  --primary: #C2410C;
+  --popover-foreground: #17151A;
+  --primary: #DC2340;
   --primary-foreground: #FFFFFF;
-  --secondary: #EEF2F7;
-  --secondary-foreground: #0F172A;
-  --muted: #EEF2F7;
-  --muted-foreground: #64748B;
-  --accent: #0E7490;
+  --secondary: #F1EFF7;
+  --secondary-foreground: #17151A;
+  --muted: #F1EFF7;
+  --muted-foreground: #6E6C78;
+  --accent: #4B5966;
   --accent-foreground: #FFFFFF;
-  --destructive: #DC2626;
-  --border: #E2E8F0;
-  --input: #E2E8F0;
-  --ring: #C2410C;
-  --radius: 0.5rem;
+  --destructive: #DC2340;
+  --border: #E7E4EF;
+  --input: #E7E4EF;
+  --ring: #DC2340;
+  --radius: 1rem;
 
   /* Sidebar (admin panel) */
-  --sidebar: #F8FAFC;
-  --sidebar-foreground: #0F172A;
-  --sidebar-primary: #C2410C;
-  --sidebar-primary-foreground: #F8FAFC;
-  --sidebar-accent: #EEF2F7;
-  --sidebar-accent-foreground: #0F172A;
-  --sidebar-border: #E2E8F0;
-  --sidebar-ring: #C2410C;
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #17151A;
+  --sidebar-primary: #DC2340;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #F1EFF7;
+  --sidebar-accent-foreground: #17151A;
+  --sidebar-border: #E7E4EF;
+  --sidebar-ring: #DC2340;
 }
 
-/* V1 tidak ada dark mode — dark class tidak dipakai */
+/* V1 tidak ada dark mode toggle — token disiapkan untuk masa depan */
 .dark {
-  --background: #0F172A;
-  --foreground: #F8FAFC;
-  --card: #1E293B;
-  --card-foreground: #F8FAFC;
-  --popover: #1E293B;
-  --popover-foreground: #F8FAFC;
-  --primary: #60A5FA;
-  --primary-foreground: #0F172A;
-  --secondary: #1E293B;
-  --secondary-foreground: #F8FAFC;
-  --muted: #1E293B;
-  --muted-foreground: #94A3B8;
-  --accent: #38BDF8;
-  --accent-foreground: #0F172A;
+  --background: #0B0C0E;
+  --foreground: #FAFAFA;
+  --card: #1A1B1E;
+  --card-foreground: #FAFAFA;
+  --popover: #1A1B1E;
+  --popover-foreground: #FAFAFA;
+  --primary: #E11D48;
+  --primary-foreground: #0B0C0E;
+  --secondary: #1A1B1E;
+  --secondary-foreground: #FAFAFA;
+  --muted: #1A1B1E;
+  --muted-foreground: #9A9DA6;
+  --accent: #7C8B99;
+  --accent-foreground: #0B0C0E;
   --destructive: #F87171;
-  --border: #334155;
-  --input: #334155;
-  --ring: #60A5FA;
-  --sidebar: #0F172A;
-  --sidebar-foreground: #F8FAFC;
-  --sidebar-primary: #60A5FA;
-  --sidebar-primary-foreground: #0F172A;
-  --sidebar-accent: #1E293B;
-  --sidebar-accent-foreground: #F8FAFC;
-  --sidebar-border: #334155;
-  --sidebar-ring: #60A5FA;
+  --border: #2A2B2F;
+  --input: #2A2B2F;
+  --ring: #E11D48;
+  --sidebar: #0B0C0E;
+  --sidebar-foreground: #FAFAFA;
+  --sidebar-primary: #E11D48;
+  --sidebar-primary-foreground: #0B0C0E;
+  --sidebar-accent: #1A1B1E;
+  --sidebar-accent-foreground: #FAFAFA;
+  --sidebar-border: #2A2B2F;
+  --sidebar-ring: #E11D48;
 }
 
 /* ============================================================
-   Page transition animation
+   Motion tokens — satu sistem timing untuk seluruh app (CLAUDE.md §10)
+   micro-interaction: 180ms ease-out · entrance: 280ms cubic-bezier expo-out
    ============================================================ */
+:root {
+  --ease-micro: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-entrance: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-micro: 180ms;
+  --duration-entrance: 280ms;
+}
+
 @keyframes page-fade-in {
   from {
     opacity: 0;
@@ -157,12 +175,47 @@
 }
 
 .page-fade-in {
-  animation: page-fade-in 0.25s ease-out;
+  animation: page-fade-in var(--duration-entrance) var(--ease-entrance);
+}
+
+@keyframes stagger-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stagger-in {
+  animation: stagger-in var(--duration-entrance) var(--ease-entrance) both;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-16px);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .page-fade-in {
+  .page-fade-in,
+  .stagger-in {
     animation: none;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
   }
 }
 
@@ -176,7 +229,9 @@
   body {
     background-color: var(--background);
     color: var(--foreground);
-    font-family: var(--font-space-grotesk), system-ui, sans-serif;
+    font-family: var(--font-geist-sans), system-ui, sans-serif;
+    font-feature-settings: "cv11", "ss01";
+    -webkit-font-smoothing: antialiased;
   }
 
   /* Eliminasi 300ms tap delay di mobile & pastikan tap langsung merespons */
