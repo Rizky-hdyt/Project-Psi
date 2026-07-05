@@ -6,30 +6,47 @@ interface AdminState {
   isAuthenticated: boolean;
   username: string;
   checking: boolean; // true saat verifikasi session pertama kali
+  forbidden: boolean; // sesi ada tapi tidak valid lagi (bukan "belum login")
 }
 
 type AdminAction =
   | { type: "SET_SESSION"; username: string }
   | { type: "CLEAR_SESSION" }
-  | { type: "DONE_CHECKING" };
+  | { type: "DONE_CHECKING" }
+  | { type: "SESSION_FORBIDDEN" };
 
 const initialState: AdminState = {
   isAuthenticated: false,
   username: "",
   checking: true,
+  forbidden: false,
 };
 
 function adminReducer(state: AdminState, action: AdminAction): AdminState {
   switch (action.type) {
     case "SET_SESSION":
-      return { isAuthenticated: true, username: action.username, checking: false };
+      return { isAuthenticated: true, username: action.username, checking: false, forbidden: false };
     case "CLEAR_SESSION":
-      return { isAuthenticated: false, username: "", checking: false };
+      return { isAuthenticated: false, username: "", checking: false, forbidden: false };
     case "DONE_CHECKING":
       return { ...state, checking: false };
+    case "SESSION_FORBIDDEN":
+      return { isAuthenticated: false, username: "", checking: false, forbidden: true };
     default:
       return state;
   }
+}
+
+export interface BulkScoreItem {
+  indicatorId: string;
+  skor: number;
+  expectedUpdatedAt?: string | null;
+}
+
+export interface BulkSaveResult {
+  ok: boolean;
+  conflict?: boolean;
+  error?: string;
 }
 
 interface AdminContextValue {
@@ -37,6 +54,7 @@ interface AdminContextValue {
   login: (username: string, password: string) => Promise<{ ok: boolean; error?: string }>;
   logout: () => Promise<void>;
   updateScore: (districtId: string, indicatorId: string, skor: number) => Promise<{ ok: boolean; error?: string }>;
+  updateScoresBulk: (districtId: string, indicators: BulkScoreItem[]) => Promise<BulkSaveResult>;
 }
 
 const AdminContext = createContext<AdminContextValue | null>(null);
@@ -51,6 +69,8 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       .then((data) => {
         if (data.authenticated) {
           dispatch({ type: "SET_SESSION", username: data.username });
+        } else if (data.reason === "invalid_session") {
+          dispatch({ type: "SESSION_FORBIDDEN" });
         } else {
           dispatch({ type: "DONE_CHECKING" });
         }
@@ -88,8 +108,30 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     return { ok: false, error: data.error ?? "Gagal menyimpan" };
   }
 
+  // Simpan 4 indikator sekaligus dalam SATU transaksi database (atomic — tidak
+  // ada kondisi "3 kesimpan, 1 gagal") + optimistic locking (kalau ada sesi
+  // lain yang sudah mengubah data ini sejak form dibuka, tolak dengan 409
+  // daripada menimpa diam-diam). Memenuhi PRD §6.2 edge case "dua admin
+  // update bersamaan" dan "koneksi putus saat simpan, atomic transaction".
+  async function updateScoresBulk(
+    districtId: string,
+    indicators: BulkScoreItem[]
+  ): Promise<BulkSaveResult> {
+    const res = await fetch("/api/admin/scores/bulk", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ districtId, indicators }),
+    });
+    if (res.ok) return { ok: true };
+    const data = await res.json();
+    if (res.status === 409) {
+      return { ok: false, conflict: true, error: data.message ?? "Data ini sudah diubah di sesi lain" };
+    }
+    return { ok: false, conflict: false, error: data.error ?? "Gagal menyimpan" };
+  }
+
   return (
-    <AdminContext.Provider value={{ state, login, logout, updateScore }}>
+    <AdminContext.Provider value={{ state, login, logout, updateScore, updateScoresBulk }}>
       {children}
     </AdminContext.Provider>
   );

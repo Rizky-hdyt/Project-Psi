@@ -1,15 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { ClipboardList } from "lucide-react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { useMemo } from "react";
+import { ClipboardList, SlidersHorizontal } from "lucide-react";
+import { useAdminSearch } from "@/contexts/AdminSearchContext";
+import { useAuditLog } from "@/hooks/useAuditLog";
 
 const INDICATOR_LABELS: Record<string, string> = {
   internet: "Internet",
@@ -17,17 +11,6 @@ const INDICATOR_LABELS: Record<string, string> = {
   community: "Komunitas",
   environment: "Lingkungan",
 };
-
-interface AuditEntry {
-  id: string;
-  districtId: string;
-  indicatorId: string;
-  oldValue: number;
-  newValue: number;
-  operator: string;
-  createdAt: string;
-  district?: { nama: string };
-}
 
 function formatTimestamp(iso: string): string {
   return new Date(iso).toLocaleString("id-ID", {
@@ -42,122 +25,125 @@ function formatTimestamp(iso: string): string {
 }
 
 export default function AuditLogPage() {
-  const [logs, setLogs] = useState<AuditEntry[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { query } = useAdminSearch();
+  const { logs, loading, error } = useAuditLog();
 
-  useEffect(() => {
-    fetch("/api/admin/audit")
-      .then((res) => {
-        if (!res.ok) throw new Error("Gagal memuat audit log");
-        return res.json() as Promise<AuditEntry[]>;
-      })
-      .then((data) => {
-        setLogs(data);
-        setLoading(false);
-      })
-      .catch((e: Error) => {
-        setError(e.message);
-        setLoading(false);
-      });
-  }, []);
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return logs;
+    return logs.filter(
+      (l) =>
+        (l.district?.nama ?? l.districtId).toLowerCase().includes(q) ||
+        (INDICATOR_LABELS[l.indicatorId] ?? l.indicatorId).toLowerCase().includes(q)
+    );
+  }, [logs, query]);
 
-  const isEmpty = !loading && !error && logs.length === 0;
+  const isEmpty = !loading && !error && filtered.length === 0;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-semibold text-ink">Audit Log</h1>
-        <p className="mt-0.5 text-sm text-muted-foreground">
-          Riwayat 100 perubahan data indikator terakhir.
+    <div className="pb-6">
+      <div className="mb-4">
+        <h1 className="text-[19px] font-extrabold tracking-tight text-[var(--a-ink)]">Log Aktivitas</h1>
+        <p className="mt-1 text-[12.5px] font-medium text-[var(--a-muted)]">
+          Riwayat 100 perubahan skor indikator terakhir.
         </p>
       </div>
 
       {loading && (
         <div className="space-y-2">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-12 animate-pulse rounded-lg bg-muted" />
+            <div key={i} className="h-12 animate-pulse rounded-[12px] bg-white" />
           ))}
         </div>
       )}
 
       {error && (
-        <div className="rounded-lg border border-error/30 bg-error-bg px-4 py-3">
-          <p className="text-sm text-error">Koneksi terputus. Coba muat ulang halaman.</p>
+        <div className="rounded-[12px] border border-[var(--a-red-border)] bg-[var(--a-red-soft)] px-4 py-3 text-[12.5px] font-medium text-[var(--a-red)]">
+          Koneksi terputus. Coba muat ulang halaman.
         </div>
       )}
 
       {isEmpty && (
-        <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-line bg-white py-16 text-center">
-          <ClipboardList className="h-8 w-8 text-muted-foreground/40" />
-          <p className="text-sm text-muted-foreground">
-            Belum ada perubahan data yang tercatat.
+        <div className="flex flex-col items-center justify-center gap-3 rounded-[16px] border border-dashed border-[var(--a-line-2)] bg-white py-16 text-center">
+          <ClipboardList className="h-8 w-8 text-[var(--a-faint)]" />
+          <p className="text-[12.5px] font-medium text-[var(--a-muted)]">
+            {query
+              ? `Tidak ada aktivitas yang cocok dengan "${query}".`
+              : "Belum ada perubahan data yang tercatat."}
           </p>
         </div>
       )}
 
-      {!loading && !error && logs.length > 0 && (
+      {!loading && !error && filtered.length > 0 && (
         <>
-          <div className="overflow-x-auto rounded-lg border border-line bg-white">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-muted/40">
-                  <TableHead className="font-semibold text-ink">Waktu</TableHead>
-                  <TableHead className="font-semibold text-ink">Distrik</TableHead>
-                  <TableHead className="font-semibold text-ink">Indikator</TableHead>
-                  <TableHead className="text-center font-semibold text-ink">Nilai Lama</TableHead>
-                  <TableHead className="text-center font-semibold text-ink">Nilai Baru</TableHead>
-                  <TableHead className="font-semibold text-ink">Operator</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {logs.map((entry) => {
-                  const changed = entry.newValue !== entry.oldValue;
-                  const increased = entry.newValue > entry.oldValue;
+          <div className="overflow-x-auto rounded-[16px] border border-[var(--a-line-2)] bg-white shadow-[0_1px_2px_rgba(25,29,39,.04)]">
+            <table className="w-full min-w-[720px] border-collapse text-left">
+              <thead>
+                <tr className="border-b border-[var(--a-line)] bg-[#fafafb] text-[10px] font-bold uppercase tracking-wide text-[var(--a-faint)]">
+                  <th className="px-4 py-3 font-bold">Waktu</th>
+                  <th className="px-4 py-3 font-bold">Distrik</th>
+                  <th className="px-4 py-3 font-bold">Indikator</th>
+                  <th className="px-4 py-3 text-center font-bold">Nilai Lama</th>
+                  <th className="px-4 py-3 text-center font-bold">Nilai Baru</th>
+                  <th className="px-4 py-3 font-bold">Operator</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((entry) => {
+                  const changed = entry.nilaiBaru !== entry.nilaiLama;
+                  const increased = entry.nilaiBaru > entry.nilaiLama;
                   return (
-                    <TableRow key={entry.id} className="hover:bg-muted/30">
-                      <TableCell className="font-mono text-xs text-muted-foreground whitespace-nowrap">
+                    <tr key={entry.id} className="border-b border-[#f4f5f8] text-[12px] last:border-b-0 hover:bg-[#fafafb]">
+                      <td className="whitespace-nowrap px-4 py-3 font-mono text-[11px] text-[var(--a-faint)]">
                         {formatTimestamp(entry.createdAt)}
-                      </TableCell>
-                      <TableCell className="text-sm font-medium text-ink">
-                        {entry.district?.nama ?? entry.districtId}
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
+                      </td>
+                      <td className="px-4 py-3 font-bold text-[var(--a-ink)]">
+                        <span className="flex items-center gap-2">
+                          <span
+                            className="grid h-6 w-6 shrink-0 place-items-center rounded-[7px]"
+                            style={{ background: "var(--a-red-soft)", color: "var(--a-red)" }}
+                          >
+                            <SlidersHorizontal className="h-3 w-3" />
+                          </span>
+                          {entry.district?.nama ?? entry.districtId}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 font-medium text-[var(--a-muted)]">
                         {INDICATOR_LABELS[entry.indicatorId] ?? entry.indicatorId}
-                      </TableCell>
-                      <TableCell className="text-center font-mono text-sm text-muted-foreground">
-                        {entry.oldValue}
-                      </TableCell>
-                      <TableCell className="text-center">
+                      </td>
+                      <td className="px-4 py-3 text-center font-mono text-[var(--a-muted)]">
+                        {entry.nilaiLama}
+                      </td>
+                      <td className="px-4 py-3 text-center">
                         <span
-                          className={`font-mono text-sm font-semibold ${
-                            !changed
-                              ? "text-muted-foreground"
+                          className="font-mono font-extrabold"
+                          style={{
+                            color: !changed
+                              ? "var(--a-muted)"
                               : increased
-                              ? "text-sawah"
-                              : "text-pesisir"
-                          }`}
+                                ? "var(--a-green)"
+                                : "var(--a-orange)",
+                          }}
                         >
-                          {entry.newValue}
+                          {entry.nilaiBaru}
                           {changed && (
-                            <span className="ml-1 text-xs font-normal">
-                              ({increased ? "+" : ""}{entry.newValue - entry.oldValue})
+                            <span className="ml-1 text-[10px] font-semibold">
+                              ({increased ? "+" : ""}
+                              {entry.nilaiBaru - entry.nilaiLama})
                             </span>
                           )}
                         </span>
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {entry.operator}
-                      </TableCell>
-                    </TableRow>
+                      </td>
+                      <td className="px-4 py-3 font-medium text-[var(--a-muted)]">{entry.operator}</td>
+                    </tr>
                   );
                 })}
-              </TableBody>
-            </Table>
+              </tbody>
+            </table>
           </div>
 
-          <p className="text-xs text-muted-foreground">
-            Menampilkan {logs.length} entri terakhir.
+          <p className="mt-2.5 text-[11px] font-semibold text-[var(--a-faint)]">
+            Menampilkan {filtered.length} dari {logs.length} entri.
           </p>
         </>
       )}

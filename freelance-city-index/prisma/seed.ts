@@ -87,32 +87,39 @@ async function main() {
   });
 
   // Seed skor indikator
+  // Rebalance 2026-07-06: nilai lama bikin Sleman menang di HAMPIR SEMUA
+  // kombinasi persona+sinyal (generalis tanpa kelemahan) sehingga
+  // rekomendasi terasa monoton. Nilai baru dirancang supaya tiap distrik
+  // punya identitas skor yang lebih tajam sesuai ringkasanKarakteristik-nya
+  // masing-masing, dan tetap bisa berubah pemenang dalam SATU persona kalau
+  // sinyal quiz (internet/community priority, environment preference)
+  // digeser ke arah lain — lihat catatan simulasi di RIWAYAT_PENGERJAAN.md.
   await prisma.districtScore.createMany({
     data: [
-      { districtId: "kota-yogyakarta", indicatorId: "internet",     skor: 90 },
-      { districtId: "kota-yogyakarta", indicatorId: "cost",         skor: 55 },
-      { districtId: "kota-yogyakarta", indicatorId: "community",    skor: 90 },
-      { districtId: "kota-yogyakarta", indicatorId: "environment",  skor: 60 },
+      { districtId: "kota-yogyakarta", indicatorId: "internet",     skor: 88 },
+      { districtId: "kota-yogyakarta", indicatorId: "cost",         skor: 42 },
+      { districtId: "kota-yogyakarta", indicatorId: "community",    skor: 97 },
+      { districtId: "kota-yogyakarta", indicatorId: "environment",  skor: 52 },
 
-      { districtId: "sleman",          indicatorId: "internet",     skor: 85 },
-      { districtId: "sleman",          indicatorId: "cost",         skor: 70 },
-      { districtId: "sleman",          indicatorId: "community",    skor: 80 },
-      { districtId: "sleman",          indicatorId: "environment",  skor: 75 },
+      { districtId: "sleman",          indicatorId: "internet",     skor: 84 },
+      { districtId: "sleman",          indicatorId: "cost",         skor: 60 },
+      { districtId: "sleman",          indicatorId: "community",    skor: 75 },
+      { districtId: "sleman",          indicatorId: "environment",  skor: 70 },
 
-      { districtId: "bantul",          indicatorId: "internet",     skor: 70 },
-      { districtId: "bantul",          indicatorId: "cost",         skor: 80 },
-      { districtId: "bantul",          indicatorId: "community",    skor: 60 },
-      { districtId: "bantul",          indicatorId: "environment",  skor: 80 },
+      { districtId: "bantul",          indicatorId: "internet",     skor: 58 },
+      { districtId: "bantul",          indicatorId: "cost",         skor: 78 },
+      { districtId: "bantul",          indicatorId: "community",    skor: 62 },
+      { districtId: "bantul",          indicatorId: "environment",  skor: 92 },
 
-      { districtId: "gunungkidul",     indicatorId: "internet",     skor: 40 },
-      { districtId: "gunungkidul",     indicatorId: "cost",         skor: 95 },
-      { districtId: "gunungkidul",     indicatorId: "community",    skor: 30 },
-      { districtId: "gunungkidul",     indicatorId: "environment",  skor: 85 },
+      { districtId: "gunungkidul",     indicatorId: "internet",     skor: 32 },
+      { districtId: "gunungkidul",     indicatorId: "cost",         skor: 99 },
+      { districtId: "gunungkidul",     indicatorId: "community",    skor: 26 },
+      { districtId: "gunungkidul",     indicatorId: "environment",  skor: 95 },
 
-      { districtId: "kulon-progo",     indicatorId: "internet",     skor: 50 },
-      { districtId: "kulon-progo",     indicatorId: "cost",         skor: 88 },
+      { districtId: "kulon-progo",     indicatorId: "internet",     skor: 45 },
+      { districtId: "kulon-progo",     indicatorId: "cost",         skor: 90 },
       { districtId: "kulon-progo",     indicatorId: "community",    skor: 40 },
-      { districtId: "kulon-progo",     indicatorId: "environment",  skor: 78 },
+      { districtId: "kulon-progo",     indicatorId: "environment",  skor: 82 },
     ],
   });
 

@@ -2,7 +2,7 @@ import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 
 const SECRET = new TextEncoder().encode(process.env.JWT_SECRET ?? "fallback-secret");
-const COOKIE_NAME = "fci_session";
+export const COOKIE_NAME = "fci_session";
 
 export async function signToken(payload: { username: string }) {
   return new SignJWT(payload)

@@ -14,6 +14,96 @@
 
 ---
 
+### 2026-07-06 lanjutan 3 — Perbaiki 3 celah PRD (403 admin, optimistic locking, back-button quiz state)
+
+**Konteks:** Baca ulang isi asli `files/PRD_Revised_v2.1.docx` (bukan cuma ringkasan CLAUDE.md) untuk audit kepatuhan penuh. Ketemu 3 requirement di §6 (User Workflows — Decision Points & Edge Cases) yang belum terpenuhi.
+
+**1. Halaman 403 admin** (PRD §6.2: "Apakah admin memiliki hak akses? NO → 403: 'Anda tidak memiliki izin'"):
+- `src/app/admin/403/page.tsx` (baru) — halaman standalone (bypass sidebar, sama seperti login page), copy persis PRD.
+- `src/lib/auth.ts` — export `COOKIE_NAME` supaya bisa dipakai ulang.
+- `src/app/api/auth/session/route.ts` — dibedakan 2 alasan gagal: `no_session` (belum pernah login → tetap ke `/admin/login`) vs `invalid_session` (cookie ADA tapi token rusak/kedaluwarsa → ke `/admin/403`, requirement PRD-nya baru bisa dipenuhi kalau dibedakan dari "belum login").
+- `AdminContext` — state baru `forbidden`, action `SESSION_FORBIDDEN`.
+- **Verifikasi nyata:** set cookie `fci_session` isi token rusak lewat Playwright → redirect ke `/admin/403` (bukan `/admin/login`). Tanpa cookie sama sekali → tetap ke `/admin/login`. Dua jalur beda terkonfirmasi.
+
+**2 & 3 sekaligus — Atomic transaction + Optimistic locking** (PRD §6.2 edge case "koneksi database putus saat Simpan: atomic, tidak ada data tersimpan sebagian" DAN "dua admin update distrik sama bersamaan: peringatan konflik"):
+- **Root cause lama:** simpan 1 distrik = 4 `PUT /api/admin/scores` terpisah lewat `Promise.all` — kalau 1 dari 4 gagal di tengah jalan, distrik itu berakhir campuran data lama+baru (melanggar PRD).
+- **Endpoint baru** `src/app/api/admin/scores/bulk/route.ts` — terima `{districtId, indicators: [{indicatorId, skor, expectedUpdatedAt}]}`, proses SEMUA di dalam satu `prisma.$transaction()` (atomic — kalau satu gagal/konflik, semuanya rollback, tidak ada partial save). Sebelum upsert tiap indikator, dicek `expectedUpdatedAt` yang dikirim client vs `updatedAt` asli di DB saat ini — kalau beda (berarti ada yang mengubah duluan), transaksi dibatalkan dan return `409` dengan pesan jelas.
+- `AdminContext.updateScoresBulk()` (baru, menggantikan pola `Promise.all(updateScore(...))` di halaman Data Distrik).
+- `admin/data/page.tsx` — `FieldState` sekarang menyimpan `loadedUpdatedAt` (snapshot saat form dibuka), dikirim balik sebagai `expectedUpdatedAt` saat simpan. Kalau server balas 409, tampilkan banner amber per-distrik + tombol "Muat Ulang Halaman", tombol Simpan didisable sampai reload.
+- **Verifikasi nyata (bukan cuma baca kode):** simulasikan "2 admin" — buka form di satu sesi, lalu sesi LAIN (fetch langsung ke endpoint bulk) menyimpan Sleman/Internet duluan. Sesi pertama coba simpan nilai berbeda → banner konflik muncul persis ("Data Sleman sudah diubah di sesi lain..."), dan dicek ke database: nilai yang tersimpan tetap punya sesi lain (84), BUKAN nilai yang barusan dicoba disimpan (77) — membuktikan optimistic locking benar-benar mencegah overwrite diam-diam.
+
+**4. Quiz: state tidak hilang saat browser Back** (PRD §6.1 edge case: "Back browser setelah lihat hasil: pertahankan state quiz, jangan mengulang dari awal"):
+- **Root cause:** `useQuizState` cuma `useState` polos di komponen `/quiz`, dan navigasi ke `/result` pakai `router.push` tanpa pernah meng-update entri history `/quiz` itu sendiri — jadi Back selalu balik ke `/quiz` kosong.
+- **Fix:** `app/quiz/page.tsx` sekarang baca state awal dari query URL (`readInitialInput`, divalidasi ketat per field) via `useSearchParams` (dibungkus `Suspense`), DAN setiap kali input berubah, `router.replace` (bukan `push` — tidak nambah history) memperbarui URL `/quiz` supaya selalu mencerminkan input terakhir. Begitu user lanjut ke `/result`, entri `/quiz` di history sudah "terisi", jadi Back mengembalikan state penuh.
+- **Bug ditemukan & diperbaiki saat testing sendiri:** percobaan pertama function `readInitialInput` mengembalikan object dengan key ber-nilai `undefined` eksplisit untuk field yang tidak ada di URL — ini menimpa `DEFAULTS` lewat spread (`{...DEFAULTS, ...initial}` tetap menimpa walau valuenya `undefined`, karena key-nya ada), bikin Step 2 (Algorithm Explanation) selalu blank karena `quiz.completeInput` selalu `null`. Diperbaiki: key yang tidak valid/tidak ada di URL di-OMIT sepenuhnya dari object, bukan diisi `undefined`.
+- **Verifikasi nyata:** Playwright isi persona+internet priority di quiz, lanjut sampai `/result`, tekan Back browser → kembali ke `/quiz` dengan persona/budget/prioritas semua ter-restore (dicek lewat className card "border-sawah bg-sawah/5" = state terpilih, dan screenshot visual).
+
+**Verifikasi keseluruhan:** `tsc --noEmit` bersih, `eslint` 0 error baru (1 pre-existing di `admin/data/page.tsx` tetap ada, tidak disentuh), `npm run build` sukses 22 routes (+2 dari sebelumnya: `/admin/403`, `/api/admin/scores/bulk`).
+
+---
+
+### 2026-07-06 lanjutan 2 — Rebalance data skor 5 distrik: Sleman tidak lagi menang di semua persona
+
+**Konteks:** User perhatikan hasil quiz **selalu** merekomendasikan Sleman apa pun persona yang dipilih. Diinvestigasi dulu apakah ini bug di `lib/scoring/*` — ternyata TIDAK, formula & bobot sudah benar dan deterministik (dicek ulang manual + reference case resmi cocok). Penyebabnya murni di **data skor seed**: Sleman kebetulan jadi "generalis" tanpa kelemahan mencolok di 4 indikator, sehingga menang di hampir semua kombinasi bobot persona.
+
+**Temuan sampingan penting:** ketahuan 2 nilai skor di database live **berbeda dari `prisma/seed.ts`** — Bantul/internet seharusnya 70 (di DB jadi 55) dan Sleman/cost seharusnya 70 (di DB jadi 65). Dikonfirmasi lewat cross-check manual pakai reference case resmi CLAUDE.md §5.4 (Sleman 79.2/Kota 77.4/Bantul 72.1) — angka itu HANYA cocok kalau pakai nilai asli seed, bukan nilai yang ada di DB saat itu. Audit log tidak mencatat perubahan ini sama sekali (cuma ada 1 entri, punya sesi testing sebelumnya) — artinya drift terjadi lewat jalur di luar `PUT /api/admin/scores` (kemungkinan reset/query manual di masa lalu), bukan lewat panel admin. Tidak sempat ditelusuri lebih jauh sumbernya, tapi sekalian diperbaiki lewat rebalance ini.
+
+**Pendekatan:** dibuat script simulasi standalone (reimplementasi persis formula `lib/scoring/normalize.ts` + `score.ts`) untuk iterasi cepat cari kombinasi skor yang: (1) tiap persona idealnya beda pemenang default-nya, (2) DALAM satu persona, pemenang bisa berubah kalau sinyal quiz lain (internet/community priority, environment preference) digeser jauh — sesuai permintaan eksplisit user, bukan cuma "beda per persona" tapi juga "beda per kombinasi jawaban".
+
+**Skor baru** (`prisma/seed.ts` + diterapkan ke DB live lewat `PUT /api/admin/scores` berulang, supaya tercatat rapi di Audit Log — bukan lewat script SQL langsung):
+
+| Distrik | Internet | Cost | Community | Environment |
+|---|--:|--:|--:|--:|
+| Kota Yogyakarta | 88 | 42 | 97 | 52 |
+| Sleman | 84 | 60 | 75 | 70 |
+| Bantul | 58 | 78 | 62 | 92 |
+| Kulon Progo | 45 | 90 | 40 | 82 |
+| Gunungkidul | 32 | 99 | 26 | 95 |
+
+Nilai baru sengaja lebih konsisten dengan `ringkasanKarakteristik` masing-masing distrik (Kota = internet/komunitas terbaik tapi termahal, Bantul = lingkungan tenang, Gunungkidul = termurah+paling tenang tapi internet/komunitas terlemah, dst).
+
+**Hasil default (semua sinyal Medium/Flexible) per persona** — diverifikasi nyata lewat Playwright ke `/result`, bukan cuma simulasi:
+- Tech Professional → **Sleman** 74.1/100
+- Creative Professional → **Bantul** 74.2/100
+- Student & Fresh Graduate → **Bantul** 72.9/100 (tapi lihat di bawah)
+- Digital Nomad → **Sleman** 73.0/100
+
+**Bukti sensitivitas sinyal (bukan cuma persona)** — Student & Fresh Graduate dengan Internet Priority **Low** + Community Priority **Low** + Environment **Quiet** → pemenang berubah jadi **Gunungkidul** 77.1/100 (bukan Bantul lagi). Ini membuktikan jawaban lain di quiz, bukan cuma persona, memengaruhi hasil — sesuai yang diminta user.
+
+**Reference case resmi CLAUDE.md §5.4 ikut diperbarui** (angka lama 79.2/77.4/72.1 dari data lama, sekarang 74.9/73.6/68.8 dari data baru — narasi tetap sama, Sleman tetap Best Match untuk Tech Professional + Internet High + Community Medium + Environment Cafe, cuma angka mentahnya berubah karena datanya berubah). File yang ikut disinkronkan: `CLAUDE.md` §5.4, `PROJECT_SUMMARY.md` §4.5, dan contoh angka hardcode di hero landing (`app/page.tsx`, "Contoh: Sleman 79.2/100" → "74.9/100"). Dokumen historis (`RIWAYAT_PENGERJAAN.md` entri lama, `GSD/`, `Tahapan/`) SENGAJA tidak diubah — itu catatan riwayat apa yang terjadi saat itu, bukan spek hidup.
+
+**Verifikasi:** `tsc --noEmit` bersih. Playwright screenshot 6 skenario (`/result` dengan query param berbeda) mengonfirmasi pemenang sesuai simulasi persis, termasuk kasus sensitivitas sinyal Student di atas.
+
+---
+
+### 2026-07-06 lanjutan — Rebuild total halaman Admin mengikuti referensi `admin-dashboard.html`
+
+**Konteks:** User minta halaman admin dibangun ulang persis seperti mockup referensi (`Referensi ui/html ui/admin-dashboard.html` + gambar ChatGPT terkait). Mockup itu ternyata punya sidebar jauh lebih luas dari fitur nyata (Persona, FAQ, Banner, Testimoni, Pengguna, Pengaturan, Riwayat Quiz, Konten Halaman — semua tidak ada implementasinya). Diklarifikasi dulu via AskUserQuestion: user pilih **visual saja untuk fitur yang sudah ada**, sisanya TIDAK ditampilkan dulu (bukan ditampilkan sebagai "segera hadir"), disimpan sebagai catatan untuk nanti kalau ditambah beneran.
+
+**Token warna & font baru, scoped khusus admin:** `.admin-theme` di `globals.css` — token `--a-*` (bg krem `#f4f2f0`, red `#e0263c`, dst.) persis nilai hex di referensi, TIDAK bercampur dengan token publik `--sawah`/`--paper` (admin sengaja punya identitas visual "tool" sendiri, beda dari halaman publik — ini pola umum, bukan inkonsistensi). Font **Plus Jakarta Sans** (`next/font/google`) di-scope ke `.admin-theme` saja lewat `AdminLayout`, tidak mengubah Geist Sans/Mono di halaman publik.
+
+**Sidebar & topbar dirombak** (`app/admin/layout.tsx`): nav dipangkas jadi HANYA link yang beneran ada halamannya — Dashboard, Beranda Website (`/`), Lihat Hasil Rekomendasi (`/result`), lalu section "Data & Evaluasi": Data Distrik, Log Aktivitas. Master Data/Konten/Sistem-Pengguna-Pengaturan dari mockup SENGAJA dihilangkan total (bukan disembunyikan doang, memang tidak dirender). Topbar baru: kotak cari (nyata — filter live, lihat di bawah), date pill (tanggal hari ini beneran, bukan hardcode), user dropdown (avatar+nama dari session asli, tombol Keluar = logout sungguhan). Tombol "Muat Ulang Data" di sidebar = reload halaman sungguhan (refresh data terbaru dari DB).
+
+**Fitur baru — search real, bukan dekorasi:** `contexts/AdminSearchContext.tsx`, query dibagi lewat context (bukan URL param, supaya sederhana) — dipakai di Dashboard (filter tabel Data Distrik), `/admin/data` (filter kartu distrik yang tampil), `/admin/audit` (filter baris log by nama distrik/indikator). Ketik "sleman" beneran memfilter data asli di ketiga halaman itu.
+
+**Dashboard (`app/admin/page.tsx`) dirombak total, SEMUA data real:**
+- Hero: foto asli Kota Yogyakarta (bukan ilustrasi SVG mockup), greeting pakai `state.username` sungguhan.
+- 4 stat card (mockup punya 5, "Total Quiz 1.248" DIHAPUS karena tidak ada persisted quiz history di V1 — lihat CLAUDE.md §2 efemeral): Total Distrik, Total Indikator, Rata-rata Skor (dihitung live dari semua skor), Terakhir Diperbarui (real, dari `updatedAt` terbaru).
+- "Ringkasan Skor Distrik": ranking real by rata-rata skor, foto distrik asli sebagai thumbnail (bukan SVG ilustrasi), badge "TERTINGGI" (bukan "Best Match" — dihindari klaim persona-spesifik di konteks non-quiz).
+- "Bobot Indikator per Persona" — mockup nunjukin 1 set bobot seolah "bobot saat ini" (padahal bobot beda per 4 persona, kalau ditampilkan rata bisa menyesatkan). Diganti jadi panel dengan **tab switcher 4 persona** (reuse `BASE_WEIGHTS` dari `lib/scoring/weights.ts`, data yang sama dipakai quiz sungguhan), jadi akurat, bukan angka fiktif.
+- "Aktivitas Terbaru": 5 entri Audit Log asli (hook baru `useAuditLog`, dipakai bareng Dashboard preview & halaman Audit penuh — no duplikasi CLAUDE.md §15.10), BUKAN "Login ke sistem"/"FAQ baru" fiktif dari mockup.
+- "Riwayat Quiz Terbaru" dari mockup **DIHAPUS TOTAL** — tidak ada data quiz history tersimpan di V1 (ephemeral by design, §2).
+- "Data Distrik" tabel: foto asli, hanya tombol Edit (bukan Edit+Hapus — hapus distrik bukan fitur nyata, 5 distrik itu fixed).
+- "Menu Cepat": cuma 4 tile yang link ke halaman sungguhan (Data Distrik, Log Aktivitas, Lihat Hasil, Beranda) — mockup punya 8 tile, setengahnya ke fitur fiktif.
+
+**Bug nyata ditemukan & diperbaiki saat rebuild Audit Log:** `app/admin/audit/page.tsx` sebelumnya pakai field `entry.oldValue`/`entry.newValue` di interface TypeScript-nya, padahal API `/api/admin/audit` (dan schema Prisma) beneran mengembalikan `nilaiLama`/`nilaiBaru` — field yang dipakai frontend TIDAK PERNAH COCOK sejak awal, jadi kolom "Nilai Lama"/"Nilai Baru" selalu tampil `undefined` di produksi. Diperbaiki jadi baca field yang benar.
+
+**Bug lingkungan (bukan kode) ditemukan saat testing:** setelah nambah `.admin-theme` block ke `globals.css`, dev server (yang sudah jalan dari sesi sebelumnya) tidak mem-parse ulang rule barunya — hasilnya semua `bg-[var(--a-red)]` dkk resolve ke transparent (variabel CSS kosong), bikin tombol/logo/ikon jadi putih-di-atas-putih alias "hilang". Root cause: cache Turbopack basi. Fix: hapus folder `.next` + restart dev server dari nol.
+
+**Verifikasi:** `tsc --noEmit` bersih, `eslint` 0 error baru (1 error pre-existing di `admin/data/page.tsx` setState-in-effect tetap ada, sengaja tidak disentuh — sama seperti sesi-sesi sebelumnya). `npm run build` sukses 20 routes. Login end-to-end via Playwright (isi form sungguhan, bukan skip auth), screenshot Dashboard/Data Distrik/Log Aktivitas/Login (desktop+mobile) — semua cocok sangat dekat dengan referensi. Fitur interaktif dites nyata: search "sleman" beneran memfilter, tab persona "Creative" beneran ganti ke 20/25/25/30%, tombol Keluar beneran logout & redirect ke `/admin/login`.
+
+---
+
 ### 2026-07-06 — Survei Relevance Score: persist ke database (sebelumnya efemeral)
 
 **Konteks:** Sesi 2026-06-27, `RelevanceSurvey.tsx` sengaja dibuat efemeral dulu ("buat sementara dulu, nanti kalau fix baru simpan ke DB"). Sekarang dilanjutkan.

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useRef, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowLeft, ArrowRight, Loader2, Check, Users, Wallet, Wifi, Handshake, Leaf,
   Laptop, Palette, GraduationCap, Globe,
@@ -18,6 +18,57 @@ import { EnvironmentPreferenceSelect } from "@/components/quiz/EnvironmentPrefer
 import { WeightBarChart } from "@/components/quiz/WeightBarChart";
 import { FormulaExample } from "@/components/quiz/FormulaExample";
 import { cn } from "@/lib/utils";
+import type { QuizInput } from "@/types/quiz";
+import type { PersonaId } from "@/types/persona";
+
+const VALID_PERSONAS: PersonaId[] = [
+  "tech-professional", "creative-professional", "student-fresh-graduate", "digital-nomad",
+];
+const VALID_INTERNET: QuizInput["internetPriority"][] = ["low", "medium", "high", "ultra"];
+const VALID_COMMUNITY: QuizInput["communityPriority"][] = ["low", "medium", "high"];
+const VALID_ENVIRONMENT: QuizInput["environmentPreference"][] = ["quiet", "cafe", "coworking", "flexible"];
+
+// Baca state quiz dari query URL (kalau ada) — dipasangkan dengan efek
+// router.replace di bawah supaya URL /quiz SELALU mencerminkan input
+// terakhir. Tanpa ini, pencet Back dari /result balik ke /quiz kosong
+// (Step 1, persona belum dipilih) — melanggar PRD §6.1 edge case "Back
+// browser setelah lihat hasil: pertahankan state quiz, jangan mengulang
+// dari awal".
+function readInitialInput(params: URLSearchParams): Partial<QuizInput> {
+  // PENTING: jangan pernah masukkan key dengan value `undefined` ke object
+  // ini. useQuizState menggabungkannya lewat `{ ...DEFAULTS, ...initial }` —
+  // kalau key-nya ADA (walau valuenya undefined), spread tetap menimpa
+  // DEFAULTS jadi undefined juga, bikin quiz.completeInput selalu null.
+  const result: Partial<QuizInput> = {};
+
+  const persona = params.get("persona");
+  if (VALID_PERSONAS.includes(persona as PersonaId)) {
+    result.personaId = persona as PersonaId;
+  }
+
+  const budgetRaw = params.get("budget");
+  const budget = budgetRaw ? Number(budgetRaw) : NaN;
+  if (Number.isFinite(budget) && budget >= 2_000_000 && budget <= 6_500_000) {
+    result.budget = budget;
+  }
+
+  const internet = params.get("internet");
+  if (VALID_INTERNET.includes(internet as QuizInput["internetPriority"])) {
+    result.internetPriority = internet as QuizInput["internetPriority"];
+  }
+
+  const community = params.get("community");
+  if (VALID_COMMUNITY.includes(community as QuizInput["communityPriority"])) {
+    result.communityPriority = community as QuizInput["communityPriority"];
+  }
+
+  const environment = params.get("environment");
+  if (VALID_ENVIRONMENT.includes(environment as QuizInput["environmentPreference"])) {
+    result.environmentPreference = environment as QuizInput["environmentPreference"];
+  }
+
+  return result;
+}
 
 const PERSONA_NAMES: Record<string, string> = {
   "tech-professional": "Tech Professional",
@@ -79,9 +130,10 @@ function QuestionCard({
   );
 }
 
-export default function QuizPage() {
+function QuizContent() {
   const router = useRouter();
-  const quiz = useQuizState();
+  const searchParams = useSearchParams();
+  const quiz = useQuizState(readInitialInput(searchParams));
   const [isCalculating, setIsCalculating] = useState(false);
   const [calcStep, setCalcStep] = useState(0);
   const timeoutRefs = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -92,6 +144,29 @@ export default function QuizPage() {
       timeoutRefs.current.forEach(clearTimeout);
     };
   }, []);
+
+  // Cerminkan input quiz saat ini ke URL /quiz lewat router.replace (BUKAN
+  // push — tidak menambah entri history baru). Begini, saat "Find My Best
+  // Region" nanti push ke /result, entri /quiz di history sudah membawa
+  // input terakhir user, jadi tombol Back browser balik ke Step 1 yang
+  // TERISI, bukan kosong (PRD §6.1 edge case).
+  useEffect(() => {
+    const p = new URLSearchParams();
+    if (quiz.input.personaId) p.set("persona", quiz.input.personaId);
+    if (quiz.input.budget !== undefined) p.set("budget", String(quiz.input.budget));
+    if (quiz.input.internetPriority) p.set("internet", quiz.input.internetPriority);
+    if (quiz.input.communityPriority) p.set("community", quiz.input.communityPriority);
+    if (quiz.input.environmentPreference) p.set("environment", quiz.input.environmentPreference);
+    const qs = p.toString();
+    router.replace(qs ? `/quiz?${qs}` : "/quiz", { scroll: false });
+  }, [
+    quiz.input.personaId,
+    quiz.input.budget,
+    quiz.input.internetPriority,
+    quiz.input.communityPriority,
+    quiz.input.environmentPreference,
+    router,
+  ]);
 
   const adjustedWeights =
     quiz.completeInput
@@ -413,5 +488,13 @@ export default function QuizPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function QuizPage() {
+  return (
+    <Suspense fallback={null}>
+      <QuizContent />
+    </Suspense>
   );
 }

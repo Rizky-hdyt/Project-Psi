@@ -126,6 +126,39 @@
   --sidebar-ring: #DC2340;
 }
 
+/* ============================================================
+   Admin theme — token TERPISAH, cuma berlaku di dalam .admin-theme
+   (dibungkus di app/admin/layout.tsx). Meniru persis referensi
+   `Referensi ui/html ui/admin-dashboard.html` — identitas "tool"
+   yang sengaja beda dari halaman publik (bukan salah, admin panel
+   internal wajar punya visual language sendiri). Nama var pakai
+   prefix --a- supaya tidak bentrok dengan token publik di atas.
+   ============================================================ */
+.admin-theme {
+  --a-bg: #f4f2f0;
+  --a-card: #ffffff;
+  --a-ink: #191d27;
+  --a-ink-2: #3d4351;
+  --a-muted: #7c8291;
+  --a-faint: #9aa0ad;
+  --a-line: #eceef2;
+  --a-line-2: #e3e6ec;
+  --a-red: #e0263c;
+  --a-red-dark: #c31b30;
+  --a-red-soft: #fdedef;
+  --a-red-border: #f8d3d9;
+  --a-green: #149646;
+  --a-green-soft: #e9f7ee;
+  --a-orange: #ea7317;
+  --a-orange-soft: #fdf1e4;
+  --a-amber: #e9a20c;
+  --a-amber-soft: #fdf5df;
+  --a-blue: #2f6fe4;
+  --a-blue-soft: #eaf1fd;
+  --a-purple: #7c4fe0;
+  --a-purple-soft: #f1ecfc;
+}
+
 /* V1 tidak ada dark mode toggle — token disiapkan untuk masa depan */
 .dark {
   --background: #0B0C0E;

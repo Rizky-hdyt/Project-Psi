@@ -196,9 +196,9 @@ base_weight(persona) → terapkan adjustment dari 4 sinyal → renormalisasi (Σ
 → Why This Match (FR-012): ambil 2 kontribusi tertinggi (nilai_i × bobot_i'), generate teks trade-off
 ```
 
-**Unit test reference case** (dari Dok 1 §9, harus match persis): Tech Professional, Internet High, Community Medium, Environment Cafe →
+**Unit test reference case** (dari Dok 1 §9, harus match persis — diperbarui 2026-07-06 setelah rebalance data seed, lihat RIWAYAT_PENGERJAAN.md): Tech Professional, Internet High, Community Medium, Environment Cafe →
 - bobot': Internet 0.444, Cost 0.214, Community 0.171, Environment 0.171
-- Sleman = 79.2 (Best Match), Kota Yogyakarta = 77.4, Bantul = 72.1
+- Sleman = 74.9 (Best Match), Kota Yogyakarta = 73.6, Bantul = 68.8
 
 ### 5.5 Kapan kalkulasi & real-time update terjadi
 - Quiz Step 1 (FR-001–005): isi input, **belum ada kalkulasi skor**.

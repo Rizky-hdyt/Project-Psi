@@ -88,10 +88,10 @@ base_weight(persona) → adjustment 4 sinyal → renormalisasi (Σ = 1)
 → Why This Match: 2 kontribusi tertinggi + teks trade-off
 ```
 
-### 4.5 Reference case (sudah diverifikasi match persis)
+### 4.5 Reference case (sudah diverifikasi match persis; angka diperbarui 2026-07-06 setelah rebalance data seed)
 Input: Tech Professional, Internet High, Community Medium, Environment Cafe →
 - Bobot': Internet 0.444 / Cost 0.214 / Community 0.171 / Environment 0.171
-- Hasil: **Sleman 79.2 (Best Match)**, Kota Yogyakarta 77.4, Bantul 72.1
+- Hasil: **Sleman 74.9 (Best Match)**, Kota Yogyakarta 73.6, Bantul 68.8
 
 ---
 

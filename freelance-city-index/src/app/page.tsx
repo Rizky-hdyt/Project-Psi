@@ -162,10 +162,10 @@ export default function LandingPage() {
                       <Quote className="h-3.5 w-3.5 shrink-0 text-sawah" />
                       <span className="text-xs font-medium text-ink">Contoh: Sleman</span>
                     </div>
-                    <span className="font-mono text-sm font-bold text-positive">79.2<span className="text-[10px] font-normal text-muted-foreground">/100</span></span>
+                    <span className="font-mono text-sm font-bold text-positive">74.9<span className="text-[10px] font-normal text-muted-foreground">/100</span></span>
                   </div>
                   <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-line">
-                    <div className="h-full rounded-full bg-positive" style={{ width: "79%" }} />
+                    <div className="h-full rounded-full bg-positive" style={{ width: "75%" }} />
                   </div>
                   <Link
                     href="/quiz"
