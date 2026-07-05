@@ -14,6 +14,35 @@
 
 ---
 
+### 2026-07-06 lanjutan 7 — Fix PillNavbar "kepotong" di layar sempit + efek glass
+
+**Konteks:** Setelah Landing & Quiz pindah ke `PillNavbar` (lanjutan 6), user lapor heading/header terlihat "kepotong" di layar sempit, dan minta navbar dibuat transparan seperti glass.
+
+**Root cause "kepotong":** `PillNavbar` pakai `@container` query untuk sembunyikan teks brand (`@[420px]`) dan link navigasi (`@[560px]`) di lebar sempit — TAPI tidak ada pengganti (hamburger/menu) sama sekali. Hasilnya di mobile: cuma logo "F" di kiri dan tombol "Mulai" di kanan, dengan celah kosong besar di tengah — kelihatan seperti navbar yang rusak/terpotong, dan navigasi (Cara Kerja/Indikator/Distrik) jadi TIDAK BISA DIAKSES SAMA SEKALI di layar sempit (regresi fungsional nyata, bukan cuma kosmetik).
+
+**Fix:**
+- Tambah tombol hamburger (`@[560px]:hidden`, jadi cuma muncul saat link disembunyikan) yang membuka dropdown berisi semua nav link + CTA "Mulai" — mengembalikan akses navigasi penuh di mobile.
+- Background `PillNavbar` diganti dari solid `bg-white` jadi glass: `bg-white/70 backdrop-blur-xl border border-white/50` — konten di belakangnya (foto hero, dsb) terlihat blur transparan mengikuti pola `GlassNavbar` lama.
+
+**Verifikasi:** Playwright screenshot 3 breakpoint (desktop 1440/tablet 768/mobile 375) untuk Landing & Quiz — mobile sekarang tampil ikon hamburger (bukan celah kosong), diklik → dropdown muncul dengan 4 link + CTA, aktif-state "Beranda" ke-highlight benar. Efek glass terlihat jelas (konten di belakang pill blur transparan) di semua breakpoint. `tsc`, `eslint`, `npm run build` (22 routes) bersih.
+
+---
+
+### 2026-07-06 lanjutan 6 — Satukan navbar Landing & Quiz jadi PillNavbar (sama seperti Result)
+
+**Permintaan user:** navbar di Landing dan Quiz dibuat sama seperti navbar di halaman Result.
+
+**Perubahan:**
+- `app/page.tsx` (Landing) — `GlassNavbar` (sticky full-width, glass background) diganti `PillNavbar` (dibungkus `sticky top-2 z-50 mx-auto max-w-[1220px]`, supaya melayang mirip Result tapi tetap sticky — Result sendiri tidak sticky karena scroll di dalam panel, Landing/Quiz scroll penuh halaman jadi sticky lebih masuk akal untuk UX).
+- `app/quiz/page.tsx` — `Navbar showStartQuiz={false}` (dipakai 2 tempat: state `isCalculating` & state normal) diganti `PillNavbar` dengan pembungkus sticky yang sama.
+- `components/shared/PillNavbar.tsx` — tambah logic sembunyikan CTA "Mulai" otomatis kalau `pathname` diawali `/quiz` (menggantikan prop `showStartQuiz={false}` yang dulu ada di `Navbar` lama — supaya tidak menawarkan "mulai quiz" saat user sudah di dalam quiz itu sendiri).
+- `components/landing/GlassNavbar.tsx` **dihapus** — sudah tidak dipakai di mana pun setelah landing berpindah ke `PillNavbar`.
+- `components/shared/Navbar.tsx` (lama) sengaja TIDAK dihapus — masih dipakai `/algoritma` dan halaman 404, di luar scope permintaan ini (cuma Landing & Quiz yang diminta).
+
+**Verifikasi:** Playwright screenshot Landing (termasuk cek sticky saat di-scroll 1500px, navbar tetap di atas), Quiz Step 1 (CTA "Mulai" dicek terhitung 0 di navbar), dan Quiz state "Menghitung hasil" — ketiganya tampil pill navbar identik dengan Result. `tsc`, `eslint`, `npm run build` (22 routes) bersih.
+
+---
+
 ### 2026-07-06 lanjutan 5 — Pindahkan link "Admin" dari navbar ke footer di semua halaman publik
 
 **Permintaan user:** hilangkan "Admin" dari navbar di semua halaman, akses ke panel admin cukup lewat footer — meniru pola yang sudah ada di landing page (`LandingFooter.tsx` sudah punya link Admin di footer sejak awal).

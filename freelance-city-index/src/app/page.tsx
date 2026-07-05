@@ -3,7 +3,7 @@ import {
   ArrowRight, CheckCircle2, ChevronDown, Wifi, Wallet, Users, Leaf, Quote,
   Target, BarChart3, Compass, ClipboardEdit, Calculator, ListOrdered, Eye,
 } from "lucide-react";
-import { GlassNavbar } from "@/components/landing/GlassNavbar";
+import { PillNavbar } from "@/components/shared/PillNavbar";
 import { AmbientBackground } from "@/components/shared/AmbientBackground";
 import { LandingFooter } from "@/components/landing/LandingFooter";
 import { HeroBackgroundSlideshow } from "@/components/landing/HeroBackgroundSlideshow";
@@ -61,7 +61,9 @@ export default function LandingPage() {
   return (
     <main className="relative flex-1">
       <AmbientBackground />
-      <GlassNavbar />
+      <div className="sticky top-2 z-50 mx-auto max-w-[1220px] px-2 sm:top-4 sm:px-4">
+        <PillNavbar />
+      </div>
 
       {/* ── SECTION 2: Hero ──────────────────────────────────────────── */}
       <section id="beranda" className="relative isolate overflow-hidden">
