@@ -14,6 +14,22 @@
 
 ---
 
+### 2026-07-06 — Survei Relevance Score: persist ke database (sebelumnya efemeral)
+
+**Konteks:** Sesi 2026-06-27, `RelevanceSurvey.tsx` sengaja dibuat efemeral dulu ("buat sementara dulu, nanti kalau fix baru simpan ke DB"). Sekarang dilanjutkan.
+
+**Schema:** tambah model `Survey` di `prisma/schema.prisma` (`relevansi` & `kemudahan` Int 1–5, `komentar` & `personaId` opsional, `createdAt` default now). Migration `20260705172336_add_survey` diterapkan ke Neon via `prisma migrate dev`.
+
+**API baru:** `POST /api/survey` (`src/app/api/survey/route.ts`) — publik tanpa auth (survei anonim), validasi `relevansi`/`kemudahan` harus integer 1–5, `personaId` divalidasi terhadap 4 id persona baku kalau diisi, `komentar` di-trim & dipotong maks 300 karakter.
+
+**Frontend:** `persistResponse()` di `RelevanceSurvey.tsx` (sebelumnya `TODO(db)` kosong) sekarang `fetch("/api/survey", ...)` sungguhan. Kegagalan network sengaja tidak menghalangi UX "Terima kasih" tampil (survei suplemen, bukan alur inti — §2 nilai produk tetap utuh).
+
+**Bug operasional ditemukan saat testing:** endpoint sempat 500 terus-menerus meski migration sudah sukses — root cause: dev server yang sedang jalan masih pegang instance `PrismaClient` lama (singleton di `lib/db.ts` sengaja di-cache di `globalForPrisma` untuk hindari koneksi berlebih saat Fast Refresh), jadi model `Survey` baru tidak dikenali sampai proses di-restart total (regenerate client + reload module saja tidak cukup). Pelajaran: restart dev server wajib setelah `prisma migrate` menambah model baru, tidak cukup andalkan Fast Refresh.
+
+**Verifikasi:** `tsc`, `eslint`, `npm run build` (20 routes) bersih. Tes langsung via curl: submit valid → 201 + id tersimpan, validasi gagal (relevansi di luar 1–5) → 400. Playwright dicek popup survei muncul otomatis di `/result` tanpa console error.
+
+---
+
 ### 2026-07-05 lanjutan 14 — Fix bug: foto hero & foto 5 distrik tidak muncul di versi live Vercel
 
 **Konteks:** Setelah push commit `de01985`, dicek langsung di versi live (https://project-psi-gamma.vercel.app/) — foto Tugu Jogja di hero landing & foto landmark di kartu ranking distrik hilang total (cuma gradasi ambient polos), padahal di `npm run dev` lokal semuanya normal.

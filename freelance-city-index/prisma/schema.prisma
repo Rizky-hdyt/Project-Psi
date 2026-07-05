@@ -43,3 +43,12 @@ model AuditLog {
   createdAt   DateTime @default(now())
   district    District @relation(fields: [districtId], references: [id])
 }
+
+model Survey {
+  id        String   @id @default(cuid())
+  relevansi Int
+  kemudahan Int
+  komentar  String?
+  personaId String?
+  createdAt DateTime @default(now())
+}

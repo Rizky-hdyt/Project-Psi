@@ -14,9 +14,23 @@ export interface SurveyResponse {
   createdAt: string; // ISO
 }
 
-// TODO(db): ganti dengan `await fetch("/api/survey", { method: "POST", body: JSON.stringify(r) })`
-async function persistResponse(_r: SurveyResponse): Promise<void> {
-  // Sengaja kosong di V1, jawaban tidak disimpan.
+async function persistResponse(r: SurveyResponse): Promise<void> {
+  try {
+    await fetch("/api/survey", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        relevansi: r.relevansi,
+        kemudahan: r.kemudahan,
+        komentar: r.komentar,
+        personaId: r.personaId,
+      }),
+    });
+  } catch {
+    // Gagal simpan tidak menghalangi UX "terima kasih" — survei ini
+    // suplemen pengukuran, bukan alur inti (§2 nilai produk tetap utuh
+    // walau submit gagal karena jaringan).
+  }
 }
 
 function RatingRow({
