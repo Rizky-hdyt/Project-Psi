@@ -10,9 +10,23 @@
 
 > Urutan terbaru di atas.
 
+> **Status commit:** entri 2026-07-05 (identitas "Crimson/Paper", lanjutan 4–13) sudah masuk **commit `de01985`**. Entri 2026-07-03 dan 2026-07-04 (Field Notes/biru/Terracotta/Almanac/TerraNova) masih bertanda "BELUM DI-COMMIT" tapi sebenarnya sudah tidak relevan untuk di-commit — semua sudah tertimpa oleh iterasi berikutnya di working tree sebelum sempat di-commit sendiri-sendiri, jadi kodenya sudah tidak ada lagi untuk di-commit. Entri itu dibiarkan sebagai riwayat evolusi desain saja.
+
 ---
 
-### 2026-07-05 lanjutan 13 — Panel "page frame" jadi glass/frosted, fix section Algoritma yang solid nutup ambient — BELUM DI-COMMIT
+### 2026-07-05 lanjutan 14 — Fix bug: foto hero & foto 5 distrik tidak muncul di versi live Vercel
+
+**Konteks:** Setelah push commit `de01985`, dicek langsung di versi live (https://project-psi-gamma.vercel.app/) — foto Tugu Jogja di hero landing & foto landmark di kartu ranking distrik hilang total (cuma gradasi ambient polos), padahal di `npm run dev` lokal semuanya normal.
+
+**Root cause:** `.gitignore` root punya aturan blanket `*.jpeg`/`*.jpg`/`*.png` (dimaksudkan untuk blokir screenshot/referensi non-kode, sesuai commit `c160267` sesi 2026-06-28). Aturan ini ternyata ikut memblokir `freelance-city-index/public/images/**` — folder aset foto SUNGGUHAN yang dipakai aplikasi (hero-yogyakarta.jpeg, 5 foto hero/{id}.jpg, 5 foto districts/{id}.jpg, total 4.1MB). Akibatnya folder ini TIDAK PERNAH ter-commit sejak awal, jadi tidak ada di GitHub → Vercel build tidak punya file-nya sama sekali. Lolos tanpa ketahuan karena dev server lokal baca langsung dari disk, tidak lewat git.
+
+**Perbaikan:** tambah exception di `.gitignore` — `!freelance-city-index/public/images/**` setelah aturan blanket, supaya git kembali melacak folder ini tanpa perlu melonggarkan aturan blokir screenshot di tempat lain. 11 file foto (4.1MB) berhasil ditambahkan ke git untuk pertama kalinya.
+
+**Pelajaran:** kalau ada `.gitignore` blanket by-extension, selalu cek ulang apakah ada folder aset FUNGSIONAL (bukan cuma referensi) yang kena imbas — `git ls-files public/` vs isi folder asli di disk adalah cara cepat mendeteksi ini.
+
+---
+
+### 2026-07-05 lanjutan 13 — Panel "page frame" jadi glass/frosted, fix section Algoritma yang solid nutup ambient — ✅ SUDAH DI-COMMIT (commit de01985, 2026-07-05)
 
 **Konteks:** User perhatikan Result, District Detail, Compare, Assistant punya kasus yang sama seperti bug lama section "5 Distrik" di landing (lanjutan 11) — panel besar `bg-paper` solid menutup gradasi ambient sepenuhnya, cuma nyisa di margin tipis sekitar panel. Diminta ganti jadi gaya "glass"/"gelembung" (bukan cuma dihapus transparan polos, seperti fix landing dulu).
 
@@ -24,7 +38,7 @@
 
 ---
 
-### 2026-07-05 lanjutan 12 — Ambient background jadi kiri→kanan, dipasang di SEMUA halaman publik (bukan cuma landing) — BELUM DI-COMMIT
+### 2026-07-05 lanjutan 12 — Ambient background jadi kiri→kanan, dipasang di SEMUA halaman publik (bukan cuma landing) — ✅ SUDAH DI-COMMIT (commit de01985, 2026-07-05)
 
 **Konteks:** User minta arah gradasi `LandingBackground` diubah dari atas-bawah jadi kiri-ke-kanan, warna pekat di kiri memudar ke kanan tapi tetap kelihatan samar (bukan rata/flat). Setelah dicoba, muncul bug baru: warnanya cuma kelihatan di kiri lalu "hilang" mendadak sekitar tengah layar.
 
@@ -38,7 +52,7 @@
 
 ---
 
-### 2026-07-05 lanjutan 11 — Fix: section "5 Distrik" satu-satunya yang tidak nyambung dengan gradasi ambient — BELUM DI-COMMIT
+### 2026-07-05 lanjutan 11 — Fix: section "5 Distrik" satu-satunya yang tidak nyambung dengan gradasi ambient — ✅ SUDAH DI-COMMIT (commit de01985, 2026-07-05)
 
 **Konteks:** Lanjutan dari perbaikan `LandingBackground` sebelumnya. User perhatikan section "5 Distrik yang Dievaluasi" beda sendiri — pas discroll ke situ, gradasi ambient di baliknya langsung ilang/ketutup, padahal section lain (Why FCI, Cara Kerja, Indikator) semuanya konsisten membiarkan gradasi tetap kelihatan nyambung.
 
@@ -50,7 +64,7 @@
 
 ---
 
-### 2026-07-05 lanjutan 10 — LandingBackground: ganti foto redup jadi gradasi warna (hilangkan efek "bayangan gambar") — BELUM DI-COMMIT
+### 2026-07-05 lanjutan 10 — LandingBackground: ganti foto redup jadi gradasi warna (hilangkan efek "bayangan gambar") — ✅ SUDAH DI-COMMIT (commit de01985, 2026-07-05)
 
 **Konteks:** User nanya kenapa ada "bayangan dari gambar" pas scroll di landing page, khususnya di section "Mengapa Freelance City Index?" yang ditandai di screenshot. Jawabannya: section itu sendiri tidak punya background, yang bocor kelihatan adalah `LandingBackground` — komponen `fixed inset-0 -z-30` yang mount sekali di seluruh halaman, isinya foto `/images/hero-yogyakarta.jpeg` opacity 0.16 + gradient. Karena `fixed`, foto samar itu tetap kelihatan menembus di belakang section manapun yang backgroundnya tidak solid, sepanjang scroll.
 
@@ -62,7 +76,7 @@ User minta diganti jadi gradasi warna murni (bukan foto) meniru referensi (`Refe
 
 ---
 
-### 2026-07-05 lanjutan 9 — Samakan lebar page-frame di layar lebar (Result/District/Compare/Assistant) — BELUM DI-COMMIT
+### 2026-07-05 lanjutan 9 — Samakan lebar page-frame di layar lebar (Result/District/Compare/Assistant) — ✅ SUDAH DI-COMMIT (commit de01985, 2026-07-05)
 
 **Konteks:** User nanya kenapa lebar halaman Result, District Detail, Compare, dan Assistant beda-beda. Jawabannya: tiap halaman direstyle dari file referensi HTML yang beda (`hasil-rekomendasi.html`=1220px, `detail-distrik.html`=1480px, `bandingkan-distrik.html`=1180px), dan Assistant dibuat baru dengan angka sendiri (820px) — jadi lebar page-frame ikut nilai `.page { max-width }` di tiap file asalnya, bukan diseragamkan. User minta disamakan: **di layar lebar (laptop/monitor) semua harus sama lebarnya**, di HP tetap seperti biasa (responsive normal).
 
@@ -74,7 +88,7 @@ User minta diganti jadi gradasi warna murni (bukan foto) meniru referensi (`Refe
 
 ---
 
-### 2026-07-05 lanjutan 8 — FCI Assistant: panel docked di layar lebar (bukan cuma halaman penuh) — BELUM DI-COMMIT
+### 2026-07-05 lanjutan 8 — FCI Assistant: panel docked di layar lebar (bukan cuma halaman penuh) — ✅ SUDAH DI-COMMIT (commit de01985, 2026-07-05)
 
 **Konteks:** Revisi atas fitur FCI Assistant yang baru dibuat di entri sebelumnya. User kasih referensi gambar mockup awal (`Referensi ui/ui/ChatGPT Image 4 Jul 2026, 20.41.39.png`, gambar yang sejak awal jadi acuan rencana widget ini) yang menunjukkan chat muncul sebagai **panel di samping** halaman Result, bukan pindah halaman — tapi user juga sadar itu cuma masuk akal di layar lebar. Jadi diminta: **layar sempit (HP) tetap pindah ke halaman `/assistant`** (perilaku yang sudah ada), **layar lebar (laptop) klik tombol → muncul panel chat docked di samping kanan halaman**, tanpa reload/pindah halaman.
 
@@ -86,7 +100,7 @@ User minta diganti jadi gradasi warna murni (bukan foto) meniru referensi (`Refe
 
 ---
 
-### 2026-07-05 lanjutan 7 — Fitur baru: FCI Assistant (chatbot rule-based, tanpa API) — BELUM DI-COMMIT
+### 2026-07-05 lanjutan 7 — Fitur baru: FCI Assistant (chatbot rule-based, tanpa API) — ✅ SUDAH DI-COMMIT (commit de01985, 2026-07-05)
 
 **Konteks:** User minta fitur "chatbot asisten kayak AI tapi tanpa API" — ini merujuk ke rencana yang sudah disepakati sebelumnya (lihat entri "Crimson/Paper" di bawah): widget `FCIAssistantWidget.tsx` yang waktu itu cuma dibangun sebagai UI shell statis (percakapan contoh hardcode, input disabled), lalu sempat terlepas total dari halaman manapun saat Result page dirombak ikut `hasil-rekomendasi.html`. Sekarang diaktifkan sungguhan, TETAP tanpa panggilan API/LLM apa pun (CLAUDE.md §8: AI generatif eksplisit di luar scope V1 → V3) — jadi diimplementasikan sebagai **rule-based keyword matcher**, bukan model AI.
 
@@ -102,7 +116,7 @@ User minta diganti jadi gradasi warna murni (bukan foto) meniru referensi (`Refe
 
 ---
 
-### 2026-07-05 lanjutan 6 — Compare page dirombak ikut `bandingkan-distrik.html` — BELUM DI-COMMIT
+### 2026-07-05 lanjutan 6 — Compare page dirombak ikut `bandingkan-distrik.html` — ✅ SUDAH DI-COMMIT (commit de01985, 2026-07-05)
 
 **Konteks:** Referensi HTML ketiga di folder yang sama, `Referensi ui/html ui/bandingkan-distrik.html`, dipakai untuk merombak `/compare`. Sama seperti Result & District Detail, restyle total ikut warna/radius/struktur HTML sambil mempertahankan data flow yang sudah berfungsi.
 
@@ -118,7 +132,7 @@ User minta diganti jadi gradasi warna murni (bukan foto) meniru referensi (`Refe
 
 ---
 
-### 2026-07-05 lanjutan 5 — District Detail dirombak ikut `detail-distrik.html`, refinement Result page — BELUM DI-COMMIT
+### 2026-07-05 lanjutan 5 — District Detail dirombak ikut `detail-distrik.html`, refinement Result page — ✅ SUDAH DI-COMMIT (commit de01985, 2026-07-05)
 
 **Konteks:** Lanjutan dari referensi HTML asli — kali ini `Referensi ui/html ui/detail-distrik.html` untuk halaman District Detail, plus 2 putaran refinement kecil untuk Result page (ukuran kartu, lebar Best Match, panjang trade-off) berdasarkan screenshot beranotasi dari user.
 
@@ -149,7 +163,7 @@ Sempat coba tambah background ambient foto di level HALAMAN, tapi user koreksi: 
 
 ---
 
-### 2026-07-05 lanjutan 4 — Result page dirombak ikut `hasil-rekomendasi.html` (referensi kode asli) — BELUM DI-COMMIT
+### 2026-07-05 lanjutan 4 — Result page dirombak ikut `hasil-rekomendasi.html` (referensi kode asli) — ✅ SUDAH DI-COMMIT (commit de01985, 2026-07-05)
 
 **Konteks:** User kasih referensi baru berupa file HTML/CSS asli (`Referensi ui/html ui/hasil-rekomendasi.html`), bukan gambar mockup — jauh lebih presisi karena bisa dibaca exact hex/radius/struktur-nya. Minta Result page dibuat semirip mungkin, HANYA beda di foto (real photo dipertahankan, bukan ilustrasi SVG tangan seperti di file HTML — user konfirmasi via AskUserQuestion), dan section tambahan yang sebelumnya ditambah sesuai `Result_Page_Spec.md` (Kontribusi Indikator, Penjelasan Rekomendasi, Next Action Banner, Footer kaya) **dihapus lagi** karena tidak ada di HTML ini (user pilih "match HTML persis" atas 2 pertanyaan klarifikasi).
 
@@ -165,7 +179,7 @@ Sempat coba tambah background ambient foto di level HALAMAN, tapi user koreksi: 
 
 ---
 
-### 2026-07-05 — Complete UI Rebuild Mode: identitas "Crimson/Paper" berbasis 2 mockup referensi — BELUM DI-COMMIT
+### 2026-07-05 — Complete UI Rebuild Mode: identitas "Crimson/Paper" berbasis 2 mockup referensi — ✅ SUDAH DI-COMMIT (commit de01985, 2026-07-05)
 
 **Konteks:** User melampirkan 2 gambar referensi (`Referensi ui/ui/*.png`, hasil generate ChatGPT) dan minta semua halaman dibangun ulang mengikuti referensi tersebut sedekat mungkin ("sama persis") — memicu Complete UI Rebuild Mode (CLAUDE.md §0.2) menimpa identitas "Almanac" (terracotta/slate) dari sesi sebelumnya. Dua klarifikasi disepakati dulu sebelum eksekusi: (1) widget "FCI Assistant" (chatbot) di mockup dibangun **UI shell saja** — percakapan contoh statis, tidak terhubung API/LLM apa pun, karena AI generatif eksplisit di luar scope V1 (CLAUDE.md §8); user minta desainnya "disimpan" untuk dipakai saat fitur AI-nya benar-benar dibangun nanti; (2) halaman Admin (tidak ada di mockup) tetap ikut didesain ulang secara ekstrapolasi supaya satu identitas visual konsisten di seluruh app.
 

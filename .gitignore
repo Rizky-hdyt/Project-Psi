@@ -18,3 +18,6 @@ PANDUAN_KODE.md
 *.jpeg
 *.jpg
 *.png
+
+# Kecuali aset foto yang memang dipakai aplikasi (bukan referensi/screenshot)
+!freelance-city-index/public/images/**
