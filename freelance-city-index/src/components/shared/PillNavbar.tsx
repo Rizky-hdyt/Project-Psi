@@ -10,7 +10,6 @@ const NAV_LINKS = [
   { href: "/#cara-kerja", label: "Cara Kerja" },
   { href: "/#indikator", label: "Indikator" },
   { href: "/result", label: "Distrik" },
-  { href: "/admin/login", label: "Admin" },
 ];
 
 // Navbar pill mengambang — dipakai di Result & District Detail. Lebar yang

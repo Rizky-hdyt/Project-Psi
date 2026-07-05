@@ -14,6 +14,39 @@
 
 ---
 
+### 2026-07-06 lanjutan 5 — Pindahkan link "Admin" dari navbar ke footer di semua halaman publik
+
+**Permintaan user:** hilangkan "Admin" dari navbar di semua halaman, akses ke panel admin cukup lewat footer — meniru pola yang sudah ada di landing page (`LandingFooter.tsx` sudah punya link Admin di footer sejak awal).
+
+**Perubahan:**
+- `components/shared/Navbar.tsx` (dipakai Quiz, Algoritma, 404) — hapus entri "Admin" dari array `links` + hapus cabang `isActive` khusus admin yang jadi mati.
+- `components/shared/PillNavbar.tsx` (dipakai Result, District Detail, Compare, Assistant) — hapus entri "Admin" dari `NAV_LINKS`.
+- `components/shared/Footer.tsx` (dipakai lewat `ConditionalFooter` di Quiz/Algoritma/District/Compare/Assistant/404) — tambah link "Admin" di sisi kanan, sejajar dengan teks sumber data.
+
+**Catatan jujur (bukan disembunyikan):** halaman **Result** (`/result`) sengaja tidak punya footer sama sekali sejak sesi rebuild sebelumnya (meniru persis `hasil-rekomendasi.html`). Karena PillNavbar-nya juga kehilangan link Admin di perubahan ini, **halaman Result sekarang tidak punya jalur ke Admin sama sekali** — user harus pindah ke halaman lain (Quiz/Distrik/dll) dulu untuk akses Admin. Tidak menambah footer ke Result karena itu mengubah keputusan desain yang sudah divalidasi sebelumnya; kalau user mau Result tetap punya akses admin, perlu keputusan eksplisit.
+
+**Verifikasi:** dicek programatis (Playwright) jumlah kemunculan teks "Admin" di elemen `<nav>` dan `<footer>` di 5 halaman (quiz, algoritma, result, compare, landing) — nav 0 di semua, footer 1 di semua KECUALI result (0, sesuai catatan di atas). `tsc`, `eslint`, `npm run build` (22 routes) bersih.
+
+---
+
+### 2026-07-06 lanjutan 4 — FCI Assistant: 5 chip saja, jeda jawaban 2 detik, tombol pindah ke kanan + ganti ikon
+
+**Permintaan user:** (1) chip pertanyaan template maksimal 5, (2) jawaban tidak instan — jeda 2 detik, (3) tombol trigger chat pindah ke kanan, (4) ganti ikon tombolnya.
+
+**1. Chip dibatasi 5:** `lib/assistant/qaBank.ts` — tambah `SUGGESTED_CHIP_IDS` (5 id: why-best, how-score, persona-diff, below-umk, change-input), dipakai `AssistantChat.tsx` untuk render chip. `QA_BANK` penuh (11 entri) TETAP dipakai oleh `matchQuestion()` untuk pencocokan kata kunci teks bebas — jadi pertanyaan soal indikator spesifik/tiebreaker tetap terjawab kalau diketik manual, cuma tidak muncul sebagai chip.
+
+**2. Jeda 2 detik + indikator "mengetik":** `AssistantChat.tsx` — `REPLY_DELAY_MS = 2000` (sebelumnya 250ms), tambah animasi 3 titik "sedang mengetik" selama jeda (supaya tidak terasa macet/diam), input & chip didisable selama jeda biar tidak dobel klik.
+
+**3 & 4. Tombol pindah kanan + ikon baru:** `AssistantDock.tsx` — ikon `MessageCircle` → `Bot` (lucide-react), posisi `left-6` → `right-6`.
+
+**Bug nyata ditemukan & diperbaiki saat verifikasi visual (bukan cuma baca kode):** setelah pindah ke kanan, tombolnya "hilang" — root cause: `AssistantDock` & `RelevanceSurvey` dirender di dalam panel ber-`backdrop-blur-2xl` (glass panel dari sesi sebelumnya). CSS `backdrop-filter` di ancestor manapun membuat elemen `position:fixed` di dalamnya ter-anchor ke ancestor itu, BUKAN ke viewport — jadi tombol yang seharusnya "fixed di bawah layar" malah nempel di bawah PANEL yang sangat tinggi (dibuktikan lewat `getBoundingClientRect()`: posisi asli `top:1025px` padahal viewport cuma 900px). Ini bug arsitektur nyata yang sudah ada sejak panel glass ditambahkan, baru ketahuan sekarang. **Fix:** `RelevanceSurvey` & `AssistantDock` di-portal ke `document.body` (`createPortal`, plus hook baru `useHasMounted` pakai `useSyncExternalStore` — bukan `useState`+`useEffect`, supaya tidak kena lint `react-hooks/set-state-in-effect`), melompati semua ancestor bermasalah.
+
+**Efek samping ditemukan sekaligus:** begitu assistant pindah ke kanan, jadi tabrakan dengan `RelevanceSurvey` yang juga fixed bottom-right (posisi lama assistant sengaja kiri justru untuk menghindari ini). Diselesaikan dengan menukar posisi: `RelevanceSurvey` sekarang bottom-LEFT, `AssistantDock` bottom-RIGHT — dua widget floating tidak lagi tumpang tindih.
+
+**Verifikasi nyata via Playwright:** `getBoundingClientRect()` tombol assistant sebelum fix (top:1025, offender: backdrop-filter blur(40px)) vs sesudah fix (top:748, offenders: kosong). Screenshot survey+assistant tampil bersamaan tanpa tumpang tindih. Klik chip → typing indicator muncul dalam 300ms → jawaban muncul di ~2.2 detik (sesuai target). `tsc`, `eslint`, `npm run build` (22 routes) bersih.
+
+---
+
 ### 2026-07-06 lanjutan 3 — Perbaiki 3 celah PRD (403 admin, optimistic locking, back-button quiz state)
 
 **Konteks:** Baca ulang isi asli `files/PRD_Revised_v2.1.docx` (bukan cuma ringkasan CLAUDE.md) untuk audit kepatuhan penuh. Ketemu 3 requirement di §6 (User Workflows — Decision Points & Edge Cases) yang belum terpenuhi.

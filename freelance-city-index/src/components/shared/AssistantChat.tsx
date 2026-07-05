@@ -2,7 +2,19 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Send, Sparkles, X } from "lucide-react";
-import { QA_BANK, matchQuestion, FALLBACK_ANSWER, type AssistantContext } from "@/lib/assistant/qaBank";
+import {
+  QA_BANK,
+  SUGGESTED_CHIP_IDS,
+  matchQuestion,
+  FALLBACK_ANSWER,
+  type AssistantContext,
+} from "@/lib/assistant/qaBank";
+
+const SUGGESTED_CHIPS = SUGGESTED_CHIP_IDS.map((id) => QA_BANK.find((e) => e.id === id)!);
+
+// Jeda sebelum jawaban muncul — meniru asisten yang "berpikir dulu", bukan
+// jawaban instan yang terasa kaku/robotik.
+const REPLY_DELAY_MS = 2000;
 import { cn } from "@/lib/utils";
 
 interface Message {
@@ -28,27 +40,32 @@ export function AssistantChat({ ctx, onClose, className }: Props) {
   ]);
   const [input, setInput] = useState("");
   const [askedIds, setAskedIds] = useState<Set<string>>(new Set());
+  const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages]);
+  }, [messages, isTyping]);
 
   function respond(question: string) {
     setMessages((prev) => [...prev, { role: "user", text: question }]);
     const matched = ctx ? matchQuestion(question) : null;
     const answerText = matched ? matched.answer(ctx!) : FALLBACK_ANSWER;
+    setIsTyping(true);
     window.setTimeout(() => {
+      setIsTyping(false);
       setMessages((prev) => [...prev, { role: "assistant", text: answerText }]);
-    }, 250);
+    }, REPLY_DELAY_MS);
   }
 
   function askChip(id: string, chipLabel: string) {
+    if (isTyping) return;
     setAskedIds((prev) => new Set(prev).add(id));
     respond(chipLabel);
   }
 
   function submitFreeText() {
+    if (isTyping) return;
     const trimmed = input.trim();
     if (!trimmed) return;
     respond(trimmed);
@@ -99,8 +116,17 @@ export function AssistantChat({ ctx, onClose, className }: Props) {
           </div>
         ))}
 
+        {isTyping && (
+          <div className="flex w-fit items-center gap-1 rounded-2xl bg-secondary px-4 py-3">
+            <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground [animation-delay:-0.3s]" />
+            <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground [animation-delay:-0.15s]" />
+            <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground" />
+          </div>
+        )}
+
         {ctx &&
-          QA_BANK.map((entry) =>
+          !isTyping &&
+          SUGGESTED_CHIPS.map((entry) =>
             askedIds.has(entry.id) ? null : (
               <button
                 key={entry.id}
@@ -130,15 +156,17 @@ export function AssistantChat({ ctx, onClose, className }: Props) {
             onKeyDown={(e) => {
               if (e.key === "Enter") submitFreeText();
             }}
+            disabled={isTyping}
             placeholder="Ketik pertanyaan Anda..."
             aria-label="Ketik pertanyaan untuk FCI Assistant"
-            className="min-w-0 flex-1 bg-transparent text-sm text-ink placeholder:text-muted-foreground focus:outline-none"
+            className="min-w-0 flex-1 bg-transparent text-sm text-ink placeholder:text-muted-foreground focus:outline-none disabled:opacity-50"
           />
           <button
             type="button"
             onClick={submitFreeText}
+            disabled={isTyping}
             aria-label="Kirim pertanyaan"
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sawah text-white transition-colors hover:bg-sawah/90"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sawah text-white transition-colors hover:bg-sawah/90 disabled:opacity-50"
           >
             <Send className="h-3.5 w-3.5" />
           </button>

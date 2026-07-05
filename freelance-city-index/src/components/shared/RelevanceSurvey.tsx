@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { CheckCircle2, X, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useHasMounted } from "@/hooks/useHasMounted";
 import type { QuizInput } from "@/types/quiz";
 
 export interface SurveyResponse {
@@ -83,6 +85,7 @@ export function RelevanceSurvey({
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [showKomentar, setShowKomentar] = useState(false);
+  const mounted = useHasMounted();
 
   // Muncul otomatis setelah 3.5 detik, user sudah sempat melihat hasil
   useEffect(() => {
@@ -114,12 +117,19 @@ export function RelevanceSurvey({
     setSubmitted(true);
   }
 
-  if (!visible) return null;
+  if (!mounted || !visible) return null;
 
-  return (
+  // Portal ke document.body: komponen ini dirender bertingkat-tingkat di
+  // dalam panel "glass" (backdrop-blur) di Result page. backdrop-filter di
+  // ancestor manapun membuat elemen `position:fixed` di dalamnya jadi
+  // ter-anchor ke ancestor itu (bukan viewport) — bug nyata yang bikin
+  // popup ini "fixed" ke bagian bawah PANEL, bukan bagian bawah LAYAR.
+  // Portal melompati semua ancestor itu sepenuhnya.
+
+  return createPortal(
     <div
       className={cn(
-        "fixed bottom-6 right-6 z-50 w-72 rounded-xl bg-white shadow-[0_4px_16px_rgba(15,23,42,0.12)]",
+        "fixed bottom-6 left-6 z-50 w-72 rounded-xl bg-white shadow-[0_4px_16px_rgba(15,23,42,0.12)]",
         "animate-in slide-in-from-bottom-4 fade-in duration-300"
       )}
       role="dialog"
@@ -218,6 +228,7 @@ export function RelevanceSurvey({
           </div>
         </div>
       )}
-    </div>
+    </div>,
+    document.body
   );
 }

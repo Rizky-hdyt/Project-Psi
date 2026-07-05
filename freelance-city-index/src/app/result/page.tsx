@@ -480,14 +480,16 @@ function ResultContent() {
         <ScoreComparisonTable ranked={ranked} districts={districts} />
       </div>
 
-      {/* Survey popup, fixed bottom-right, muncul otomatis setelah 3.5 detik */}
+      {/* Survey popup, fixed bottom-left, muncul otomatis setelah 3.5 detik —
+          sengaja di kiri supaya tidak numpuk dengan tombol FCI Assistant di
+          kanan-bawah. */}
       <RelevanceSurvey personaId={personaId} />
 
       {/* FCI Assistant — di layar sempit tombol navigasi ke /assistant, di
           layar lebar (lg:+) tombol membuka panel docked di kanan halaman
           (overlay, bukan reflow) supaya layout Result page yang sudah dibuat
-          semirip mungkin dengan HTML tetap utuh. Tombol trigger di bottom-left
-          supaya tidak ketutup RelevanceSurvey yang fixed bottom-right. */}
+          semirip mungkin dengan HTML tetap utuh. Tombol trigger di
+          kanan-bawah (bottom-6 right-6). */}
       <AssistantDock href={`/assistant?${quizParams}`} ctx={assistantCtx} />
 
       {/* Compare dialog */}

@@ -15,7 +15,6 @@ const links = [
   { href: "/#cara-kerja", label: "Cara Kerja" },
   { href: "/#indikator", label: "Indikator" },
   { href: "/result", label: "Distrik" },
-  { href: "/admin/login", label: "Admin" },
 ];
 
 export function Navbar({ showStartQuiz = true }: NavbarProps) {
@@ -28,9 +27,6 @@ export function Navbar({ showStartQuiz = true }: NavbarProps) {
     }
     if (href === "/result") {
       return pathname?.startsWith("/result") || pathname?.startsWith("/district");
-    }
-    if (href === "/admin/login") {
-      return pathname?.startsWith("/admin");
     }
     return pathname === href;
   }

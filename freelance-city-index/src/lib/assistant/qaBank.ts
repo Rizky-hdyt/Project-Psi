@@ -99,6 +99,18 @@ export const QA_BANK: QAEntry[] = [
   },
 ];
 
+// Chip saran cuma tampilkan 5 pertanyaan paling umum (biar tidak penuh),
+// tapi mesin pencocokan kata kunci (matchQuestion) tetap jalan untuk SEMUA
+// entri QA_BANK kalau user ketik bebas — jadi pertanyaan soal indikator
+// spesifik atau tiebreaker tetap terjawab walau tidak muncul sebagai chip.
+export const SUGGESTED_CHIP_IDS = [
+  "why-best",
+  "how-score",
+  "persona-diff",
+  "below-umk",
+  "change-input",
+];
+
 export const FALLBACK_ANSWER =
   "Maaf, saya belum bisa jawab itu — saat ini saya cuma bisa bantu jelaskan seputar rekomendasi, skor, indikator, dan algoritma FCI. Coba tanya pakai kata kunci lain, atau pilih salah satu contoh pertanyaan di atas.";
 

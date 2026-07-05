@@ -1,5 +1,9 @@
 import Link from "next/link";
 
+// Satu-satunya akses ke panel admin dari halaman publik (quiz/algoritma/
+// district/compare/assistant) — sengaja dipindah dari navbar ke footer,
+// meniru pola LandingFooter (CLAUDE.md: navbar untuk navigasi pengguna,
+// admin bukan bagian dari alur freelancer).
 export function Footer() {
   return (
     <footer className="border-t border-line bg-white">
@@ -7,9 +11,17 @@ export function Footer() {
         <Link href="/" className="w-fit text-xs text-muted-foreground transition-colors hover:text-ink">
           Freelance City Index <span className="text-muted-foreground/50">/ Yogyakarta Edition</span>
         </Link>
-        <p className="font-mono text-[11px] text-muted-foreground/60">
-          Data: BPS DIY, Diskominfo, UMK 2025
-        </p>
+        <div className="flex items-center gap-4">
+          <p className="font-mono text-[11px] text-muted-foreground/60">
+            Data: BPS DIY, Diskominfo, UMK 2025
+          </p>
+          <Link
+            href="/admin/login"
+            className="text-xs text-muted-foreground transition-colors hover:text-ink"
+          >
+            Admin
+          </Link>
+        </div>
       </div>
     </footer>
   );
