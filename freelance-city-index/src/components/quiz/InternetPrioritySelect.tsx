@@ -1,6 +1,6 @@
 "use client";
 
-import { Wifi } from "lucide-react";
+import { CheckSquare2 } from "lucide-react";
 import type { QuizInput } from "@/types/quiz";
 import { cn } from "@/lib/utils";
 
@@ -17,13 +17,11 @@ function SignalBars({ count, active }: { count: number; active: boolean }) {
       {[1, 2, 3, 4].map((bar) => (
         <div
           key={bar}
-          className="w-1 rounded-sm transition-all"
-          style={{
-            height: `${bar * 25}%`,
-            backgroundColor: bar <= count
-              ? (active ? "#fff" : "#0E7490")
-              : (active ? "rgba(255,255,255,0.3)" : "#E2E8F0"),
-          }}
+          className={cn(
+            "w-1 rounded-sm transition-colors duration-[180ms]",
+            bar <= count ? (active ? "bg-white" : "bg-ink") : (active ? "bg-white/30" : "bg-line")
+          )}
+          style={{ height: `${bar * 25}%` }}
         />
       ))}
     </div>
@@ -37,43 +35,34 @@ interface Props {
 
 export function InternetPrioritySelect({ value, onChange }: Props) {
   return (
-    <div>
-      <div className="mb-3 flex items-center gap-2">
-        <Wifi className="h-4 w-4 text-pesisir" />
-        <label className="text-sm font-semibold text-ink">
-          Seberapa penting internet cepat?
-        </label>
-      </div>
-      <div className="flex gap-2">
-        {OPTIONS.map((opt) => {
-          const isActive = value === opt.value;
-          return (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => onChange(opt.value)}
-              aria-pressed={isActive}
-              style={isActive ? {
-                backgroundColor: "#0E7490",
-                borderColor: "#0E7490",
-                boxShadow: "0 2px 8px rgba(14,116,144,0.35)",
-              } : undefined}
-              className={cn(
-                "flex min-h-[44px] flex-1 flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2.5 transition-all duration-200",
-                isActive
-                  ? "border-transparent text-white"
-                  : "border-line bg-white text-ink hover:border-pesisir/40 hover:shadow-sm"
-              )}
-            >
+    <div className="grid grid-cols-4 gap-2">
+      {OPTIONS.map((opt) => {
+        const isActive = value === opt.value;
+        return (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => onChange(opt.value)}
+            aria-pressed={isActive}
+            className={cn(
+              "flex min-h-11 flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2.5 transition-colors duration-[180ms]",
+              isActive
+                ? "border-sawah bg-sawah/5"
+                : "border-line bg-white text-ink hover:border-ink/30"
+            )}
+          >
+            {isActive ? (
+              <CheckSquare2 className="h-3.5 w-3.5 text-sawah" />
+            ) : (
               <SignalBars count={opt.bars} active={isActive} />
-              <span className="text-xs font-semibold">{opt.label}</span>
-              <span className={cn("font-mono text-[9px]", isActive ? "text-white/70" : "text-muted-foreground")}>
-                {opt.sub}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+            )}
+            <span className={cn("text-xs font-medium", isActive ? "text-sawah" : "text-ink")}>{opt.label}</span>
+            <span className={cn("font-mono text-[10px]", isActive ? "text-sawah/70" : "text-muted-foreground")}>
+              {opt.sub}
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 }

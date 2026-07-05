@@ -180,7 +180,7 @@ export default function DataManagementPage() {
             return (
               <div
                 key={district.id}
-                className="rounded-lg border border-line bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.06)]"
+                className="rounded-lg border border-line bg-white p-5"
               >
                 <div className="mb-4 flex items-center justify-between">
                   <div>
@@ -218,7 +218,7 @@ export default function DataManagementPage() {
                           aria-describedby={
                             field.error ? `${district.id}-${ind.id}-err` : undefined
                           }
-                          className="h-9 font-mono"
+                          className="min-h-11 font-mono"
                         />
                         {field.error ? (
                           <p
@@ -241,7 +241,7 @@ export default function DataManagementPage() {
                     size="sm"
                     disabled={!dirty || hasErr || isSaving}
                     onClick={() => handleSave(district.id)}
-                    className="gap-1.5 bg-sawah text-white hover:bg-sawah/90 disabled:opacity-40"
+                    className="min-h-11 gap-1.5 bg-sawah text-white hover:bg-sawah/90 disabled:opacity-40"
                   >
                     <Save className="h-3.5 w-3.5" />
                     {isSaving ? "Menyimpan..." : `Simpan ${districtName(district.id)}`}

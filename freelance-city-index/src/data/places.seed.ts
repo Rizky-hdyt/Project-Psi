@@ -481,10 +481,3 @@ export const CATEGORY_LABEL: Record<PlaceCategory, string> = {
   quiet: "Tempat Tenang",
   library: "Perpustakaan",
 };
-
-export const CATEGORY_COLOR: Record<PlaceCategory, { bg: string; text: string; border: string }> = {
-  cafe:      { bg: "#FFE4E6", text: "#9F1239", border: "#9F123930" },
-  coworking: { bg: "#CFFAFE", text: "#0E7490", border: "#0E749030" },
-  quiet:     { bg: "#FFEDD5", text: "#C2410C", border: "#C2410C30" },
-  library:   { bg: "#ECFCCB", text: "#4D7C0F", border: "#4D7C0F30" },
-};

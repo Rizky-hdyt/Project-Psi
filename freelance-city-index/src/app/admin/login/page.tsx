@@ -79,7 +79,7 @@ export default function AdminLoginPage() {
       <div className="w-full max-w-sm">
         {/* Header */}
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-sawah">
+          <div className="mx-auto mb-4 flex h-11 w-11 items-center justify-center rounded-full bg-sawah">
             <span className="font-mono text-lg font-bold text-white">F</span>
           </div>
           <h1 className="text-xl font-semibold text-ink">Admin Panel</h1>
@@ -104,7 +104,7 @@ export default function AdminLoginPage() {
               }}
               placeholder="admin"
               aria-invalid={!!error}
-              className="h-10"
+              className="min-h-11"
             />
           </div>
 
@@ -124,12 +124,12 @@ export default function AdminLoginPage() {
                 }}
                 placeholder="••••••••••••"
                 aria-invalid={!!error}
-                className="h-10 pr-10"
+                className="min-h-11 pr-10"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-[var(--radius-sm)] text-muted-foreground after:absolute after:-inset-3 after:content-[''] hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
               >
                 {showPassword ? (
@@ -150,7 +150,7 @@ export default function AdminLoginPage() {
           <Button
             type="submit"
             disabled={loading}
-            className="mt-2 h-10 w-full gap-2 bg-sawah text-white hover:bg-sawah/90"
+            className="mt-2 min-h-11 w-full gap-2 bg-sawah text-white hover:bg-sawah/90"
           >
             <LogIn className="h-4 w-4" />
             {loading ? "Masuk..." : "Masuk"}

@@ -2,10 +2,12 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Navbar } from "@/components/shared/Navbar";
 import { AlgorithmSection } from "@/components/landing/AlgorithmSection";
+import { AmbientBackground } from "@/components/shared/AmbientBackground";
 
 export default function AlgoritmaPage() {
   return (
-    <div className="min-h-screen bg-paper">
+    <div className="relative min-h-screen">
+      <AmbientBackground />
       <Navbar />
 
       {/* Back button */}
@@ -13,7 +15,7 @@ export default function AlgoritmaPage() {
         <div className="mx-auto max-w-[1120px] px-4 py-3 sm:px-6">
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-paper hover:text-ink"
+            className="-ml-2 inline-flex min-h-11 items-center gap-1.5 rounded-lg px-2 text-sm text-muted-foreground transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
           >
             <ArrowLeft className="h-4 w-4" />
             Kembali ke Beranda
@@ -22,7 +24,7 @@ export default function AlgoritmaPage() {
       </div>
 
       {/* Algorithm content */}
-      <AlgorithmSection standalone />
+      <AlgorithmSection />
     </div>
   );
 }

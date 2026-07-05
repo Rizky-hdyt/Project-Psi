@@ -60,7 +60,7 @@ export function DistrictPreviewSection() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   return (
-    <section className="relative isolate scroll-mt-24 overflow-hidden bg-paper px-4 py-16 sm:px-6 sm:py-24 lg:py-28">
+    <section className="relative isolate scroll-mt-24 overflow-hidden px-4 py-16 sm:px-6 sm:py-24 lg:py-28">
       <div className="relative mx-auto max-w-[1240px]">
         <ScrollReveal className="mx-auto mb-12 max-w-xl text-center">
           <h2 className="mb-3 text-3xl font-bold tracking-tight text-ink sm:text-4xl">

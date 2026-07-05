@@ -14,38 +14,20 @@ const navItems = [
   { href: "/admin/audit", label: "Audit Log", icon: ClipboardList, exact: false },
 ];
 
-function AdminLayoutInner({ children }: { children: React.ReactNode }) {
-  const { state, logout } = useAdmin();
-  const router = useRouter();
-  const pathname = usePathname();
-  const isLoginPage = pathname === "/admin/login";
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  // Tunggu session check selesai dulu (!state.checking) sebelum redirect
-  // Tanpa ini, redirect tembak saat isAuthenticated masih false sementara (checking)
-  // yang menyebabkan gerak bolak-balik login ↔ admin
-  useEffect(() => {
-    if (!state.checking && !state.isAuthenticated && !isLoginPage) {
-      router.replace("/admin/login");
-    }
-  }, [state.checking, state.isAuthenticated, isLoginPage, router]);
-
-  // Close sidebar on route change
-  useEffect(() => {
-    setSidebarOpen(false);
-  }, [pathname]);
-
-  if (isLoginPage) return <>{children}</>;
-  if (state.checking) return null;
-  if (!state.isAuthenticated) return null;
-
-  const SidebarContent = () => (
+function SidebarContent({
+  pathname,
+  onNavigate,
+  onLogout,
+}: {
+  pathname: string | null;
+  onNavigate: () => void;
+  onLogout: () => void;
+}) {
+  return (
     <>
       <div className="border-b border-line px-4 py-4">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-          Admin Panel
-        </p>
-        <p className="mt-0.5 text-sm font-semibold text-ink">Freelance City Index</p>
+        <p className="text-sm font-semibold text-ink">Freelance City Index</p>
+        <p className="mt-0.5 text-xs text-muted-foreground">Admin Panel</p>
       </div>
 
       <nav className="flex flex-col gap-0.5 p-3" aria-label="Navigasi admin">
@@ -55,6 +37,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
             <Link
               key={href}
               href={href}
+              onClick={onNavigate}
               aria-current={isActive ? "page" : undefined}
               className={cn(
                 "flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm transition-colors min-h-[44px]",
@@ -75,10 +58,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
           variant="ghost"
           size="sm"
           className="min-h-[44px] w-full justify-start gap-2 text-muted-foreground hover:text-destructive"
-          onClick={() => {
-            logout();
-            router.push("/admin/login");
-          }}
+          onClick={onLogout}
         >
           <LogOut className="h-4 w-4" />
           Keluar
@@ -86,12 +66,39 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
       </div>
     </>
   );
+}
+
+function AdminLayoutInner({ children }: { children: React.ReactNode }) {
+  const { state, logout } = useAdmin();
+  const router = useRouter();
+  const pathname = usePathname();
+  const isLoginPage = pathname === "/admin/login";
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Tunggu session check selesai dulu (!state.checking) sebelum redirect
+  // Tanpa ini, redirect tembak saat isAuthenticated masih false sementara (checking)
+  // yang menyebabkan gerak bolak-balik login ↔ admin
+  useEffect(() => {
+    if (!state.checking && !state.isAuthenticated && !isLoginPage) {
+      router.replace("/admin/login");
+    }
+  }, [state.checking, state.isAuthenticated, isLoginPage, router]);
+
+  if (isLoginPage) return <>{children}</>;
+  if (state.checking) return null;
+  if (!state.isAuthenticated) return null;
+
+  function handleLogout() {
+    setSidebarOpen(false);
+    logout();
+    router.push("/admin/login");
+  }
 
   return (
     <div className="flex min-h-screen bg-background">
       {/* Desktop sidebar */}
       <aside className="hidden w-56 shrink-0 flex-col border-r border-line bg-white md:flex">
-        <SidebarContent />
+        <SidebarContent pathname={pathname} onNavigate={() => {}} onLogout={handleLogout} />
       </aside>
 
       {/* Mobile sidebar overlay */}
@@ -121,7 +128,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
             <X className="h-5 w-5" />
           </button>
         </div>
-        <SidebarContent />
+        <SidebarContent pathname={pathname} onNavigate={() => setSidebarOpen(false)} onLogout={handleLogout} />
       </aside>
 
       {/* Main content */}

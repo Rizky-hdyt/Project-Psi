@@ -1,24 +1,24 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Suspense } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
-  ChevronUp,
-  ChevronDown,
-  Star,
   RefreshCw,
-  Wifi,
-  Wallet,
   Users,
-  Leaf,
+  Star,
+  Activity,
+  CalendarDays,
   ArrowRight,
   MapPin,
   BarChart3,
+  Crown,
 } from "lucide-react";
+import { getDistrictVisual } from "@/data/districts.visuals";
+import { ScoreComparisonTable, scoreColor } from "@/components/result/ScoreComparisonTable";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -27,167 +27,30 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Navbar } from "@/components/shared/Navbar";
+import { PillNavbar } from "@/components/shared/PillNavbar";
+import { AssistantDock } from "@/components/shared/AssistantDock";
+import type { AssistantContext } from "@/lib/assistant/qaBank";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { RelevanceSurvey } from "@/components/shared/RelevanceSurvey";
+import { WhyThisMatch } from "@/components/shared/WhyThisMatch";
 import { rankDistricts } from "@/lib/scoring/rank";
-import { generateWhyText } from "@/lib/scoring/whyThisMatch";
 import { useDistricts } from "@/hooks/useDistricts";
-import { getDistrictVisual } from "@/data/districts.visuals";
+import { DistrictSwatch } from "@/components/shared/DistrictSwatch";
+import { AmbientBackground } from "@/components/shared/AmbientBackground";
 import { cn } from "@/lib/utils";
 import type { QuizInput } from "@/types/quiz";
-import type { District } from "@/types/district";
-import type { IndicatorId, RankedDistrict } from "@/types/recommendation";
+import type { District, DistrictScore } from "@/types/district";
+import type { RankedDistrict } from "@/types/recommendation";
 
-// ── District metadata ────────────────────────────────────────────────────────
-const DISTRICT_SECONDARY_BADGE: Record<string, string> = {
-  "kota-yogyakarta": "Best Connectivity",
-  sleman: "Best Balance",
-  bantul: "Best for Creators",
-  "kulon-progo": "Most Potential",
-  gunungkidul: "Lowest Cost",
+const PERSONA_NAMES: Record<string, string> = {
+  "tech-professional": "Tech Professional",
+  "creative-professional": "Creative Professional",
+  "student-fresh-graduate": "Student & Fresh Graduate",
+  "digital-nomad": "Digital Nomad",
 };
 
-const INDICATORS: { id: IndicatorId; label: string; shortLabel: string; icon: React.ElementType }[] = [
-  { id: "internet", label: "Internet", shortLabel: "Internet", icon: Wifi },
-  { id: "cost", label: "Biaya Hidup", shortLabel: "Biaya", icon: Wallet },
-  { id: "community", label: "Komunitas", shortLabel: "Komunitas", icon: Users },
-  { id: "environment", label: "Lingkungan", shortLabel: "Lingkungan", icon: Leaf },
-];
-
-function formatRupiah(n: number) {
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    notation: "compact",
-    maximumFractionDigits: 1,
-  }).format(n);
-}
-
-// ── District Avatar ──────────────────────────────────────────────────────────
-function DistrictAvatar({
-  districtId,
-  size = "md",
-}: {
-  districtId: string;
-  size?: "sm" | "md";
-}) {
-  const visual = getDistrictVisual(districtId);
-  const cls =
-    size === "sm"
-      ? "flex h-7 w-7 shrink-0 items-center justify-center rounded-full font-mono text-xs font-bold text-white"
-      : "flex h-9 w-9 shrink-0 items-center justify-center rounded-full font-mono text-sm font-bold text-white";
-  return (
-    <div
-      className={cls}
-      style={{ background: `linear-gradient(135deg, ${visual.gradientFrom}, ${visual.gradientTo})` }}
-      aria-hidden="true"
-    >
-      {visual.emoji}
-    </div>
-  );
-}
-
-// ── Score Comparison Sidebar ─────────────────────────────────────────────────
-function ScoreComparisonChart({ ranked, districts }: { ranked: RankedDistrict[]; districts: District[] }) {
-  const districtMap = Object.fromEntries(districts.map((d) => [d.id, d]));
-  const maxScore = ranked[0]?.skorTotal ?? 100;
-
-  return (
-    <div className="rounded-xl border border-line bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.06)]">
-      <p className="mb-0.5 text-sm font-semibold text-ink">Perbandingan Skor</p>
-      <p className="mb-4 text-xs text-muted-foreground">{ranked.length} distrik diurutkan berdasarkan skor</p>
-      <div className="space-y-2.5">
-        {ranked.map((r) => {
-          const d = districtMap[r.districtId];
-          const visual = getDistrictVisual(r.districtId);
-          const pct = Math.round((r.skorTotal / maxScore) * 100);
-          return (
-            <div key={r.districtId} className="flex items-center gap-2">
-              <span className="w-20 shrink-0 truncate text-xs text-muted-foreground">
-                {d?.nama.replace("Kabupaten ", "").replace("Kota ", "") ?? r.districtId}
-              </span>
-              <div className="flex-1">
-                <div className="h-2 w-full overflow-hidden rounded-full bg-line">
-                  <div
-                    className="h-full rounded-full motion-safe:transition-all motion-safe:duration-500"
-                    style={{
-                      width: `${pct}%`,
-                      background: `linear-gradient(90deg, ${visual.gradientFrom}, ${visual.gradientTo})`,
-                    }}
-                  />
-                </div>
-              </div>
-              <span className="w-8 text-right font-mono text-xs font-semibold text-ink">
-                {(r.skorTotal / 10).toFixed(1)}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-// ── Top Recommendation Sidebar Card ─────────────────────────────────────────
-function TopRecommendationCard({
-  ranked,
-  districts,
-  resultUrl,
-}: {
-  ranked: RankedDistrict[];
-  districts: District[];
-  resultUrl: string;
-}) {
-  if (ranked.length === 0) return null;
-  const top = ranked[0];
-  const d = districts.find((x) => x.id === top.districtId);
-  if (!d) return null;
-
-  const topVisual = getDistrictVisual(top.districtId);
-  return (
-    <div
-      className="rounded-xl p-5 text-white shadow-[0_4px_16px_rgba(0,0,0,0.2)]"
-      style={{
-        background: `linear-gradient(135deg, ${topVisual.gradientFrom} 0%, ${topVisual.gradientTo} 100%)`,
-      }}
-    >
-      <div className="mb-3 flex items-center gap-1.5">
-        <MapPin className="h-3.5 w-3.5 opacity-80" />
-        <span className="text-xs font-semibold uppercase tracking-wider opacity-80">
-          Rekomendasi Teratas
-        </span>
-      </div>
-      <div className="mb-1 flex items-center gap-2">
-        <span className="text-2xl">{getDistrictVisual(top.districtId).emoji}</span>
-        <h3 className="font-display text-xl font-bold">{d.nama}</h3>
-      </div>
-      <p className="mb-4 text-sm opacity-75 leading-relaxed line-clamp-2">
-        {d.ringkasanKarakteristik}
-      </p>
-
-      <div className="mb-4 grid grid-cols-2 gap-3">
-        <div className="rounded-lg bg-white/15 p-3">
-          <p className="font-mono text-2xl font-bold">{(top.skorTotal / 10).toFixed(1)}</p>
-          <p className="text-xs opacity-75">Skor Kecocokan</p>
-        </div>
-        <div className="rounded-lg bg-white/15 p-3">
-          <p className="font-mono text-2xl font-bold">{d.coworkingCount}</p>
-          <p className="text-xs opacity-75">Ruang Coworking</p>
-        </div>
-      </div>
-
-      <Link href={`/district/${d.id}?${resultUrl.split("?")[1] ?? ""}`}>
-        <Button
-          className="w-full gap-1.5 bg-white text-sawah hover:bg-white/90 font-semibold"
-          size="sm"
-        >
-          Jelajahi {d.nama}
-          <ArrowRight className="h-3.5 w-3.5" />
-        </Button>
-      </Link>
-    </div>
-  );
+function formatDateID(iso: string) {
+  return new Date(iso).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
 }
 
 // ── Compare Dialog ────────────────────────────────────────────────────────────
@@ -208,9 +71,10 @@ function CompareDialog({
   const districtMap = Object.fromEntries(districts.map((d) => [d.id, d]));
   const [selected, setSelected] = useState<string[]>([]);
 
-  useEffect(() => {
-    if (!open) setSelected([]);
-  }, [open]);
+  function closeAndReset() {
+    setSelected([]);
+    onClose();
+  }
 
   function toggle(id: string) {
     setSelected((prev) => {
@@ -223,11 +87,11 @@ function CompareDialog({
   function handleCompare() {
     if (selected.length < 2) return;
     router.push(`/compare?districts=${selected.join(",")}&${quizParams}`);
-    onClose();
+    closeAndReset();
   }
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
+    <Dialog open={open} onOpenChange={(v) => { if (!v) closeAndReset(); }}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-ink">
@@ -235,11 +99,11 @@ function CompareDialog({
             Bandingkan Distrik
           </DialogTitle>
           <DialogDescription>
-            Pilih 2–3 distrik untuk dibandingkan secara detail. Skor berdasarkan preferensi quiz Anda.
+            Pilih 2 sampai 3 distrik untuk dibandingkan secara detail. Skor berdasarkan preferensi quiz Anda.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-2 py-2">
+        <div className="space-y-1 py-2">
           {ranked.map((r) => {
             const d = districtMap[r.districtId];
             if (!d) return null;
@@ -251,21 +115,18 @@ function CompareDialog({
                 onClick={() => toggle(r.districtId)}
                 disabled={isDisabled}
                 className={cn(
-                  "flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  "flex w-full items-center gap-3 rounded-[var(--radius-sm)] border px-4 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   isSelected
-                    ? "border-sawah bg-sawah/6 shadow-sm"
+                    ? "border-sawah bg-sawah/5"
                     : isDisabled
                       ? "cursor-not-allowed border-line opacity-40"
-                      : "border-line hover:border-sawah/40 hover:bg-muted/50"
+                      : "border-line hover:border-ink/30"
                 )}
               >
-                {/* Checkbox visual */}
                 <div
                   className={cn(
-                    "flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors",
-                    isSelected
-                      ? "border-sawah bg-sawah text-white"
-                      : "border-line bg-white"
+                    "flex h-5 w-5 shrink-0 items-center justify-center rounded-[4px] border-2 transition-colors",
+                    isSelected ? "border-sawah bg-sawah text-white" : "border-line bg-white"
                   )}
                 >
                   {isSelected && (
@@ -275,25 +136,20 @@ function CompareDialog({
                   )}
                 </div>
 
-                <DistrictAvatar districtId={r.districtId} size="sm" />
+                <DistrictSwatch districtId={r.districtId} size="sm" />
 
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className={cn("text-sm font-semibold", isSelected ? "text-ink" : "text-ink/80")}>
-                      {d.nama}
-                    </span>
+                    <span className="text-sm font-semibold text-ink">{d.nama}</span>
                     {r.rank === 1 && (
-                      <Badge className="gap-1 bg-sawah px-1.5 py-0 text-[9px] text-white hover:bg-sawah">
-                        <Star className="h-2 w-2" />
-                        Best
-                      </Badge>
+                      <span className="text-[10px] font-medium text-sawah">Best</span>
                     )}
                   </div>
                   <span className="text-xs text-muted-foreground">Rank #{r.rank}</span>
                 </div>
 
-                <span className="font-mono text-lg font-bold text-ink">
-                  {(r.skorTotal / 10).toFixed(1)}
+                <span className="font-mono text-lg font-bold tabular-nums text-ink">
+                  {r.skorTotal.toFixed(1)}
                 </span>
               </button>
             );
@@ -301,7 +157,7 @@ function CompareDialog({
         </div>
 
         <DialogFooter className="gap-2 sm:gap-2">
-          <Button variant="outline" onClick={onClose} className="border-line">
+          <Button variant="outline" onClick={closeAndReset} className="border-line">
             Batalkan
           </Button>
           <Button
@@ -318,169 +174,214 @@ function CompareDialog({
   );
 }
 
-// ── District Rank Card ────────────────────────────────────────────────────────
-function DistrictRankCard({
+// ── Hero: foto distrik terbaik + headline + stat row + kartu Best Match ──────
+function ResultHero({
+  personaLabel,
   ranked,
-  district,
-  isBest,
-  isOpen,
-  onToggle,
-  whyText,
+  districts,
+  scores,
   resultUrl,
+  onCompare,
+  onRetakeQuiz,
 }: {
-  ranked: RankedDistrict;
-  district: District;
-  isBest: boolean;
-  isOpen: boolean;
-  onToggle: () => void;
-  whyText: string;
+  personaLabel: string;
+  ranked: RankedDistrict[];
+  districts: District[];
+  scores: DistrictScore[];
   resultUrl: string;
+  onCompare: () => void;
+  onRetakeQuiz: () => void;
 }) {
-  const displayScore = (ranked.skorTotal / 10).toFixed(1);
-  const secondaryBadge = DISTRICT_SECONDARY_BADGE[district.id];
-  const scoreBar = Math.round(ranked.skorTotal);
-  const visual = getDistrictVisual(district.id);
+  const districtMap = Object.fromEntries(districts.map((d) => [d.id, d]));
+  const best = ranked[0];
+  const bestDistrict = districtMap[best.districtId];
+  const heroPhoto = getDistrictVisual(best.districtId).imageUrl;
+  const avgScore = ranked.reduce((sum, r) => sum + r.skorTotal, 0) / ranked.length;
+  const latestUpdate = scores.reduce(
+    (latest, s) => (s.updatedAt > latest ? s.updatedAt : latest),
+    scores[0]?.updatedAt ?? new Date().toISOString()
+  );
+
+  // Semua ikon stat pakai satu warna hijau (bukan per-kartu custom),
+  // sesuai .stat .ic di hasil-rekomendasi.html
+  const STATS = [
+    { icon: Users, value: String(ranked.length), label: "Distrik Dievaluasi di DIY" },
+    { icon: Star, value: best.skorTotal.toFixed(1), label: `Skor Tertinggi ${bestDistrict.nama}` },
+    { icon: Activity, value: avgScore.toFixed(1), label: "Skor Rata-rata dari 5 distrik" },
+    { icon: CalendarDays, value: formatDateID(latestUpdate), label: "Terakhir Diperbarui" },
+  ];
 
   return (
-    <div
-      className={
-        isBest
-          ? "rounded-xl border-2 border-sawah bg-white overflow-hidden"
-          : "rounded-xl border border-line bg-white shadow-[0_1px_3px_rgba(15,23,42,0.06)] overflow-hidden"
-      }
-    >
-      {/* Gradient strip */}
-      <div
-        className="h-1.5 w-full"
-        style={{ background: `linear-gradient(90deg, ${visual.gradientFrom}, ${visual.gradientTo})` }}
-      />
-
-      {/* Card header */}
-      <button
-        className="flex w-full items-start gap-3 p-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-t-xl"
-        onClick={onToggle}
-        aria-expanded={isOpen}
-        aria-label={`${isOpen ? "Tutup" : "Buka"} detail ${district.nama}`}
-      >
-        <span
-          className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full font-mono text-xs font-bold ${
-            isBest ? "bg-sawah text-white" : "bg-line text-muted-foreground"
-          }`}
-        >
-          #{ranked.rank}
-        </span>
-
-        <DistrictAvatar districtId={district.id} />
-
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="font-semibold text-ink">{district.nama}</span>
-            {isBest && (
-              <Badge className="gap-1 bg-sawah text-white hover:bg-sawah px-2 py-0.5 text-[10px]">
-                <Star className="h-2.5 w-2.5" />
-                Best Match
-              </Badge>
-            )}
-            {secondaryBadge && (
-              <Badge variant="outline" className="border-line text-muted-foreground px-2 py-0.5 text-[10px]">
-                {secondaryBadge}
-              </Badge>
-            )}
-          </div>
-          {ranked.isBelowUMK && (
-            <span className="mt-1 inline-block rounded-full bg-warning-bg px-2 py-0.5 font-mono text-[10px] text-warning border border-warning/30">
-              Budget di bawah UMK
-            </span>
-          )}
-        </div>
-
-        <div className="flex shrink-0 items-center gap-2">
-          <span className="font-mono text-2xl font-bold text-ink">{displayScore}</span>
-          {isOpen ? (
-            <ChevronUp className="h-4 w-4 text-muted-foreground" />
-          ) : (
-            <ChevronDown className="h-4 w-4 text-muted-foreground" />
-          )}
-        </div>
-      </button>
-
-      {/* Score bar */}
-      <div className="mx-4 mb-3 h-1.5 w-[calc(100%-2rem)] overflow-hidden rounded-full bg-line">
+    <section className="relative isolate mt-3.5 overflow-hidden rounded-[22px]">
+      <div className="relative px-4 pb-6 pt-6 sm:px-7 sm:pb-7 sm:pt-7">
+        <Image src={heroPhoto} alt="" fill sizes="100vw" className="-z-20 object-cover" priority />
         <div
-          className={`h-full rounded-full motion-safe:transition-all motion-safe:duration-500 ${isBest ? "bg-sawah" : "bg-pesisir/50"}`}
-          style={{ width: `${scoreBar}%` }}
+          className="pointer-events-none absolute inset-0 -z-10"
+          style={{
+            background:
+              "linear-gradient(115deg, rgba(246,245,250,0.94) 0%, rgba(246,245,250,0.6) 45%, rgba(246,245,250,0.25) 75%, rgba(246,245,250,0.5) 100%)",
+          }}
+          aria-hidden="true"
         />
-      </div>
 
-      {/* Mini stats */}
-      <div className="mx-4 mb-3 flex flex-wrap gap-x-4 gap-y-1">
-        {INDICATORS.map(({ id, shortLabel, icon: Icon }) => (
-          <span key={id} className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Icon className="h-3 w-3" />
-            {shortLabel}:{" "}
-            <span className="font-mono font-semibold text-ink ml-0.5">
-              {Math.round(ranked.skorPerIndikator[id] / 10)}
-            </span>
-          </span>
-        ))}
-      </div>
-
-      {/* Expandable */}
-      {isOpen && (
-        <div className="border-t border-line px-4 pb-4 pt-4">
-          <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
-            {district.ringkasanKarakteristik}
-          </p>
-
-          <div className="mb-4 space-y-2.5">
-            {INDICATORS.map(({ id, label }) => {
-              const rawSkor = ranked.skorPerIndikator[id];
-              const displayVal = Math.round(rawSkor / 10);
-              return (
-                <div key={id} className="flex items-center gap-3">
-                  <span className="w-24 shrink-0 text-xs text-muted-foreground">{label}</span>
-                  <div className="flex-1">
-                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-line">
-                      <div
-                        className="h-full rounded-full bg-pesisir motion-safe:transition-all motion-safe:duration-300"
-                        style={{ width: `${rawSkor}%` }}
-                      />
-                    </div>
-                  </div>
-                  <span className="w-8 text-right font-mono text-xs font-semibold text-ink">
-                    {displayVal}/10
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="mb-4 flex flex-wrap gap-2 text-xs">
-            <span className="rounded border border-line px-2 py-1 font-mono text-muted-foreground">
-              UMK {formatRupiah(district.umk)}/bln
-            </span>
-            <span className="rounded border border-line px-2 py-1 font-mono text-muted-foreground">
-              {district.coworkingCount} coworking spaces
-            </span>
-            <span className="rounded border border-line px-2 py-1 font-mono text-muted-foreground">
-              ~{district.internetMbps} Mbps
-            </span>
-          </div>
-
-          <div className="mb-4 rounded-lg bg-sawah/6 p-3">
-            <p className="mb-1.5 text-xs font-semibold text-sawah">Mengapa cocok untuk Anda</p>
-            <p className="text-xs leading-relaxed text-muted-foreground">{whyText}</p>
-          </div>
-
-          <Link href={`/district/${district.id}?${resultUrl.split("?")[1] ?? ""}`}>
-            <Button className="w-full gap-1.5 bg-sawah text-white hover:bg-sawah/90 min-h-[40px]" size="sm">
-              <MapPin className="h-3.5 w-3.5" />
-              Lihat Detail Distrik
+        <div className="relative">
+          {/* Utility row — Bandingkan/Ulangi, tidak ada di referensi tapi fitur tetap dipertahankan */}
+          <div className="mb-4 flex justify-end gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onCompare}
+              className="gap-1.5 border-line bg-white text-muted-foreground hover:text-ink"
+            >
+              <BarChart3 className="h-3.5 w-3.5" />
+              Bandingkan
             </Button>
-          </Link>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onRetakeQuiz}
+              className="gap-1.5 border-line bg-white text-muted-foreground hover:text-ink"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+              Ulangi Quiz
+            </Button>
+          </div>
+
+          <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
+            {/* Kolom kiri: headline + stat row */}
+            <div>
+              <p className="text-xs font-semibold text-sawah">Hasil Rekomendasi</p>
+              <h1 className="mt-1.5 max-w-md text-3xl font-bold leading-[1.15] tracking-tight text-ink sm:text-4xl">
+                Distrik Terbaik untuk Anda
+              </h1>
+              <p className="mt-3 text-sm text-ink/70">Berdasarkan profil Anda sebagai</p>
+              <span className="mt-2 inline-flex rounded-full border border-sawah/25 bg-sawah/10 px-3 py-1 text-xs font-medium text-sawah">
+                {personaLabel}
+              </span>
+
+              <div className="mt-10 grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+                {STATS.map(({ icon: Icon, value, label }) => (
+                  <div key={label} className="rounded-lg border border-line bg-white/90 p-1.5">
+                    <span className="mb-1 flex h-4 w-4 items-center justify-center rounded bg-positive-bg">
+                      <Icon className="h-2 w-2 text-positive" />
+                    </span>
+                    <p className="font-mono text-[11px] font-bold text-ink">{value}</p>
+                    <p className="mt-0.5 text-[8px] leading-snug text-muted-foreground">{label}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Kolom kanan: kartu Best Match */}
+            <div className="rounded-2xl border border-line bg-white/95 p-4 shadow-[0_10px_26px_rgba(30,35,48,0.10)] sm:p-5">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-amber-600">
+                    <Crown className="h-3 w-3" />
+                    Best Match
+                  </span>
+                  <h2 className="mt-1.5 text-lg font-bold tracking-tight text-ink">{bestDistrict.nama}</h2>
+                  <p className="mt-2 text-[11px] text-muted-foreground">Skor Keseluruhan</p>
+                  <p className="font-mono text-2xl font-bold text-positive">
+                    {best.skorTotal.toFixed(1)}
+                    <span className="ml-0.5 text-xs font-normal text-muted-foreground">/100</span>
+                  </p>
+                  <div className="mt-1.5 flex items-center gap-1">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400" />
+                    ))}
+                    <span className="ml-1 text-[11px] text-muted-foreground">Best Match</span>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="mb-1.5 text-xs font-semibold text-ink">Why This Match?</p>
+                  <WhyThisMatch ranked={best} districtNama={bestDistrict.nama} />
+                </div>
+              </div>
+
+              <Link href={`/district/${bestDistrict.id}?${resultUrl.split("?")[1] ?? ""}`}>
+                <Button className="mt-4 w-full gap-1.5 bg-sawah text-white hover:bg-sawah/90 min-h-10 text-xs" size="sm">
+                  <MapPin className="h-3.5 w-3.5" />
+                  Lihat Detail Distrik
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Button>
+              </Link>
+            </div>
+          </div>
         </div>
-      )}
-    </div>
+      </div>
+    </section>
+  );
+}
+
+// Rank #1 = amber, rank #3 = orange, sisanya ink — pola persis di
+// hasil-rekomendasi.html (.rank-card.first, :nth-child(3) .rank-num)
+function rankBadgeColor(rank: number) {
+  if (rank === 1) return "#F59E0B";
+  if (rank === 3) return "#F97316";
+  return "var(--ink)";
+}
+
+// ── Ranking grid — 5 kartu foto, semua rank ──────────────────────────────────
+function RankingGrid({
+  ranked,
+  districts,
+  resultUrl,
+}: {
+  ranked: RankedDistrict[];
+  districts: District[];
+  resultUrl: string;
+}) {
+  const districtMap = Object.fromEntries(districts.map((d) => [d.id, d]));
+  const qs = resultUrl.split("?")[1] ?? "";
+
+  return (
+    <section className="mt-3.5 rounded-[22px] bg-white p-4 shadow-[0_4px_14px_rgba(30,35,48,0.04)] sm:p-5">
+      <p className="mb-3.5 text-sm font-extrabold text-ink">Ranking 5 Distrik di DIY</p>
+      <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 lg:grid-cols-5">
+        {ranked.map((r) => {
+          const d = districtMap[r.districtId];
+          if (!d) return null;
+          const photo = getDistrictVisual(d.id).imageUrl;
+          const isFirst = r.rank === 1;
+          return (
+            <Link
+              key={r.districtId}
+              href={`/district/${d.id}?${qs}`}
+              className={cn(
+                "group overflow-hidden rounded-2xl border bg-white transition-all duration-[180ms] hover:-translate-y-1 hover:shadow-[0_12px_26px_rgba(30,35,48,0.12)]",
+                isFirst ? "border-2 border-amber-500 shadow-[0_8px_22px_rgba(245,158,11,0.22)]" : "border-line"
+              )}
+            >
+              <div className="relative aspect-[11/6]">
+                <Image
+                  src={photo}
+                  alt=""
+                  fill
+                  sizes="(min-width: 1024px) 20vw, (min-width: 640px) 33vw, 50vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                <span
+                  className="absolute left-2.5 top-2.5 flex h-[26px] w-[26px] items-center justify-center rounded-full text-xs font-extrabold text-white shadow-[0_2px_8px_rgba(0,0,0,0.3)]"
+                  style={{ backgroundColor: rankBadgeColor(r.rank) }}
+                >
+                  {r.rank}
+                </span>
+              </div>
+              <div className="p-3.5">
+                <p className="truncate text-[15px] font-extrabold tracking-tight text-ink">{d.nama}</p>
+                <p className="mt-0.5 text-[10.5px] font-semibold text-muted-foreground">Skor Keseluruhan</p>
+                <p className="mt-1.5 font-mono text-xl font-extrabold" style={{ color: scoreColor(r.skorTotal) }}>
+                  {r.skorTotal.toFixed(1)}
+                  <span className="ml-0.5 text-xs font-semibold text-muted-foreground">/100</span>
+                </p>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 
@@ -495,8 +396,6 @@ function ResultContent() {
   const community = (params.get("community") ?? "medium") as QuizInput["communityPriority"];
   const environment = (params.get("environment") ?? "flexible") as QuizInput["environmentPreference"];
 
-  const [openCardId, setOpenCardId] = useState<string | null>(null);
-  const [hasInteracted, setHasInteracted] = useState(false);
   const [compareOpen, setCompareOpen] = useState(false);
 
   const { districts, scores, loading: distLoading, error: distError } = useDistricts();
@@ -517,16 +416,8 @@ function ResultContent() {
 
   if (distLoading) {
     return (
-      <div className="flex flex-col gap-6 lg:flex-row">
-        <div className="flex-1 space-y-3">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-24 animate-pulse rounded-xl border border-line bg-white" />
-          ))}
-        </div>
-        <div className="w-full space-y-4 lg:w-[300px]">
-          <div className="h-48 animate-pulse rounded-xl border border-line bg-white" />
-          <div className="h-52 animate-pulse rounded-xl bg-pesisir/30" />
-        </div>
+      <div className="p-4">
+        <div className="h-72 animate-pulse rounded-2xl bg-muted" />
       </div>
     );
   }
@@ -557,76 +448,47 @@ function ResultContent() {
     return <EmptyState onRetry={() => router.push("/quiz")} />;
   }
 
-  const districtMap = Object.fromEntries(districts.map((d) => [d.id, d]));
   const resultUrl = `/result?persona=${personaId}&budget=${budget}&internet=${internet}&community=${community}&environment=${environment}`;
   const quizParams = `persona=${personaId}&budget=${budget}&internet=${internet}&community=${community}&environment=${environment}`;
+  const personaLabel = PERSONA_NAMES[personaId] ?? personaId;
 
-  const effectiveOpenId = hasInteracted ? openCardId : ranked[0]?.districtId;
+  const bestDistrict = districts.find((d) => d.id === ranked[0]?.districtId);
+  const assistantCtx: AssistantContext | null = bestDistrict
+    ? {
+        personaLabel,
+        bestName: bestDistrict.nama,
+        bestScore: ranked[0].skorTotal,
+        isBelowUMK: !!ranked[0].isBelowUMK,
+      }
+    : null;
 
   return (
     <>
-      {/* Page header */}
-      <div className="mb-6">
-        <h1 className="font-display text-xl font-bold text-ink sm:text-2xl">
-          Peringkat Distrik Anda
-        </h1>
-        <p className="mt-0.5 text-sm text-muted-foreground">
-          Berdasarkan profil &amp; preferensi Anda, skor kecocokan personal, bukan generik
-        </p>
-        <div className="mt-3 flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCompareOpen(true)}
-            className="gap-1.5 border-line text-muted-foreground hover:border-sawah hover:text-sawah"
-          >
-            <BarChart3 className="h-3.5 w-3.5" />
-            Bandingkan
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => router.push("/quiz")}
-            className="gap-1.5 border-line text-muted-foreground hover:text-ink"
-          >
-            <RefreshCw className="h-3.5 w-3.5" />
-            Ulangi Quiz
-          </Button>
-        </div>
-      </div>
+      <ResultHero
+        personaLabel={personaLabel}
+        ranked={ranked}
+        districts={districts}
+        scores={scores}
+        resultUrl={resultUrl}
+        onCompare={() => setCompareOpen(true)}
+        onRetakeQuiz={() => router.push("/quiz")}
+      />
 
-      {/* Cards + sidebar */}
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-        <div className="min-w-0 flex-1 space-y-3">
-          {ranked.map((r) => {
-            const d = districtMap[r.districtId];
-            const isOpen = effectiveOpenId === r.districtId;
-            return (
-              <DistrictRankCard
-                key={r.districtId}
-                ranked={r}
-                district={d}
-                isBest={r.rank === 1}
-                isOpen={isOpen}
-                onToggle={() => {
-                  setHasInteracted(true);
-                  setOpenCardId(isOpen ? null : r.districtId);
-                }}
-                whyText={generateWhyText(r, d.nama)}
-                resultUrl={resultUrl}
-              />
-            );
-          })}
-        </div>
+      <RankingGrid ranked={ranked} districts={districts} resultUrl={resultUrl} />
 
-        <div className="w-full space-y-4 lg:w-[300px] lg:shrink-0 lg:sticky lg:top-[64px]">
-          <ScoreComparisonChart ranked={ranked} districts={districts} />
-          <TopRecommendationCard ranked={ranked} districts={districts} resultUrl={resultUrl} />
-        </div>
+      <div className="mt-3.5 rounded-[22px] bg-white p-4 shadow-[0_4px_14px_rgba(30,35,48,0.04)] sm:p-5">
+        <ScoreComparisonTable ranked={ranked} districts={districts} />
       </div>
 
       {/* Survey popup, fixed bottom-right, muncul otomatis setelah 3.5 detik */}
       <RelevanceSurvey personaId={personaId} />
+
+      {/* FCI Assistant — di layar sempit tombol navigasi ke /assistant, di
+          layar lebar (lg:+) tombol membuka panel docked di kanan halaman
+          (overlay, bukan reflow) supaya layout Result page yang sudah dibuat
+          semirip mungkin dengan HTML tetap utuh. Tombol trigger di bottom-left
+          supaya tidak ketutup RelevanceSurvey yang fixed bottom-right. */}
+      <AssistantDock href={`/assistant?${quizParams}`} ctx={assistantCtx} />
 
       {/* Compare dialog */}
       <CompareDialog
@@ -641,23 +503,18 @@ function ResultContent() {
 }
 
 // ── Page ─────────────────────────────────────────────────────────────────────
+// Struktur "page frame" bulat (rounded-[26px], padding kecil) berisi navbar
+// pill + hero + ranking + tabel — meniru persis .page di hasil-rekomendasi.html.
 export default function ResultPage() {
   return (
-    <div className="min-h-screen bg-paper">
-      <Navbar />
-      <div className="mx-auto max-w-[1120px] px-4 py-8 sm:px-6 sm:py-10">
+    <div className="min-h-screen p-2 sm:p-4">
+      <AmbientBackground />
+      <div className="mx-auto max-w-[1220px] rounded-[26px] border border-white/50 bg-paper/70 p-2.5 shadow-xl backdrop-blur-2xl sm:p-3.5">
+        <PillNavbar />
         <Suspense
           fallback={
-            <div className="flex flex-col gap-6 lg:flex-row">
-              <div className="flex-1 space-y-3">
-                {[...Array(5)].map((_, i) => (
-                  <div key={i} className="h-24 animate-pulse rounded-xl border border-line bg-white" />
-                ))}
-              </div>
-              <div className="w-full space-y-4 lg:w-[300px]">
-                <div className="h-48 animate-pulse rounded-xl border border-line bg-white" />
-                <div className="h-52 animate-pulse rounded-xl bg-pesisir/30" />
-              </div>
+            <div className="p-4">
+              <div className="h-72 animate-pulse rounded-2xl bg-muted" />
             </div>
           }
         >

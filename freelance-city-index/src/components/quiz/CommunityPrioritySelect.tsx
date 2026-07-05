@@ -1,6 +1,6 @@
 "use client";
 
-import { Users } from "lucide-react";
+import { CheckSquare2 } from "lucide-react";
 import type { QuizInput } from "@/types/quiz";
 import { cn } from "@/lib/utils";
 
@@ -16,12 +16,11 @@ function ActivityDots({ count, active }: { count: number; active: boolean }) {
       {[1, 2, 3].map((dot) => (
         <div
           key={dot}
-          className={cn("rounded-full transition-all", dot <= count ? "h-2 w-2" : "h-1.5 w-1.5")}
-          style={{
-            backgroundColor: dot <= count
-              ? (active ? "#fff" : "#4D7C0F")
-              : (active ? "rgba(255,255,255,0.3)" : "#E2E8F0"),
-          }}
+          className={cn(
+            "rounded-full transition-colors duration-[180ms]",
+            dot <= count ? "h-2 w-2" : "h-1.5 w-1.5",
+            dot <= count ? (active ? "bg-white" : "bg-ink") : (active ? "bg-white/30" : "bg-line")
+          )}
         />
       ))}
     </div>
@@ -35,43 +34,34 @@ interface Props {
 
 export function CommunityPrioritySelect({ value, onChange }: Props) {
   return (
-    <div>
-      <div className="mb-3 flex items-center gap-2">
-        <Users className="h-4 w-4" style={{ color: "#4D7C0F" }} />
-        <label className="text-sm font-semibold text-ink">
-          Seberapa penting komunitas &amp; coworking aktif?
-        </label>
-      </div>
-      <div className="flex gap-2">
-        {OPTIONS.map((opt) => {
-          const isActive = value === opt.value;
-          return (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => onChange(opt.value)}
-              aria-pressed={isActive}
-              style={isActive ? {
-                backgroundColor: "#4D7C0F",
-                borderColor: "#4D7C0F",
-                boxShadow: "0 2px 8px rgba(77,124,15,0.35)",
-              } : undefined}
-              className={cn(
-                "flex min-h-[44px] flex-1 flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2.5 transition-all duration-200",
-                isActive
-                  ? "border-transparent text-white"
-                  : "border-line bg-white text-ink hover:border-[#4D7C0F]/40 hover:shadow-sm"
-              )}
-            >
+    <div className="grid grid-cols-3 gap-2">
+      {OPTIONS.map((opt) => {
+        const isActive = value === opt.value;
+        return (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => onChange(opt.value)}
+            aria-pressed={isActive}
+            className={cn(
+              "flex min-h-11 flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2.5 transition-colors duration-[180ms]",
+              isActive
+                ? "border-sawah bg-sawah/5"
+                : "border-line bg-white text-ink hover:border-ink/30"
+            )}
+          >
+            {isActive ? (
+              <CheckSquare2 className="h-3.5 w-3.5 text-sawah" />
+            ) : (
               <ActivityDots count={opt.dots} active={isActive} />
-              <span className="text-xs font-semibold">{opt.label}</span>
-              <span className={cn("font-mono text-[9px]", isActive ? "text-white/70" : "text-muted-foreground")}>
-                {opt.sub}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+            )}
+            <span className={cn("text-xs font-medium", isActive ? "text-sawah" : "text-ink")}>{opt.label}</span>
+            <span className={cn("font-mono text-[10px]", isActive ? "text-sawah/70" : "text-muted-foreground")}>
+              {opt.sub}
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 }

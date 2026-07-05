@@ -1,22 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { Star, MapPin, Wifi, ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
+import { Star, MapPin, Wifi, ChevronDown, ChevronUp, ExternalLink, Coffee, Building2, TreePine, BookOpen } from "lucide-react";
 import {
   getRecommendedPlaces,
   CATEGORY_LABEL,
-  CATEGORY_COLOR,
   type SuggestedPlace,
   type EnvironmentPreference,
   type PersonaId,
   type PlaceCategory,
 } from "@/data/places.seed";
 
-const CATEGORY_ICON: Record<PlaceCategory, string> = {
-  cafe: "☕",
-  coworking: "💻",
-  quiet: "🌿",
-  library: "📚",
+const CATEGORY_ICON: Record<PlaceCategory, React.ElementType> = {
+  cafe: Coffee,
+  coworking: Building2,
+  quiet: TreePine,
+  library: BookOpen,
 };
 
 const ENV_LABEL: Record<EnvironmentPreference, string> = {
@@ -34,22 +33,10 @@ const PERSONA_LABEL: Record<PersonaId, string> = {
 };
 
 function StarRating({ rating }: { rating: number }) {
-  const full = Math.floor(rating);
-  const half = rating % 1 >= 0.5;
   return (
     <div className="flex items-center gap-1">
-      <div className="flex items-center">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <Star
-            key={i}
-            className="h-3 w-3"
-            fill={i < full ? "#F59E0B" : i === full && half ? "url(#half)" : "none"}
-            stroke={i < full || (i === full && half) ? "#F59E0B" : "#CBD5E1"}
-            strokeWidth={1.5}
-          />
-        ))}
-      </div>
-      <span className="font-mono text-xs font-semibold text-ink">{rating.toFixed(1)}</span>
+      <Star className="h-3 w-3 fill-current text-warning" strokeWidth={0} />
+      <span className="font-mono text-xs font-semibold tabular-nums text-ink">{rating.toFixed(1)}</span>
     </div>
   );
 }
@@ -63,71 +50,48 @@ function PriceRange({ level }: { level: 1 | 2 | 3 }) {
   );
 }
 
-function PlaceCard({ place, accentColor }: { place: SuggestedPlace; accentColor: string }) {
-  const cat = CATEGORY_COLOR[place.kategori];
+function PlaceRow({ place }: { place: SuggestedPlace }) {
+  const Icon = CATEGORY_ICON[place.kategori];
+  const hasWifi = place.tags.some((t) => t.toLowerCase().includes("wifi"));
   const mapsUrl = place.gmapsSlug
     ? `https://maps.google.com/?q=${place.gmapsSlug}`
     : `https://maps.google.com/?q=${encodeURIComponent(place.nama + " " + place.alamat)}`;
 
   return (
-    <div className="flex flex-col rounded-xl border border-line bg-white p-4 shadow-[0_1px_4px_rgba(15,23,42,0.06)] transition-all duration-200 hover:shadow-[0_4px_14px_rgba(15,23,42,0.12)] hover:-translate-y-0.5">
-      {/* Header: ikon kategori + nama + badge */}
-      <div className="mb-3 flex items-start justify-between gap-2">
-        <div className="flex items-start gap-2">
-          <span className="mt-0.5 text-xl leading-none">{CATEGORY_ICON[place.kategori]}</span>
-          <div>
-            <p className="text-sm font-semibold leading-tight text-ink">{place.nama}</p>
-            <div className="mt-1 flex items-center gap-1.5">
-              <span
-                className="rounded-full border px-2 py-0.5 text-[10px] font-semibold"
-                style={{ backgroundColor: cat.bg, color: cat.text, borderColor: cat.border }}
-              >
-                {CATEGORY_LABEL[place.kategori]}
-              </span>
-              <PriceRange level={place.priceRange} />
-            </div>
-          </div>
+    <div className="flex items-start gap-3 py-3.5">
+      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-baseline gap-x-2">
+          <span className="font-medium text-ink">{place.nama}</span>
+          <span className="text-xs text-muted-foreground">{CATEGORY_LABEL[place.kategori]}</span>
+          <PriceRange level={place.priceRange} />
+          {hasWifi && (
+            <span className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Wifi className="h-3 w-3" />
+              WiFi
+            </span>
+          )}
         </div>
+        <div className="mt-0.5 flex items-start gap-1.5">
+          <MapPin className="mt-0.5 h-3 w-3 shrink-0 text-muted-foreground" />
+          <p className="text-xs leading-snug text-muted-foreground">{place.alamat}</p>
+        </div>
+        {place.tags.length > 0 && (
+          <p className="mt-1 text-xs text-muted-foreground/80">{place.tags.join(" · ")}</p>
+        )}
+      </div>
+      <div className="flex shrink-0 flex-col items-end gap-2">
+        <StarRating rating={place.rating} />
         <a
           href={mapsUrl}
           target="_blank"
           rel="noopener noreferrer"
           aria-label={`Buka ${place.nama} di Google Maps`}
-          className="shrink-0 rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-paper hover:text-ink"
+          className="relative rounded-[var(--radius-sm)] p-1 text-muted-foreground transition-colors after:absolute after:-inset-3 after:content-[''] hover:bg-paper hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
         >
           <ExternalLink className="h-3.5 w-3.5" />
         </a>
       </div>
-
-      {/* Rating */}
-      <StarRating rating={place.rating} />
-
-      {/* Alamat */}
-      <div className="mt-2.5 flex items-start gap-1.5">
-        <MapPin className="mt-0.5 h-3 w-3 shrink-0 text-muted-foreground" />
-        <p className="text-[11px] leading-snug text-muted-foreground">{place.alamat}</p>
-      </div>
-
-      {/* Tags */}
-      <div className="mt-3 flex flex-wrap gap-1">
-        {place.tags.map((tag) => (
-          <span
-            key={tag}
-            className="rounded-full px-2 py-0.5 text-[10px] font-medium"
-            style={{ backgroundColor: `${accentColor}12`, color: accentColor }}
-          >
-            {tag}
-          </span>
-        ))}
-      </div>
-
-      {/* WiFi indicator */}
-      {place.tags.some((t) => t.toLowerCase().includes("wifi")) && (
-        <div className="mt-2.5 flex items-center gap-1 border-t border-line pt-2.5">
-          <Wifi className="h-3 w-3 text-pesisir" />
-          <span className="text-[10px] font-medium text-pesisir">WiFi tersedia</span>
-        </div>
-      )}
     </div>
   );
 }
@@ -137,10 +101,9 @@ interface Props {
   districtNama: string;
   environmentPreference: EnvironmentPreference;
   personaId: PersonaId;
-  accentColor: string;
 }
 
-export function SuggestedPlaces({ districtId, districtNama, environmentPreference, personaId, accentColor }: Props) {
+export function SuggestedPlaces({ districtId, districtNama, environmentPreference, personaId }: Props) {
   const [showAll, setShowAll] = useState(false);
 
   const places = getRecommendedPlaces(districtId, environmentPreference, personaId);
@@ -152,33 +115,20 @@ export function SuggestedPlaces({ districtId, districtNama, environmentPreferenc
   const subtitle = `Rekomendasi untuk ${PERSONA_LABEL[personaId]} di ${districtNama}`;
 
   return (
-    <section className="rounded-2xl border border-line bg-white p-6 shadow-[0_2px_12px_rgba(15,23,42,0.07)]">
+    <section>
       {/* Header */}
-      <div className="mb-5">
-        <div className="flex items-center gap-2">
-          <div
-            className="flex h-7 w-7 items-center justify-center rounded-lg text-sm"
-            style={{ backgroundColor: `${accentColor}18` }}
-          >
-            {CATEGORY_ICON[environmentPreference === "quiet" ? "quiet" : environmentPreference === "coworking" ? "coworking" : environmentPreference === "cafe" ? "cafe" : "coworking"]}
-          </div>
-          <div>
-            <p className="text-xs font-medium text-muted-foreground">
-              Tempat yang disarankan
-            </p>
-            <h2 className="text-base font-bold text-ink">{sectionTitle}</h2>
-          </div>
-        </div>
-        <p className="mt-1.5 text-xs text-muted-foreground">{subtitle}</p>
-        <p className="mt-1 font-mono text-[10px] text-muted-foreground">
-          Diurutkan berdasarkan rating · {places.length} tempat ditemukan
+      <div className="mb-4">
+        <h2 className="text-sm font-semibold text-ink">{sectionTitle}</h2>
+        <p className="mt-1 text-xs text-muted-foreground">{subtitle}</p>
+        <p className="mt-1 font-mono text-[11px] text-muted-foreground">
+          Diurutkan berdasarkan rating, {places.length} tempat ditemukan
         </p>
       </div>
 
-      {/* Grid */}
-      <div className="grid gap-3 sm:grid-cols-2">
+      {/* List */}
+      <div className="divide-y divide-line border-y border-line">
         {displayed.map((place) => (
-          <PlaceCard key={place.nama} place={place} accentColor={accentColor} />
+          <PlaceRow key={place.nama} place={place} />
         ))}
       </div>
 
@@ -187,7 +137,7 @@ export function SuggestedPlaces({ districtId, districtNama, environmentPreferenc
         <button
           type="button"
           onClick={() => setShowAll((v) => !v)}
-          className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-line py-2.5 text-xs font-medium text-muted-foreground transition-all hover:border-solid hover:text-ink"
+          className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-[var(--radius-sm)] border border-dashed border-line py-2.5 text-xs font-medium text-muted-foreground transition-colors hover:border-solid hover:text-ink"
         >
           {showAll ? (
             <>
@@ -204,8 +154,8 @@ export function SuggestedPlaces({ districtId, districtNama, environmentPreferenc
       )}
 
       {/* Disclaimer */}
-      <p className="mt-3 text-center font-mono text-[9px] text-muted-foreground">
-        Data berdasarkan kurasi tim · Rating bersifat indikatif · Cek Google Maps untuk info terkini
+      <p className="mt-4 text-center text-xs text-muted-foreground">
+        Data berdasarkan kurasi tim. Rating bersifat indikatif. Cek Google Maps untuk info terkini.
       </p>
     </section>
   );

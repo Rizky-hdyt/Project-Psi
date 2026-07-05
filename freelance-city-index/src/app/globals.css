@@ -58,7 +58,11 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 
-  /* Radius — dua nilai saja: sm untuk input/kontrol kecil, md untuk container */
+  /* Radius — dua nilai saja: sm untuk input/kontrol kecil, md untuk container.
+     Radius besar (page frame, hero, Best Match — 22px) dipakai sebagai
+     rounded-[22px] literal di Result page saja, TIDAK lewat token radius-lg
+     ini karena radius-lg sudah dipakai luas oleh shadcn Button/Input di
+     seluruh app (mengubahnya di sini akan ikut membesarkan semua tombol). */
   --radius-sm: calc(var(--radius) * 0.5);
   --radius-md: var(--radius);
   --radius-lg: var(--radius);
@@ -74,41 +78,41 @@
      warna hanya dipakai untuk makna (aksi utama/Best Match/status),
      tidak untuk dekorasi. Nama token lama dipertahankan supaya
      seluruh komponen ter-remap otomatis (CLAUDE.md §10). */
-  --ink: #17151A;
-  --paper: #F6F5FA;
-  --sawah: #DC2340;       /* signal — CTA utama, Best Match, focus ring */
+  --ink: #1E2330;
+  --paper: #E9E8F2;
+  --sawah: #E0263C;       /* signal — CTA utama, Best Match, focus ring */
   --pesisir: #4B5966;     /* aksen sekunder quiet (info/data, tidak saturated) */
   --genteng: #7A6A52;     /* aksen tersier quiet (dipakai sangat terbatas) */
-  --line: #E7E4EF;
+  --line: #E8EAF0;
   --warning: #B45309;
   --warning-bg: #FEF3C7;
-  --error: #DC2340;
+  --error: #E0263C;
   --error-bg: #FCE7EA;
-  --score-high: #16A34A;
-  --score-mid: #D97706;
-  --score-low: #DC2626;
+  --score-high: #1A9B4B;  /* 2 tingkat saja: hijau (>=80) / oranye (<80), lihat hasil-rekomendasi.html */
+  --score-mid: #F97316;
+  --score-low: #F97316;
   --positive: #0D9488;
   --positive-bg: #CCFBF1;
 
   /* shadcn semantic tokens */
-  --background: #F6F5FA;
-  --foreground: #17151A;
+  --background: #E9E8F2;
+  --foreground: #1E2330;
   --card: #FFFFFF;
-  --card-foreground: #17151A;
+  --card-foreground: #1E2330;
   --popover: #FFFFFF;
-  --popover-foreground: #17151A;
-  --primary: #DC2340;
+  --popover-foreground: #1E2330;
+  --primary: #E0263C;
   --primary-foreground: #FFFFFF;
   --secondary: #F1EFF7;
-  --secondary-foreground: #17151A;
+  --secondary-foreground: #1E2330;
   --muted: #F1EFF7;
-  --muted-foreground: #6E6C78;
+  --muted-foreground: #6B7280;
   --accent: #4B5966;
   --accent-foreground: #FFFFFF;
-  --destructive: #DC2340;
-  --border: #E7E4EF;
-  --input: #E7E4EF;
-  --ring: #DC2340;
+  --destructive: #E0263C;
+  --border: #E8EAF0;
+  --input: #E8EAF0;
+  --ring: #E0263C;
   --radius: 1rem;
 
   /* Sidebar (admin panel) */

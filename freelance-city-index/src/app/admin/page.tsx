@@ -61,13 +61,13 @@ export default function AdminDashboardPage() {
         </div>
         <div className="flex gap-2">
           <Link href="/admin/data">
-            <Button size="sm" className="gap-1.5 bg-sawah text-white hover:bg-sawah/90">
+            <Button size="sm" className="min-h-11 gap-1.5 bg-sawah text-white hover:bg-sawah/90">
               <Database className="h-3.5 w-3.5" />
               Update Data
             </Button>
           </Link>
           <Link href="/admin/audit">
-            <Button size="sm" variant="outline" className="gap-1.5">
+            <Button size="sm" variant="outline" className="min-h-11 gap-1.5">
               <ClipboardList className="h-3.5 w-3.5" />
               Audit Log
             </Button>

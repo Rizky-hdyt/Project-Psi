@@ -20,7 +20,7 @@ export function EmptyState({ onRetry }: EmptyStateProps) {
           variant="outline"
           size="sm"
           onClick={onRetry}
-          className="gap-2 border-line"
+          className="min-h-11 gap-2 border-line"
         >
           <RefreshCw className="h-3.5 w-3.5" />
           Coba Lagi

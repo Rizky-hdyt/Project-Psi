@@ -4,7 +4,7 @@ import {
   Target, BarChart3, Compass, ClipboardEdit, Calculator, ListOrdered, Eye,
 } from "lucide-react";
 import { GlassNavbar } from "@/components/landing/GlassNavbar";
-import { LandingBackground } from "@/components/landing/LandingBackground";
+import { AmbientBackground } from "@/components/shared/AmbientBackground";
 import { LandingFooter } from "@/components/landing/LandingFooter";
 import { HeroBackgroundSlideshow } from "@/components/landing/HeroBackgroundSlideshow";
 import { ScrollReveal } from "@/components/landing/ScrollReveal";
@@ -19,10 +19,10 @@ const FEATURE_BADGES = [
 ];
 
 const STATS = [
-  { value: "5", label: "Districts" },
-  { value: "4", label: "Indicators" },
-  { value: "SAW", label: "Metode Perhitungan" },
-  { value: "100%", label: "Transparent Recommendation" },
+  { value: "5", label: "Distrik" },
+  { value: "4", label: "Indikator" },
+  { value: "1", label: "Metode Perhitungan Berbobot" },
+  { value: "100%", label: "Rekomendasi Transparan" },
 ];
 
 const CHECKLIST = [
@@ -52,7 +52,7 @@ const WHY_CARDS = [
 
 const HOW_STEPS = [
   { icon: ClipboardEdit, num: "1", title: "Isi Preferensi", desc: "Pilih persona kerja dan 4 sinyal preferensi Anda." },
-  { icon: Calculator, num: "2", title: "Perhitungan SAW", desc: "Sistem menghitung skor tiap distrik dengan metode SAW." },
+  { icon: Calculator, num: "2", title: "Hitung Skor Berbobot", desc: "Sistem menghitung skor tiap distrik dengan metode weighted scoring." },
   { icon: ListOrdered, num: "3", title: "Ranking Distrik", desc: "5 distrik diurutkan berdasarkan skor kecocokan Anda." },
   { icon: Eye, num: "4", title: "Lihat Hasil", desc: "Lihat rekomendasi terbaik lengkap dengan alasannya." },
 ];
@@ -60,7 +60,7 @@ const HOW_STEPS = [
 export default function LandingPage() {
   return (
     <main className="relative flex-1">
-      <LandingBackground />
+      <AmbientBackground />
       <GlassNavbar />
 
       {/* ── SECTION 2: Hero ──────────────────────────────────────────── */}

@@ -35,8 +35,8 @@ const PERSONAS: {
     label: "Tech Professional",
     shortLabel: "Tech",
     icon: Laptop,
-    color: "#0E7490",
-    bg: "#CFFAFE",
+    color: "#3B5BA5",
+    bg: "#E8ECF7",
     weights: { internet: 40, cost: 25, community: 20, environment: 15 },
     tagline: "Internet jadi prioritas utama, koneksi stabil adalah syarat kerja.",
   },
@@ -45,8 +45,8 @@ const PERSONAS: {
     label: "Creative Professional",
     shortLabel: "Creative",
     icon: Palette,
-    color: "#9F1239",
-    bg: "#FFE4E6",
+    color: "#946638",
+    bg: "#F3EAE0",
     weights: { internet: 20, cost: 25, community: 25, environment: 30 },
     tagline: "Lingkungan & komunitas sama pentingnya, inspirasi datang dari suasana.",
   },
@@ -55,8 +55,8 @@ const PERSONAS: {
     label: "Student & Fresh Grad",
     shortLabel: "Student",
     icon: GraduationCap,
-    color: "#C2410C",
-    bg: "#FFEDD5",
+    color: "#2F7A6E",
+    bg: "#E7F3F1",
     weights: { internet: 20, cost: 45, community: 20, environment: 15 },
     tagline: "Biaya hidup adalah penentu utama, efisiensi anggaran nomor satu.",
   },
@@ -65,8 +65,8 @@ const PERSONAS: {
     label: "Digital Nomad",
     shortLabel: "Nomad",
     icon: Globe,
-    color: "#4D7C0F",
-    bg: "#ECFCCB",
+    color: "#6B5A3F",
+    bg: "#F0EBE3",
     weights: { internet: 30, cost: 25, community: 25, environment: 20 },
     tagline: "Profil paling seimbang, semua indikator relevan, tidak ada yang diabaikan.",
   },
@@ -78,10 +78,10 @@ const INDICATORS: {
   icon: React.ElementType;
   color: string;
 }[] = [
-  { key: "internet",    label: "Internet",    icon: Wifi,     color: "#0E7490" },
-  { key: "cost",        label: "Biaya Hidup", icon: Wallet,   color: "#C2410C" },
-  { key: "community",   label: "Komunitas",   icon: Users,    color: "#4D7C0F" },
-  { key: "environment", label: "Lingkungan",  icon: TreePine, color: "#475569" },
+  { key: "internet",    label: "Internet",    icon: Wifi,     color: "#3B5BA5" },
+  { key: "cost",        label: "Biaya Hidup", icon: Wallet,   color: "#946638" },
+  { key: "community",   label: "Komunitas",   icon: Users,    color: "#2F7A6E" },
+  { key: "environment", label: "Lingkungan",  icon: TreePine, color: "#6B5A3F" },
 ];
 
 const DATA_SOURCES = [
@@ -100,9 +100,9 @@ function TabCaraKerja() {
       {/* 3 metric boxes */}
       <div className="grid grid-cols-3 gap-3">
         {[
-          { val: "4", label: "Indikator Penilaian", color: "#0E7490", bg: "#CFFAFE" },
-          { val: "4", label: "Profil Pengguna", color: "#C2410C", bg: "#FFEDD5" },
-          { val: "100", label: "Skor Maksimum", color: "#4D7C0F", bg: "#ECFCCB" },
+          { val: "4", label: "Indikator Penilaian", color: "#3B5BA5", bg: "#E8ECF7" },
+          { val: "4", label: "Profil Pengguna", color: "#946638", bg: "#F3EAE0" },
+          { val: "100", label: "Skor Maksimum", color: "#2F7A6E", bg: "#E7F3F1" },
         ].map(({ val, label, color, bg }) => (
           <div key={label} className="rounded-xl border border-line p-4 text-center" style={{ backgroundColor: bg }}>
             <p className="font-mono text-2xl font-bold sm:text-3xl" style={{ color }}>{val}</p>
@@ -169,7 +169,7 @@ function TabBobot() {
               } : {
                 borderColor: "#E2E8F0",
                 backgroundColor: "#fff",
-                color: "#64748B",
+                color: "#6B6E76",
               }}
             >
               <Icon className="h-4 w-4" />
@@ -250,7 +250,7 @@ function TabBobot() {
                           className="inline-block rounded-md px-2 py-0.5 font-mono font-bold"
                           style={isHighest
                             ? { backgroundColor: p.bg, color: p.color }
-                            : { color: "#64748B" }}
+                            : { color: "#6B6E76" }}
                         >
                           {pct}%
                         </span>
@@ -290,11 +290,11 @@ function TabFormula() {
 
   return (
     <div className="space-y-5">
-      <div className="rounded-xl bg-[#0F172A] p-5 font-mono text-sm">
-        <p className="mb-3 text-[#FDBA74] text-xs font-bold uppercase tracking-widest">// Formula Weighted Scoring</p>
-        <p className="text-[#F8FAFC]">
+      <div className="rounded-xl bg-ink p-5 font-mono text-sm">
+        <p className="mb-3 text-xs text-white/50">Formula Weighted Scoring</p>
+        <p className="text-paper">
           Skor_distrik{" "}
-          <span className="text-[#FDBA74]">=</span>
+          <span className="text-white/60">=</span>
           {" Σ (skor_indikator × bobot_persona)"}
         </p>
         <div className="mt-4 border-t border-white/10 pt-4 text-xs text-white/50">
@@ -316,7 +316,7 @@ function TabFormula() {
                 onClick={() => setActivePersona(p.id)}
                 className="flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-all"
                 style={isActive ? { borderColor: p.color, backgroundColor: p.bg, color: p.color }
-                  : { borderColor: "#E2E8F0", color: "#64748B" }}
+                  : { borderColor: "#E2E8F0", color: "#6B6E76" }}
               >
                 <Icon className="h-3 w-3" />
                 {p.shortLabel}
@@ -382,10 +382,7 @@ function TabData() {
                 <p className="text-[11px] text-muted-foreground">{keterangan}</p>
               </div>
             </div>
-            <span
-              className="shrink-0 rounded-full px-2.5 py-1 font-mono text-[10px] font-semibold"
-              style={{ backgroundColor: "#FFEDD5", color: "#C2410C" }}
-            >
+            <span className="shrink-0 font-mono text-xs text-muted-foreground">
               {frekuensi}
             </span>
           </div>
@@ -399,31 +396,20 @@ function TabData() {
 }
 
 // ─── Komponen utama ──────────────────────────────────────────────
+// Dipakai hanya di /algoritma (standalone). Landing punya section
+// transparansi sendiri, jangan reuse komponen ini di sana (CLAUDE.md §6).
 
-interface AlgorithmSectionProps {
-  standalone?: boolean;
-}
-
-export function AlgorithmSection({ standalone = false }: AlgorithmSectionProps) {
+export function AlgorithmSection() {
   const [activeTab, setActiveTab] = useState<TabId>("bobot");
 
   return (
-    <section className={standalone ? "bg-paper" : "border-y border-line bg-white"}>
-      <div className={`mx-auto max-w-[1120px] px-4 sm:px-6 ${standalone ? "py-10 sm:py-14" : "py-14 lg:py-16"}`}>
+    <section>
+      <div className="mx-auto max-w-[1120px] px-4 py-10 sm:px-6 sm:py-14">
         {/* Header */}
         <div className="mb-10 max-w-2xl">
-          <p className="mb-2 font-mono text-xs font-medium uppercase tracking-widest text-sawah">
-            Transparansi · Cara Kerja
-          </p>
-          {standalone ? (
-            <h1 className="font-display text-3xl font-bold text-ink sm:text-4xl">
-              Cara Kerja Algoritma
-            </h1>
-          ) : (
-            <h2 className="font-display text-2xl font-bold text-ink sm:text-3xl">
-              Mengapa rekomendasi Anda berbeda dari orang lain?
-            </h2>
-          )}
+          <h1 className="text-3xl font-bold tracking-tight text-ink sm:text-4xl">
+            Cara Kerja Algoritma
+          </h1>
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
             Sistem ini tidak punya satu bobot tunggal yang berlaku untuk semua orang.
             Setiap persona mendapat bobot yang berbeda, karena kebutuhan freelancer memang tidak sama.
@@ -431,20 +417,15 @@ export function AlgorithmSection({ standalone = false }: AlgorithmSectionProps) 
         </div>
 
         {/* Tab bar */}
-        <div className="mb-8 flex gap-1 overflow-x-auto rounded-xl border border-line bg-white p-1">
+        <div className="mb-8 flex gap-1 overflow-x-auto rounded-xl border border-line bg-muted p-1">
           {TABS.map(({ id, label }) => (
             <button
               key={id}
               type="button"
               onClick={() => setActiveTab(id)}
-              className="flex-1 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200"
-              style={activeTab === id ? {
-                backgroundColor: standalone ? "#F8FAFC" : "#fff",
-                color: "#0F172A",
-                boxShadow: "0 1px 3px rgba(15,23,42,0.10)",
-              } : {
-                color: "#64748B",
-              }}
+              className={`flex-1 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-colors duration-[180ms] ${
+                activeTab === id ? "bg-white font-semibold text-ink shadow-sm" : "text-muted-foreground"
+              }`}
             >
               {label}
             </button>

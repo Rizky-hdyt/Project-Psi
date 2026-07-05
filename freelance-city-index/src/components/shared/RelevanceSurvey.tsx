@@ -41,7 +41,7 @@ function RatingRow({
             aria-label={`Nilai ${n} dari 5`}
             onClick={() => onChange(n)}
             className={cn(
-              "transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded",
+              "rounded p-1 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
               active ? "text-sawah" : "text-line hover:text-sawah/40"
             )}
           >
@@ -105,7 +105,7 @@ export function RelevanceSurvey({
   return (
     <div
       className={cn(
-        "fixed bottom-6 right-6 z-50 w-72 rounded-xl border border-line bg-white shadow-[0_2px_8px_rgba(15,23,42,0.10)]",
+        "fixed bottom-6 right-6 z-50 w-72 rounded-xl bg-white shadow-[0_4px_16px_rgba(15,23,42,0.12)]",
         "animate-in slide-in-from-bottom-4 fade-in duration-300"
       )}
       role="dialog"
@@ -122,7 +122,7 @@ export function RelevanceSurvey({
           type="button"
           onClick={() => setVisible(false)}
           aria-label="Tutup survei"
-          className="rounded p-0.5 text-muted-foreground hover:text-ink focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring transition-colors"
+          className="relative rounded p-0.5 text-muted-foreground after:absolute after:-inset-2.5 after:content-[''] hover:text-ink focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring transition-colors"
         >
           <X className="h-3.5 w-3.5" />
         </button>
@@ -189,7 +189,7 @@ export function RelevanceSurvey({
             <button
               type="button"
               onClick={() => setVisible(false)}
-              className="text-xs text-muted-foreground hover:text-ink focus-visible:outline-none"
+              className="min-h-11 rounded px-1 text-xs text-muted-foreground hover:text-ink focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             >
               Lewati
             </button>
@@ -197,7 +197,7 @@ export function RelevanceSurvey({
               size="sm"
               onClick={handleSubmit}
               disabled={!canSubmit}
-              className="h-7 bg-sawah px-3 text-xs text-white hover:bg-sawah/90 disabled:opacity-40"
+              className="min-h-11 bg-sawah px-3 text-xs text-white hover:bg-sawah/90 disabled:opacity-40"
             >
               {submitting ? "..." : "Kirim"}
             </Button>
