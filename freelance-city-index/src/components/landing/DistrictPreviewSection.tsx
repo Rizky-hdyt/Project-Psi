@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, ChevronDown, Wifi } from "lucide-react";
+import { ChevronDown, Wifi } from "lucide-react";
 import { DISTRICT_VISUALS } from "@/data/districts.visuals";
 import districtsData from "@/data/districts.seed.json";
 import { ScrollReveal } from "@/components/landing/ScrollReveal";
@@ -132,13 +131,18 @@ export function DistrictPreviewSection() {
                       <Wifi className="h-3.5 w-3.5" />
                       {mbps ? `${mbps} Mbps` : "—"}
                     </span>
-                    <Link
-                      href={`/district/${d.id}`}
-                      className="inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-white/25"
+                    <button
+                      type="button"
+                      onClick={() => setExpandedId((prev) => (prev === d.id ? null : d.id))}
+                      aria-expanded={isOpen}
+                      aria-controls={`district-detail-${d.id}`}
+                      className="inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-white/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                     >
-                      Lihat Detail
-                      <ArrowRight className="h-3 w-3" />
-                    </Link>
+                      {isOpen ? "Tutup" : "Lihat Detail"}
+                      <ChevronDown
+                        className={cn("h-3 w-3 transition-transform duration-[180ms]", isOpen && "rotate-180")}
+                      />
+                    </button>
                   </div>
                 </div>
               </ScrollReveal>
