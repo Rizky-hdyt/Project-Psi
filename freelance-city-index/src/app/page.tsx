@@ -73,7 +73,12 @@ export default function LandingPage() {
 
       {/* ── SECTION 2: Hero ──────────────────────────────────────────── */}
       <section id="beranda" className="relative isolate overflow-hidden">
-        <div className="relative min-h-[820px] px-4 pb-16 pt-8 sm:min-h-[760px] sm:px-6 sm:pt-10 lg:px-10">
+        {/* Di lg+ tinggi hero mengikuti viewport (100svh - strip navbar ±76px,
+            di-cap 1000px untuk monitor tinggi) supaya gambar latar memenuhi
+            seluruh layar pertama — dengan tinggi fixed 820px, di laptop lebar
+            rasio kontainer jadi ~2.3 dan object-cover memotong ±40% sisi
+            atas-bawah gambar 4:3, terlihat seperti pita terpotong. */}
+        <div className="relative flex min-h-[820px] flex-col justify-center px-4 pb-16 pt-8 sm:min-h-[760px] sm:px-6 sm:pt-10 lg:min-h-[min(calc(100svh-76px),1000px)] lg:px-10">
           <HeroBackgroundSlideshow />
           <div
             className="pointer-events-none absolute inset-0"
@@ -170,7 +175,7 @@ export default function LandingPage() {
                       <Quote className="h-3.5 w-3.5 shrink-0 text-sawah" />
                       <span className="text-xs font-medium text-ink">Contoh: Sleman</span>
                     </div>
-                    <span className="font-mono text-sm font-bold text-positive">74.9<span className="text-[10px] font-normal text-muted-foreground">/100</span></span>
+                    <span className="font-mono text-sm font-bold text-positive">75.9<span className="text-[10px] font-normal text-muted-foreground">/100</span></span>
                   </div>
                   <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-line">
                     <div className="h-full rounded-full bg-positive" style={{ width: "75%" }} />
