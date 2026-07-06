@@ -14,6 +14,16 @@
 
 ---
 
+### 2026-07-06 lanjutan 12 — Footer kecil di semua halaman publik (termasuk Result)
+
+**Konteks:** User minta setiap halaman punya footer kecil seperti di District Detail, kecuali Landing (punya LandingFooter sendiri) dan Admin.
+
+**Fix:** infrastrukturnya sudah ada (`ConditionalFooter` di root layout) — cukup hapus pengecualian `/result` yang dulu sengaja dibuat meniru mockup hasil-rekomendasi.html tanpa footer. Efek samping positif: Result kembali punya akses ke Admin lewat footer (catatan lanjutan 5 soal "Result kehilangan jalur ke Admin" kini tertutup).
+
+**Verifikasi:** Playwright cek 8 halaman — footer kecil ada di quiz/result/compare/algoritma/assistant/district, tidak ada di admin, dan Landing tetap hanya 1 footer (LandingFooter, tidak dobel). tsc+eslint bersih.
+
+---
+
 ### 2026-07-06 lanjutan 11 — Hero landing: gambar latar memenuhi layar pertama penuh (fix "terpotong atas-bawah" di laptop)
 
 **Konteks:** User lapor gambar pemandangan hero landing terlihat terpotong bagian atas & bawah di laptop.
