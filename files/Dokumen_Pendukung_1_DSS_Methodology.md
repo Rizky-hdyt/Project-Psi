@@ -100,10 +100,11 @@ Pengguna menginput **4 sinyal** pada Quiz Step 1, dalam urutan tampil berikut (s
 Tiga indikator kualitas (Internet/Community/Environment) kini punya selektor eksplisit; Cost ditangani via budget (bukan selektor bobot langsung).
 
 ```
-1. Internet   : bobot_internet  x {Low 0.7 | Medium 1.0 | High 1.3 | Ultra 1.6}
-2. Community  : bobot_community x {Low 0.7 | Medium 1.0 | High 1.3}
-3. Environment: pilihan Quiet/Cafe/Coworking/Flexible -> delta kecil pada Environment (+-5)
-                (TIDAK lagi menambah Community -- menghindari double counting)
+1. Internet   : bobot_internet  x {Low 0.3 | Medium 1.0 | High 1.7 | Ultra 2.5}
+2. Community  : bobot_community x {Low 0.3 | Medium 1.0 | High 1.8}
+3. Environment: delta pada bobot Environment {Quiet +15 | Cafe +8 | Coworking +4 | Flexible +0}
+                (TIDAK lagi menambah Community -- menghindari double counting;
+                Quiet paling sensitif terhadap suasana, Coworking paling tidak)
 4. Cost       : budget = sinyal afordabilitas (flag "di bawah UMK") + tiebreaker (UMK terendah)
 5. Normalisasi: bobot_i' = bobot_i / SIGMA bobot -> SIGMA = 100%
 ```
@@ -167,35 +168,37 @@ Komponen ini dirender di dua tempat: di kartu Best Match pada Result Page (`/res
 
 ## 9. Contoh Perhitungan (4 input, persona baku)
 
-**Skenario:** Persona = **Tech Professional**; Internet = **High (x1.3)**; Community = **Medium (x1.0)**; Environment = **Cafe (+5)**.
+**Skenario:** Persona = **Tech Professional**; Internet = **High (x1.7)**; Community = **Medium (x1.0)**; Environment = **Cafe (+8)**.
 
-**Bobot:** Base Tech 40/25/20/15 -> Internet 40x1.3 = 52; Community 20; Environment 15+5 = 20; Cost 25. SIGMA = 117 ->
+**Bobot:** Base Tech 40/25/20/15 -> Internet 40x1.7 = 68; Community 20; Environment 15+8 = 23; Cost 25. SIGMA = 136 ->
 
 | Indikator | bobot' |
 |-----------|:------:|
-| Internet | 52/117 = **0,444** |
-| Cost | 25/117 = **0,214** |
-| Community | 20/117 = **0,171** |
-| Environment | 20/117 = **0,171** |
+| Internet | 68/136 = **0,500** |
+| Cost | 25/136 = **0,184** |
+| Community | 20/136 = **0,147** |
+| Environment | 23/136 = **0,169** |
 
-**Data indikator (contoh):**
+**Data indikator (seed rebalance 2026-07-06):**
 
 | Wilayah | Internet | Cost | Community | Environment |
 |---------|:--------:|:----:|:---------:|:-----------:|
-| Sleman | 85 | 70 | 80 | 75 |
-| Kota Yogyakarta | 90 | 55 | 90 | 60 |
-| Bantul | 70 | 80 | 60 | 80 |
+| Sleman | 84 | 60 | 75 | 70 |
+| Kota Yogyakarta | 88 | 42 | 97 | 52 |
+| Bantul | 58 | 78 | 62 | 92 |
 
 **Skor:**
 ```
-Sleman = 85x0,444 + 70x0,214 + 80x0,171 + 75x0,171 = 37,8 + 15,0 + 13,7 + 12,8 = 79,2
-Kota   = 90x0,444 + 55x0,214 + 90x0,171 + 60x0,171 = 40,0 + 11,8 + 15,4 + 10,3 = 77,4
-Bantul = 70x0,444 + 80x0,214 + 60x0,171 + 80x0,171 = 31,1 + 17,1 + 10,3 + 13,7 = 72,1
+Sleman = 84x0,500 + 60x0,184 + 75x0,147 + 70x0,169 = 42,0 + 11,0 + 11,0 + 11,8 = 75,9
+Kota   = 88x0,500 + 42x0,184 + 97x0,147 + 52x0,169 = 44,0 + 7,7 + 14,3 + 8,8 = 74,8
+Bantul = 58x0,500 + 78x0,184 + 62x0,147 + 92x0,169 = 29,0 + 14,3 + 9,1 + 15,6 = 68,0
 ```
-**Ranking:** Sleman (79,2) -> Kota (77,4) -> Bantul (72,1). **Best Match: Sleman.**
+**Ranking:** Sleman (75,9) -> Kota (74,8) -> Bantul (68,0). **Best Match: Sleman.**
 
-**Why This Match (Sleman):** kontribusi tertinggi = Internet (37,8) & Cost (15,0) ->
-*"Sleman direkomendasikan karena internet kuat (85/100) sesuai prioritas tinggi Anda, dan biaya hidup relatif terjangkau (70/100). Trade-off: lingkungan sedikit di bawah wilayah ternyaman."*
+**Why This Match (Sleman):** kontribusi tertinggi = Internet (42,0) & Environment (11,8) ->
+*"Sleman direkomendasikan karena internet kuat (84/100) sesuai prioritas tinggi Anda, dan lingkungan kerjanya nyaman (70/100). Trade-off: biaya hidup sedikit di atas wilayah termurah."*
+
+> **Catatan revisi 2026-07-06:** rentang multiplier diperlebar (sebelumnya Internet 0.7–1.6, Community 0.7–1.3, Environment flat +-5). Dengan rentang lama, bobot dasar persona terlalu dominan: simulasi seluruh 192 kombinasi input menunjukkan Best Match nyaris tidak berubah apa pun jawaban user (188/192 kombinasi menghasilkan pemenang yang sama). Rentang baru + rebalance data seed membuat jawaban user benar-benar menentukan hasil: 4 distrik berbeda kini bisa menjadi Best Match.
 
 ---
 

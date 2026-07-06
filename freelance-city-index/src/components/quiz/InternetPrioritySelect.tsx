@@ -5,10 +5,10 @@ import type { QuizInput } from "@/types/quiz";
 import { cn } from "@/lib/utils";
 
 const OPTIONS: { value: QuizInput["internetPriority"]; label: string; sub: string; bars: number }[] = [
-  { value: "low",    label: "Low",    sub: "×0.7 bobot", bars: 1 },
+  { value: "low",    label: "Low",    sub: "×0.3 bobot", bars: 1 },
   { value: "medium", label: "Medium", sub: "×1.0 bobot", bars: 2 },
-  { value: "high",   label: "High",   sub: "×1.3 bobot", bars: 3 },
-  { value: "ultra",  label: "Ultra",  sub: "×1.6 bobot", bars: 4 },
+  { value: "high",   label: "High",   sub: "×1.7 bobot", bars: 3 },
+  { value: "ultra",  label: "Ultra",  sub: "×2.5 bobot", bars: 4 },
 ];
 
 function SignalBars({ count, active }: { count: number; active: boolean }) {

@@ -5,9 +5,9 @@ import type { QuizInput } from "@/types/quiz";
 import { cn } from "@/lib/utils";
 
 const OPTIONS: { value: QuizInput["communityPriority"]; label: string; sub: string; dots: number }[] = [
-  { value: "low",    label: "Low",    sub: "×0.7 bobot", dots: 1 },
+  { value: "low",    label: "Low",    sub: "×0.3 bobot", dots: 1 },
   { value: "medium", label: "Medium", sub: "×1.0 bobot", dots: 2 },
-  { value: "high",   label: "High",   sub: "×1.3 bobot", dots: 3 },
+  { value: "high",   label: "High",   sub: "×1.8 bobot", dots: 3 },
 ];
 
 function ActivityDots({ count, active }: { count: number; active: boolean }) {

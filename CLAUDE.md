@@ -182,9 +182,11 @@ PRD sudah direvisi: Community Priority disisipkan sebagai **FR-004** (bukan suff
 
 ### 5.3 Empat sinyal input quiz (urutan tampil = urutan FR)
 1. **Budget** (FR-002) → sinyal afordabilitas (flag "di bawah UMK") + **tiebreaker**, BUKAN bobot indikator langsung.
-2. **Internet Priority** (FR-003): Low ×0.7 / Medium ×1.0 / High ×1.3 / Ultra ×1.6
-3. **Community Priority** (FR-004): Low ×0.7 / Medium ×1.0 / High ×1.3
-4. **Environment Preference** (FR-005): Quiet/Cafe/Coworking/Flexible → delta ±5 ke skor Environment saja (tidak menambah Community — hindari double counting)
+2. **Internet Priority** (FR-003): Low ×0.3 / Medium ×1.0 / High ×1.7 / Ultra ×2.5
+3. **Community Priority** (FR-004): Low ×0.3 / Medium ×1.0 / High ×1.8
+4. **Environment Preference** (FR-005): delta ke **bobot** Environment saja (tidak menambah Community — hindari double counting): Quiet +0.15 / Cafe +0.08 / Coworking +0.04 / Flexible +0
+
+> Rentang multiplier diperlebar 2026-07-06 (sebelumnya 0.7–1.6 dan delta Environment flat +0.05 untuk semua non-Flexible): dengan rentang lama, bobot persona terlalu dominan — simulasi 192 kombinasi input menunjukkan Best Match nyaris tidak pernah berubah apa pun jawaban user. Dengan rentang baru + data seed rebalance, 4 distrik berbeda bisa jadi Best Match tergantung jawaban (lihat RIWAYAT_PENGERJAAN.md).
 
 ### 5.4 Alur kalkulasi (deterministik)
 ```
@@ -196,9 +198,9 @@ base_weight(persona) → terapkan adjustment dari 4 sinyal → renormalisasi (Σ
 → Why This Match (FR-012): ambil 2 kontribusi tertinggi (nilai_i × bobot_i'), generate teks trade-off
 ```
 
-**Unit test reference case** (dari Dok 1 §9, harus match persis — diperbarui 2026-07-06 setelah rebalance data seed, lihat RIWAYAT_PENGERJAAN.md): Tech Professional, Internet High, Community Medium, Environment Cafe →
-- bobot': Internet 0.444, Cost 0.214, Community 0.171, Environment 0.171
-- Sleman = 74.9 (Best Match), Kota Yogyakarta = 73.6, Bantul = 68.8
+**Unit test reference case** (dari Dok 1 §9, harus match persis — diperbarui 2026-07-06 setelah rebalance data seed + pelebaran multiplier, lihat RIWAYAT_PENGERJAAN.md): Tech Professional, Internet High, Community Medium, Environment Cafe →
+- bobot': Internet 0.500, Cost 0.184, Community 0.147, Environment 0.169
+- Sleman = 75.9 (Best Match), Kota Yogyakarta = 74.8, Bantul = 68.0
 
 ### 5.5 Kapan kalkulasi & real-time update terjadi
 - Quiz Step 1 (FR-001–005): isi input, **belum ada kalkulasi skor**.

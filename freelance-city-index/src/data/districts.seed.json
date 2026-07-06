@@ -62,29 +62,125 @@
     }
   ],
   "scores": [
-    { "districtId": "kota-yogyakarta", "indicatorId": "internet",     "skor": 90, "updatedAt": "2026-06-20T00:00:00.000Z" },
-    { "districtId": "kota-yogyakarta", "indicatorId": "cost",         "skor": 55, "updatedAt": "2026-06-20T00:00:00.000Z" },
-    { "districtId": "kota-yogyakarta", "indicatorId": "community",    "skor": 90, "updatedAt": "2026-06-20T00:00:00.000Z" },
-    { "districtId": "kota-yogyakarta", "indicatorId": "environment",  "skor": 60, "updatedAt": "2026-06-20T00:00:00.000Z" },
-
-    { "districtId": "sleman",          "indicatorId": "internet",     "skor": 85, "updatedAt": "2026-06-20T00:00:00.000Z" },
-    { "districtId": "sleman",          "indicatorId": "cost",         "skor": 70, "updatedAt": "2026-06-20T00:00:00.000Z" },
-    { "districtId": "sleman",          "indicatorId": "community",    "skor": 80, "updatedAt": "2026-06-20T00:00:00.000Z" },
-    { "districtId": "sleman",          "indicatorId": "environment",  "skor": 75, "updatedAt": "2026-06-20T00:00:00.000Z" },
-
-    { "districtId": "bantul",          "indicatorId": "internet",     "skor": 70, "updatedAt": "2026-06-20T00:00:00.000Z" },
-    { "districtId": "bantul",          "indicatorId": "cost",         "skor": 80, "updatedAt": "2026-06-20T00:00:00.000Z" },
-    { "districtId": "bantul",          "indicatorId": "community",    "skor": 60, "updatedAt": "2026-06-20T00:00:00.000Z" },
-    { "districtId": "bantul",          "indicatorId": "environment",  "skor": 80, "updatedAt": "2026-06-20T00:00:00.000Z" },
-
-    { "districtId": "gunungkidul",     "indicatorId": "internet",     "skor": 40, "updatedAt": "2026-06-20T00:00:00.000Z" },
-    { "districtId": "gunungkidul",     "indicatorId": "cost",         "skor": 95, "updatedAt": "2026-06-20T00:00:00.000Z" },
-    { "districtId": "gunungkidul",     "indicatorId": "community",    "skor": 30, "updatedAt": "2026-06-20T00:00:00.000Z" },
-    { "districtId": "gunungkidul",     "indicatorId": "environment",  "skor": 85, "updatedAt": "2026-06-20T00:00:00.000Z" },
-
-    { "districtId": "kulon-progo",     "indicatorId": "internet",     "skor": 50, "updatedAt": "2026-06-20T00:00:00.000Z" },
-    { "districtId": "kulon-progo",     "indicatorId": "cost",         "skor": 88, "updatedAt": "2026-06-20T00:00:00.000Z" },
-    { "districtId": "kulon-progo",     "indicatorId": "community",    "skor": 40, "updatedAt": "2026-06-20T00:00:00.000Z" },
-    { "districtId": "kulon-progo",     "indicatorId": "environment",  "skor": 78, "updatedAt": "2026-06-20T00:00:00.000Z" }
+    {
+      "districtId": "kota-yogyakarta",
+      "indicatorId": "internet",
+      "skor": 88,
+      "updatedAt": "2026-07-06T00:00:00.000Z"
+    },
+    {
+      "districtId": "kota-yogyakarta",
+      "indicatorId": "cost",
+      "skor": 42,
+      "updatedAt": "2026-07-06T00:00:00.000Z"
+    },
+    {
+      "districtId": "kota-yogyakarta",
+      "indicatorId": "community",
+      "skor": 97,
+      "updatedAt": "2026-07-06T00:00:00.000Z"
+    },
+    {
+      "districtId": "kota-yogyakarta",
+      "indicatorId": "environment",
+      "skor": 52,
+      "updatedAt": "2026-07-06T00:00:00.000Z"
+    },
+    {
+      "districtId": "sleman",
+      "indicatorId": "internet",
+      "skor": 84,
+      "updatedAt": "2026-07-06T00:00:00.000Z"
+    },
+    {
+      "districtId": "sleman",
+      "indicatorId": "cost",
+      "skor": 60,
+      "updatedAt": "2026-07-06T00:00:00.000Z"
+    },
+    {
+      "districtId": "sleman",
+      "indicatorId": "community",
+      "skor": 75,
+      "updatedAt": "2026-07-06T00:00:00.000Z"
+    },
+    {
+      "districtId": "sleman",
+      "indicatorId": "environment",
+      "skor": 70,
+      "updatedAt": "2026-07-06T00:00:00.000Z"
+    },
+    {
+      "districtId": "bantul",
+      "indicatorId": "internet",
+      "skor": 58,
+      "updatedAt": "2026-07-06T00:00:00.000Z"
+    },
+    {
+      "districtId": "bantul",
+      "indicatorId": "cost",
+      "skor": 78,
+      "updatedAt": "2026-07-06T00:00:00.000Z"
+    },
+    {
+      "districtId": "bantul",
+      "indicatorId": "community",
+      "skor": 62,
+      "updatedAt": "2026-07-06T00:00:00.000Z"
+    },
+    {
+      "districtId": "bantul",
+      "indicatorId": "environment",
+      "skor": 92,
+      "updatedAt": "2026-07-06T00:00:00.000Z"
+    },
+    {
+      "districtId": "gunungkidul",
+      "indicatorId": "internet",
+      "skor": 32,
+      "updatedAt": "2026-07-06T00:00:00.000Z"
+    },
+    {
+      "districtId": "gunungkidul",
+      "indicatorId": "cost",
+      "skor": 99,
+      "updatedAt": "2026-07-06T00:00:00.000Z"
+    },
+    {
+      "districtId": "gunungkidul",
+      "indicatorId": "community",
+      "skor": 26,
+      "updatedAt": "2026-07-06T00:00:00.000Z"
+    },
+    {
+      "districtId": "gunungkidul",
+      "indicatorId": "environment",
+      "skor": 95,
+      "updatedAt": "2026-07-06T00:00:00.000Z"
+    },
+    {
+      "districtId": "kulon-progo",
+      "indicatorId": "internet",
+      "skor": 45,
+      "updatedAt": "2026-07-06T00:00:00.000Z"
+    },
+    {
+      "districtId": "kulon-progo",
+      "indicatorId": "cost",
+      "skor": 90,
+      "updatedAt": "2026-07-06T00:00:00.000Z"
+    },
+    {
+      "districtId": "kulon-progo",
+      "indicatorId": "community",
+      "skor": 40,
+      "updatedAt": "2026-07-06T00:00:00.000Z"
+    },
+    {
+      "districtId": "kulon-progo",
+      "indicatorId": "environment",
+      "skor": 82,
+      "updatedAt": "2026-07-06T00:00:00.000Z"
+    }
   ]
 }
