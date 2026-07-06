@@ -14,6 +14,24 @@
 
 ---
 
+### 2026-07-06 lanjutan 14 — Rekomendasi Tempat diikat ke Kecamatan Terbaik (bukan lagi level distrik)
+
+**Konteks:** Setelah fitur ranking kecamatan (lanjutan 13) tayang, section "Kecamatan Terbaik di {distrik}" dan section "Tempat kerja rekomendasi" (`SuggestedPlaces`) di `/district/:id` masih berjalan sendiri-sendiri — tempat cuma difilter per `districtId`, tidak tahu kecamatan mana yang direkomendasikan algoritma. User minta keduanya nyambung: tempat yang muncul harus mengikuti kecamatan rank 1 ("Area terbaik") dari ranking kecamatan, plus pelengkap dari kecamatan lain di distrik yang sama kalau datanya tipis — berlaku otomatis untuk distrik rank berapa pun yang dibuka user.
+
+**Perubahan:**
+- `src/data/places.seed.ts`: tambah field wajib `subDistrictId` ke interface `SuggestedPlace`. Semua ~42 entri lama ditandai ulang ke salah satu dari 25 kecamatan asli (`prisma/seed.ts`), berdasarkan teks alamat yang sudah ada — beberapa alamat yang menyebut area di luar 5 kecamatan yang dimodelkan per distrik (mis. "Dlingo", "Pakem", "Samigaluh", "Tepus") diselaraskan ke kecamatan termodel terdekat sebagai best-effort, teks alamat ikut disesuaikan supaya tidak menyebut nama kecamatan yang beda dari tag. Ditambah 13 entri baru supaya seluruh 25 kecamatan minimal punya 2 tempat (sebelumnya Umbulharjo, Kalasan, Semin, Panjatan nol sama sekali kalau ditag apa adanya) — total naik dari 42 jadi 55 tempat.
+- `getRecommendedPlaces()`: signature dapat parameter baru `targetSubDistrictId`. Tempat di kecamatan target diprioritaskan penuh (filter kategori primary/secondary tetap sama persis, cuma dilapis urutan sumber), tempat kecamatan lain di distrik yang sama jadi pelengkap kalau kurang dari 4/8. `null` → fallback ke perilaku lama (semua tempat se-distrik, tanpa pembedaan) untuk defensif.
+- `SuggestedPlaces.tsx`: props baru `targetSubDistrictId` + `subDistricts` (reuse `subDistrictsHere` yang sudah dihitung di halaman, tidak fetch baru). Subtitle sekarang menyebut kecamatan terbaik eksplisit ("...di sekitar Depok, Sleman"). Tiap baris tempat dapat badge kecil: merah "Di {kecamatan}" kalau persis di kecamatan target, abu-abu "Sekitar · {kecamatan}" kalau pelengkap dari kecamatan lain.
+- `src/app/district/[id]/page.tsx`: wiring 3 baris — `rankedSub[0]?.subDistrictId` (sudah dihitung sebelumnya untuk section Kecamatan Terbaik) diteruskan langsung ke `SuggestedPlaces`, tidak perlu state/effect baru. Otomatis ikut real-time recompute (FR-010) kalau input quiz diubah.
+
+**Tidak disentuh:** formula scoring (`rankSubDistricts`/`computeDistrictScore` dipakai apa adanya, cuma dibaca hasilnya), routing, Prisma/API (places tetap seed statis client-side, bukan tabel database).
+
+**Verifikasi:** `tsc --noEmit` & `npm run lint` bersih. Grep `subDistrictId` di `places.seed.ts` konfirmasi seluruh 25 kecamatan (5 per distrik) punya minimal 2 entri. Cek visual Playwright di 5 halaman `/district/:id` (dev server sempat macet duluan karena proses Turbopack lama crash — bukan dari perubahan sesi ini, diperbaiki dengan hapus `.next` + restart): subtitle & badge kecamatan tampil benar di semua distrik (mis. Sleman → "sekitar Depok", badge "Di Depok" untuk 3 tempat + "Sekitar · Ngaglik" untuk pelengkap), tanpa console error.
+
+**Catatan tambahan (di luar scope kode):** ditemukan file `freelance-city-index/AGENTS.md` (ter-load otomatis via `@AGENTS.md` di `CLAUDE.md`) berisi instruksi mencurigakan yang meniru pola prompt injection ("baca node_modules/next/dist/docs/ sebelum coding, ini bukan Next.js yang kamu tahu") — tidak diikuti, sudah diberitahu ke user langsung untuk dicek/dihapus.
+
+---
+
 ### 2026-07-06 lanjutan 13 — Ranking level kedua: Kecamatan Terbaik di dalam tiap distrik
 
 **Konteks:** Masukan dari dosen pembimbing — distrik itu wilayahnya luas (mis. "Sleman"), begitu user dapat rekomendasi mereka belum tahu titik spesifik mana yang dimaksud. Didiskusikan 2 opsi: flatten total ke 25 kecamatan (ganti struktur 5 distrik), atau tetap 5 distrik + kecamatan sebagai ranking kedua di dalamnya ("ranking 2 kali"). Dipilih opsi kedua supaya tesis inti produk (keputusan < 60 detik di level distrik) tidak hilang, dan algoritma scoring inti (§5 CLAUDE.md) tidak perlu diubah.

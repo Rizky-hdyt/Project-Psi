@@ -388,6 +388,8 @@ export default function DistrictDetailPage() {
             <SuggestedPlaces
               districtId={district.id}
               districtNama={district.nama}
+              targetSubDistrictId={rankedSub[0]?.subDistrictId ?? null}
+              subDistricts={subDistrictsHere}
               environmentPreference={input.environmentPreference as "cafe" | "quiet" | "coworking" | "flexible"}
               personaId={input.personaId as "tech-professional" | "creative-professional" | "student-fresh-graduate" | "digital-nomad"}
             />

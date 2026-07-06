@@ -10,6 +10,7 @@ import {
   type PersonaId,
   type PlaceCategory,
 } from "@/data/places.seed";
+import type { SubDistrict } from "@/types/district";
 
 const CATEGORY_ICON: Record<PlaceCategory, React.ElementType> = {
   cafe: Coffee,
@@ -50,7 +51,7 @@ function PriceRange({ level }: { level: 1 | 2 | 3 }) {
   );
 }
 
-function PlaceRow({ place }: { place: SuggestedPlace }) {
+function PlaceRow({ place, isInTarget, subDistrictNama }: { place: SuggestedPlace; isInTarget: boolean; subDistrictNama: string | null }) {
   const Icon = CATEGORY_ICON[place.kategori];
   const hasWifi = place.tags.some((t) => t.toLowerCase().includes("wifi"));
   const mapsUrl = place.gmapsSlug
@@ -69,6 +70,17 @@ function PlaceRow({ place }: { place: SuggestedPlace }) {
             <span className="flex items-center gap-1 text-xs text-muted-foreground">
               <Wifi className="h-3 w-3" />
               WiFi
+            </span>
+          )}
+          {subDistrictNama && (
+            <span
+              className={
+                isInTarget
+                  ? "rounded-full bg-sawah/10 px-2 py-0.5 text-[10px] font-medium text-sawah"
+                  : "rounded-full bg-paper px-2 py-0.5 text-[10px] font-medium text-muted-foreground"
+              }
+            >
+              {isInTarget ? `Di ${subDistrictNama}` : `Sekitar · ${subDistrictNama}`}
             </span>
           )}
         </div>
@@ -99,20 +111,34 @@ function PlaceRow({ place }: { place: SuggestedPlace }) {
 interface Props {
   districtId: string;
   districtNama: string;
+  targetSubDistrictId: string | null;
+  subDistricts: SubDistrict[];
   environmentPreference: EnvironmentPreference;
   personaId: PersonaId;
 }
 
-export function SuggestedPlaces({ districtId, districtNama, environmentPreference, personaId }: Props) {
+export function SuggestedPlaces({
+  districtId,
+  districtNama,
+  targetSubDistrictId,
+  subDistricts,
+  environmentPreference,
+  personaId,
+}: Props) {
   const [showAll, setShowAll] = useState(false);
 
-  const places = getRecommendedPlaces(districtId, environmentPreference, personaId);
+  const places = getRecommendedPlaces(districtId, targetSubDistrictId, environmentPreference, personaId);
   if (places.length === 0) return null;
 
   const displayed = showAll ? places : places.slice(0, 4);
 
+  const subDistrictNamaById = new Map(subDistricts.map((sd) => [sd.id, sd.nama]));
+  const targetNama = targetSubDistrictId ? subDistrictNamaById.get(targetSubDistrictId) ?? null : null;
+
   const sectionTitle = ENV_LABEL[environmentPreference];
-  const subtitle = `Rekomendasi untuk ${PERSONA_LABEL[personaId]} di ${districtNama}`;
+  const subtitle = targetNama
+    ? `Rekomendasi untuk ${PERSONA_LABEL[personaId]} di sekitar ${targetNama}, ${districtNama}`
+    : `Rekomendasi untuk ${PERSONA_LABEL[personaId]} di ${districtNama}`;
 
   return (
     <section>
@@ -128,7 +154,12 @@ export function SuggestedPlaces({ districtId, districtNama, environmentPreferenc
       {/* List */}
       <div className="divide-y divide-line border-y border-line">
         {displayed.map((place) => (
-          <PlaceRow key={place.nama} place={place} />
+          <PlaceRow
+            key={place.nama}
+            place={place}
+            isInTarget={place.subDistrictId === targetSubDistrictId}
+            subDistrictNama={subDistrictNamaById.get(place.subDistrictId) ?? null}
+          />
         ))}
       </div>
 
