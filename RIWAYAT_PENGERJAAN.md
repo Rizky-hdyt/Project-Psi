@@ -14,6 +14,48 @@
 
 ---
 
+### 2026-07-06 lanjutan 11 — Hero landing: gambar latar memenuhi layar pertama penuh (fix "terpotong atas-bawah" di laptop)
+
+**Konteks:** User lapor gambar pemandangan hero landing terlihat terpotong bagian atas & bawah di laptop.
+
+**Root cause:** tinggi hero fixed `min-h-[820px]` sementara lebarnya full viewport — di laptop 1920px rasio kontainer ~2.3, padahal 3 dari 5 foto hero berrasio 4:3 (1920×1440), jadi `object-cover` membuang ±40% sisi atas-bawah. Ditambah di layar tinggi, section berikutnya ikut kelihatan di bawah hero sehingga gambar tampak seperti pita terjepit.
+
+**Fix:** di `page.tsx`, tinggi hero pada `lg+` diganti mengikuti viewport: `lg:min-h-[min(calc(100svh-76px),1000px)]` (76px = strip navbar, cap 1000px untuk monitor tinggi) + `flex flex-col justify-center` supaya konten tetap center vertikal. Mobile/tablet tidak berubah (820/760px). Sekalian: angka contoh skor Sleman di kartu hero diupdate 74.9 → 75.9 (mengikuti reference case baru lanjutan 10).
+
+**Verifikasi:** screenshot Playwright 1366×768, 1440×900, 1920×1080 — gambar (Tugu Yogyakarta dst.) kini memenuhi seluruh layar pertama, terlihat utuh dari puncak sampai dasar, tidak ada strip section lain menjepit. `tsc` bersih.
+
+---
+
+### 2026-07-06 lanjutan 10 — Algoritma: pelebaran multiplier sinyal quiz supaya jawaban user benar-benar menentukan hasil
+
+**Konteks:** User merasa hasil rekomendasi "seperti template" — persona yang dipilih seolah sudah mengunci hasil, mau internet/community priority diisi apa pun hasilnya sama. Simulasi seluruh 192 kombinasi input (4 persona × 4 internet × 3 community × 4 environment) dengan data DB aktual membuktikan keluhan itu benar: pemenang nyaris tidak pernah berubah dalam satu persona (mis. Tech Professional: 42/48 kombinasi tetap Sleman), dan **Quiet/Cafe/Coworking efeknya persis identik** karena `ENVIRONMENT_DELTA` sama semua (+0.05).
+
+**Root cause:** (1) rentang multiplier lama (0.7–1.6) terlalu sempit — bobot persona jadi jangkar dominan, jawaban user cuma menggeser bobot beberapa persen; (2) delta Environment flat untuk 3 dari 4 opsi = sinyal mati; (3) budget memang by-design hanya tiebreaker + flag UMK (tidak diubah).
+
+**Fix (disetujui user — struktur pertanyaan quiz TIDAK berubah, tetap sesuai PRD):**
+- `normalize.ts`: Internet Low ×0.3 / Medium ×1.0 / High ×1.7 / Ultra ×2.5 (lama 0.7/1.0/1.3/1.6); Community Low ×0.3 / Medium ×1.0 / High ×1.8 (lama 0.7/1.0/1.3); Environment delta dibedakan per opsi: Quiet +0.15, Cafe +0.08, Coworking +0.04, Flexible +0 (lama flat +0.05 non-Flexible).
+- Label multiplier di `InternetPrioritySelect.tsx` & `CommunityPrioritySelect.tsx` disesuaikan.
+- `districts.seed.json` disinkronkan ke nilai skor DB/prisma seed (sebelumnya stale, masih berisi nilai pra-rebalance — file ini hanya dipakai landing preview, bukan scoring, tapi biar tidak menyesatkan).
+- CLAUDE.md §5.3–5.4 dan Dok 1 (files/Dokumen_Pendukung_1) §6 + §9 diupdate: reference case baru Tech/High/Medium/Cafe → bobot' 0.500/0.184/0.147/0.169 → Sleman 75,9 (Best Match), Kota 74,8, Bantul 68,0.
+
+**Hasil simulasi 192 kombinasi (data DB, multiplier baru):** pemenang tersebar Sleman 68×, Bantul 66×, Kota Yogyakarta 34×, Gunungkidul 24×; tiap persona punya 3–4 kemungkinan Best Match dan 10–11 urutan ranking unik (sebelumnya 3–7 unik dan 1–2 pemenang). Kulon Progo tetap tidak pernah menang — wajar, profilnya "berkembang" dan selalu kalah niche dari Bantul (lebih seimbang) atau Gunungkidul (lebih murah+tenang).
+
+**Catatan:** tidak perlu re-seed DB — data skor di Neon tidak berubah, yang berubah hanya logika bobot di client.
+
+**Verifikasi:** `tsc --noEmit` bersih; simulasi reference case match dengan angka yang ditulis ke CLAUDE.md/Dok 1.
+
+---
+
+### 2026-07-06 lanjutan 9 — Landing: kartu 5 distrik jadi expand penjelasan singkat, bukan navigasi
+
+**Konteks:** User minta tombol "Lihat Detail" di section 5 distrik landing page tidak lagi pindah ke `/district/:id`, melainkan menampilkan penjelasan singkat inline.
+
+**Fix:** di `DistrictPreviewSection.tsx`, `<Link>` "Lihat Detail" diganti `<button>` yang men-toggle panel penjelasan (`d.alasan`) yang sama dengan toggle di area judul kartu; label berubah "Lihat Detail"/"Tutup" + chevron berputar. Route `/district/:id` sendiri tetap ada (permanen §6).
+
+**Verifikasi:** `tsc --noEmit` bersih.
+
+---
+
 ### 2026-07-06 lanjutan 8 — Fix noda gradasi mentah di pojok kiri-atas navbar Landing/Quiz
 
 **Konteks:** User kirim screenshot dengan lingkaran menandai pojok kiri-atas halaman Landing — ada noda warna oranye/peach mentah yang kelihatan tidak disengaja, di celah antara tepi viewport dan pill navbar.

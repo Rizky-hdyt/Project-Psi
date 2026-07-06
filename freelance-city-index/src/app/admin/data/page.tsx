@@ -60,16 +60,18 @@ export default function DataManagementPage() {
   const [savingDistrict, setSavingDistrict] = useState<string | null>(null);
   const [conflictDistrict, setConflictDistrict] = useState<string | null>(null);
 
-  // Initialize forms once data is loaded from API
-  useEffect(() => {
-    if (!loading && districts.length > 0) {
-      const init: Record<string, DistrictForm> = {};
-      for (const d of districts) {
-        init[d.id] = initForm(d.id, scores);
-      }
-      setForms(init);
+  // Initialize forms once data is loaded from API — dilakukan saat render
+  // (pola "adjust state when props change"), bukan di dalam effect, supaya
+  // tidak memicu cascading render setelah commit
+  const [formsInitialized, setFormsInitialized] = useState(false);
+  if (!loading && districts.length > 0 && !formsInitialized) {
+    const init: Record<string, DistrictForm> = {};
+    for (const d of districts) {
+      init[d.id] = initForm(d.id, scores);
     }
-  }, [loading, districts, scores]);
+    setForms(init);
+    setFormsInitialized(true);
+  }
 
   useEffect(() => {
     if (savedDistrict) {

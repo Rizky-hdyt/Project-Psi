@@ -28,7 +28,10 @@ export function useDistricts(): UseDistrictsResult {
       })
       .then((data) => {
         setDistricts(
-          data.map(({ scores: _, ...d }) => d as District)
+          data.map(({ scores, ...d }) => {
+            void scores; // dibuang — scores dipisah ke state sendiri di bawah
+            return d as District;
+          })
         );
         setScores(
           data.flatMap((d) =>
