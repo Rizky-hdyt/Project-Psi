@@ -218,8 +218,10 @@ function QuizContent() {
     return (
       <div className="relative isolate flex min-h-screen flex-col overflow-hidden">
         <AmbientBackground />
-        <div className="sticky top-2 z-50 mx-auto w-full max-w-[1220px] px-2 sm:top-4 sm:px-4">
-          <PillNavbar />
+        <div className="sticky top-0 z-50 bg-paper/80 backdrop-blur-xl">
+          <div className="mx-auto max-w-[1220px] px-2 py-2 sm:px-4 sm:py-3">
+            <PillNavbar />
+          </div>
         </div>
         <div className="flex flex-1 items-center justify-center px-4 py-16">
           <div className="w-full max-w-[360px]">
@@ -292,8 +294,10 @@ function QuizContent() {
   return (
     <div className="relative isolate min-h-screen overflow-hidden">
       <AmbientBackground />
-      <div className="sticky top-2 z-50 mx-auto w-full max-w-[1220px] px-2 sm:top-4 sm:px-4">
-        <PillNavbar />
+      <div className="sticky top-0 z-50 bg-paper/80 backdrop-blur-xl">
+        <div className="mx-auto max-w-[1220px] px-2 py-2 sm:px-4 sm:py-3">
+          <PillNavbar />
+        </div>
       </div>
 
       {/* Step progress bar — dua lingkaran bernomor, terpusat */}

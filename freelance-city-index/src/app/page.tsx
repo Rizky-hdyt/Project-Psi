@@ -61,8 +61,14 @@ export default function LandingPage() {
   return (
     <main className="relative flex-1">
       <AmbientBackground />
-      <div className="sticky top-2 z-50 mx-auto max-w-[1220px] px-2 sm:top-4 sm:px-4">
-        <PillNavbar />
+      {/* Strip pembungkus navbar dikasih backing lembut (bukan transparan
+          penuh) — tanpa ini, celah di sekitar pill nav menampakkan gradasi
+          AmbientBackground yang pekat mentah-mentah di pojok kiri-atas,
+          kelihatan seperti noda warna yang tidak disengaja. */}
+      <div className="sticky top-0 z-50 bg-paper/80 backdrop-blur-xl">
+        <div className="mx-auto max-w-[1220px] px-2 py-2 sm:px-4 sm:py-3">
+          <PillNavbar />
+        </div>
       </div>
 
       {/* ── SECTION 2: Hero ──────────────────────────────────────────── */}

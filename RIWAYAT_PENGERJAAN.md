@@ -14,6 +14,18 @@
 
 ---
 
+### 2026-07-06 lanjutan 8 — Fix noda gradasi mentah di pojok kiri-atas navbar Landing/Quiz
+
+**Konteks:** User kirim screenshot dengan lingkaran menandai pojok kiri-atas halaman Landing — ada noda warna oranye/peach mentah yang kelihatan tidak disengaja, di celah antara tepi viewport dan pill navbar.
+
+**Root cause:** Wrapper sticky navbar (lanjutan 6/7) cuma berupa `<div>` transparan dengan padding (`px-2 top-2`) — celah di sekitar pill langsung menampakkan `AmbientBackground` yang gradasinya pekat di kiri (by design, lihat lanjutan sebelumnya soal gradasi kiri-kanan). Di Result page hal ini tidak kelihatan aneh karena pill navbar-nya duduk DI DALAM panel "page frame" yang punya backing sendiri (`bg-paper/70`) — celah di sekitar pill menampakkan backing panel yang lembut, bukan gradasi mentah. Landing/Quiz tidak punya panel pembungkus itu, jadi celahnya menampakkan gradasi vivid langsung.
+
+**Fix:** strip pembungkus navbar dikasih backing sendiri (`bg-paper/80 backdrop-blur-xl`, full-width, `sticky top-0`), pill navbar diletakkan di dalam sub-container `max-w-[1220px]` dengan padding — jadi celah di sekitar pill sekarang menampakkan backing paper/glass yang lembut & konsisten, bukan gradasi mentah, meniru persis cara Result page menghindari masalah yang sama.
+
+**Verifikasi:** screenshot ulang Landing (desktop & mobile) — noda gradasi di pojok sudah hilang, strip navbar terlihat rata & konsisten di seluruh lebar. `tsc`, `eslint`, `npm run build` (22 routes) bersih.
+
+---
+
 ### 2026-07-06 lanjutan 7 — Fix PillNavbar "kepotong" di layar sempit + efek glass
 
 **Konteks:** Setelah Landing & Quiz pindah ke `PillNavbar` (lanjutan 6), user lapor heading/header terlihat "kepotong" di layar sempit, dan minta navbar dibuat transparan seperti glass.
