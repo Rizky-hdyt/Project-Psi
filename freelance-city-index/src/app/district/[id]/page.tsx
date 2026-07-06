@@ -1,16 +1,19 @@
 "use client";
 
+import { useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import {
   ArrowLeft, Wifi, Wallet, Users, Leaf, Crown, Star, Building2, ChevronRight,
+  MapPin, ChevronDown, ChevronUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PillNavbar } from "@/components/shared/PillNavbar";
 import { WhyThisMatch } from "@/components/shared/WhyThisMatch";
 import { SuggestedPlaces } from "@/components/district/SuggestedPlaces";
 import { rankDistricts } from "@/lib/scoring/rank";
+import { rankSubDistricts } from "@/lib/scoring/rankSubDistricts";
 import { computeAdjustedWeights } from "@/lib/scoring/normalize";
 import { useDistricts } from "@/hooks/useDistricts";
 import { getDistrictVisual } from "@/data/districts.visuals";
@@ -45,7 +48,8 @@ export default function DistrictDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const params = useSearchParams();
-  const { districts, scores, loading, error } = useDistricts();
+  const { districts, scores, subDistricts, subDistrictScores, loading, error } = useDistricts();
+  const [expandedSubDistrict, setExpandedSubDistrict] = useState<string | null>(null);
 
   if (loading) {
     return (
@@ -92,6 +96,9 @@ export default function DistrictDetailPage() {
   const ranked      = rankDistricts(input, districts, scores);
   const rankedEntry = ranked.find((r) => r.districtId === id);
   const weights     = computeAdjustedWeights(input);
+
+  const subDistrictsHere = subDistricts.filter((sd) => sd.districtId === id);
+  const rankedSub = rankSubDistricts(input, subDistrictsHere, subDistrictScores);
 
   const districtScores = Object.fromEntries(
     scores
@@ -223,6 +230,76 @@ export default function DistrictDetailPage() {
               ))}
             </div>
           </section>
+
+          {/* Kecamatan Terbaik — ranking level kedua di dalam distrik ini, pakai
+              formula scoring yang sama persis dengan level distrik (lihat
+              rankSubDistricts), supaya user tahu titik spesifik di dalam
+              distrik yang luas ini, bukan cuma nama kabupaten/kota. */}
+          {rankedSub.length > 0 && (
+            <section className="mt-3.5 rounded-2xl bg-white p-4 shadow-[0_4px_14px_rgba(30,35,48,0.04)] sm:p-5">
+              <h2 className="text-sm font-extrabold text-ink">Kecamatan Terbaik di {district.nama}</h2>
+              <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
+                Diranking pakai bobot &amp; preferensi yang sama dengan hasil quiz Anda.
+              </p>
+
+              <div className="mt-4 divide-y divide-line rounded-2xl border border-line">
+                {rankedSub.map((r) => {
+                  const sd = subDistrictsHere.find((s) => s.id === r.subDistrictId)!;
+                  const isFirst = r.rank === 1;
+                  const isExpanded = expandedSubDistrict === r.subDistrictId;
+                  return (
+                    <div key={r.subDistrictId} className="px-4 py-3.5 sm:px-5">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setExpandedSubDistrict((prev) => (prev === r.subDistrictId ? null : r.subDistrictId))
+                        }
+                        className="flex w-full items-center gap-3.5 text-left"
+                      >
+                        <span
+                          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-extrabold text-white"
+                          style={{ backgroundColor: isFirst ? "#F59E0B" : "var(--ink)" }}
+                        >
+                          {r.rank}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="flex items-center gap-1.5 text-sm font-extrabold text-ink">
+                            <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                            {sd.nama}
+                            {isFirst && (
+                              <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700">
+                                Terbaik
+                              </span>
+                            )}
+                          </p>
+                          <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                            {sd.ringkasanKarakteristik}
+                          </p>
+                        </div>
+                        <span className="shrink-0 text-right">
+                          <span className="font-mono text-lg font-extrabold text-positive">
+                            {r.skorTotal.toFixed(1)}
+                          </span>
+                          <span className="ml-0.5 text-[11px] font-semibold text-muted-foreground">/100</span>
+                        </span>
+                        {isExpanded ? (
+                          <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+                        )}
+                      </button>
+
+                      {isExpanded && (
+                        <div className="ml-11 mt-3 rounded-xl bg-paper/60 p-3.5">
+                          <WhyThisMatch ranked={r} districtNama={sd.nama} />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
 
           {/* Tentang */}
           <section className="mt-3.5 rounded-2xl bg-white p-4 shadow-[0_4px_14px_rgba(30,35,48,0.04)] sm:p-5">

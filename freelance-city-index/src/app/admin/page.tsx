@@ -366,8 +366,14 @@ export default function AdminDashboardPage() {
                       </span>
                       <div className="min-w-0 flex-1">
                         <p className="text-[12px] font-semibold leading-snug text-[var(--a-ink-2)]">
-                          Mengubah skor <b>{INDICATOR_LABELS[entry.indicatorId] ?? entry.indicatorId}</b> distrik{" "}
-                          <b>{entry.district?.nama ?? entry.districtId}</b> ({entry.nilaiLama}→{entry.nilaiBaru})
+                          Mengubah skor <b>{INDICATOR_LABELS[entry.indicatorId] ?? entry.indicatorId}</b>{" "}
+                          {entry.subDistrictNama ? "kecamatan" : "distrik"}{" "}
+                          <b>
+                            {entry.subDistrictNama
+                              ? `${entry.subDistrictNama} (${entry.district?.nama ?? entry.districtId})`
+                              : (entry.district?.nama ?? entry.districtId)}
+                          </b>{" "}
+                          ({entry.nilaiLama}→{entry.nilaiBaru})
                         </p>
                         <p className="mt-0.5 font-mono text-[10.5px] font-semibold text-[var(--a-faint)]">
                           {timeAgo(entry.createdAt)}

@@ -305,6 +305,16 @@ interface RecommendationResult {
 }
 ```
 
+**Extension 2026-07-06 — Kecamatan (ranking level 2):** ditambahkan `SubDistrict` &
+`SubDistrictScore` (relasi ke `District`, skema di `prisma/schema.prisma`) untuk
+ranking kecamatan di dalam satu distrik — lihat `src/types/district.ts`,
+`src/lib/scoring/rankSubDistricts.ts`, dan RIWAYAT_PENGERJAAN.md (lanjutan 13) untuk
+detail & rationale lengkap. Ini aditif murni: interface `District`/`DistrictScore`/
+`RecommendationResult` di atas tidak berubah, tidak ada indikator ke-5 (kolom
+tambahan dataset kecamatan seperti `Tourism_Score` diperlakukan sebagai data
+mentah/tampilan, bukan bobot scoring — sama seperti `umk`/`coworkingCount` di
+level distrik).
+
 ---
 
 ## 8. MVP Scope — Batas Tegas (MoSCoW Discipline) [PERMANEN]
@@ -406,9 +416,18 @@ Setiap sub-section di bawah dipisah dua kolom: **Yang harus ada (permanen, fungs
 
 **Default V1 (visual, bebas diganti):** Bentuk kartu (expandable/flat/tab), warna badge Best Match, mini-chart per indikator, sidebar perbandingan skor, ada-tidaknya fitur compare/dialog, semua styling visual.
 
+**Extension 2026-07-06:** subtitle kecil "Area terbaik: {kecamatan}" di kartu Best
+Match & tiap kartu ranking, dihitung dari `rankSubDistricts` — lihat RIWAYAT_PENGERJAAN.md
+lanjutan 13.
+
 ### 11.5 District Detail (`/district/:id`) — FR-011
 
 **Permanen (functional):** District Snapshot wajib menampilkan minimal 6 aspek: Internet Quality, Rentang Biaya Kost, Estimasi Biaya Hidup, Aktivitas Komunitas, Best For Persona, Ringkasan Karakteristik. `WhyThisMatch` di-reuse dari komponen yang sama dipakai di Result (§6). Wajib ada cara kembali ke Result.
+
+**Extension 2026-07-06:** section tambahan "Kecamatan Terbaik di {distrik}" — ranking
+level 2 (5 kecamatan di dalam distrik ini), formula sama persis dengan ranking
+distrik (`rankSubDistricts`, reuse `computeAdjustedWeights`/`computeDistrictScore`).
+Detail & rationale di RIWAYAT_PENGERJAAN.md lanjutan 13.
 
 **Default V1 (visual, bebas diganti):** Layout grid snapshot (2/3 kolom), ada-tidaknya hero image/gradient, ikon representatif tiap aspek, styling tombol kembali.
 
@@ -417,6 +436,11 @@ Setiap sub-section di bawah dipisah dua kolom: **Yang harus ada (permanen, fungs
 **Permanen (functional):** Login wajib sebelum akses dashboard/data/audit. Input indikator wajib divalidasi 0–100 dengan feedback real-time (sebelum submit, bukan cuma saat submit). Audit log harus mencatat perubahan data (nilai lama, nilai baru, siapa, kapan). Data yang berumur >7 hari harus punya penanda visual yang berbeda dari data segar (soal kejelasan informasi, bukan soal warna spesifik).
 
 **Default V1 (visual, bebas diganti):** Styling tabel, warna badge "data lama", bentuk form input, komponen toast konfirmasi — semua bebas, termasuk mengganti dari tabel ke card list kalau itu pilihan desain yang lebih baik selama datanya tetap sama-sama scannable.
+
+**Extension 2026-07-06:** `/admin/data` — tiap kartu distrik dapat section
+"Kecamatan" collapsible (5 form skor per distrik, validasi & audit log sama persis
+polanya dengan distrik). `/admin/audit` & Dashboard menampilkan label "Kec. {nama}
+({distrik})" untuk entri kecamatan.
 
 ---
 
@@ -512,6 +536,7 @@ freelance-city-index/
 │   │   │   ├── normalize.ts           # adjustment + renormalisasi
 │   │   │   ├── score.ts               # Skor_distrik calculation
 │   │   │   ├── rank.ts                # ranking + tiebreaker UMK
+│   │   │   ├── rankSubDistricts.ts    # ranking level 2: kecamatan di dalam 1 distrik (2026-07-06)
 │   │   │   └── whyThisMatch.ts        # top-2 kontribusi generator
 │   │   ├── utils.ts                   # shadcn cn() helper
 │   │   └── validation/adminInput.ts   # validasi 0-100, FR-A05

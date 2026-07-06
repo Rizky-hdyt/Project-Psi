@@ -12,6 +12,16 @@ export interface RankedDistrict {
   isBelowUMK: boolean;
 }
 
+// Ranking level kedua — kecamatan di dalam satu distrik (lihat rankSubDistricts).
+export interface RankedSubDistrict {
+  subDistrictId: string;
+  districtId: string;
+  rank: number;
+  skorTotal: number;
+  skorPerIndikator: Record<IndicatorId, number>;
+  kontribusi: Record<IndicatorId, number>;
+}
+
 export interface RecommendationResult {
   sessionId: string;
   personaId: PersonaId;

@@ -11,6 +11,8 @@ export interface AuditEntry {
   operator: string;
   createdAt: string;
   district?: { nama: string };
+  subDistrictId?: string | null;
+  subDistrictNama?: string | null;
 }
 
 interface UseAuditLogResult {

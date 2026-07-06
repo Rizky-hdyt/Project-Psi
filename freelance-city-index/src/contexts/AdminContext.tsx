@@ -55,6 +55,7 @@ interface AdminContextValue {
   logout: () => Promise<void>;
   updateScore: (districtId: string, indicatorId: string, skor: number) => Promise<{ ok: boolean; error?: string }>;
   updateScoresBulk: (districtId: string, indicators: BulkScoreItem[]) => Promise<BulkSaveResult>;
+  updateSubDistrictScoresBulk: (subDistrictId: string, indicators: BulkScoreItem[]) => Promise<BulkSaveResult>;
 }
 
 const AdminContext = createContext<AdminContextValue | null>(null);
@@ -130,8 +131,29 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     return { ok: false, conflict: false, error: data.error ?? "Gagal menyimpan" };
   }
 
+  // Sama pola dengan updateScoresBulk, cuma target endpoint & body key beda
+  // (subDistrictId, bukan districtId) — kecamatan punya tabel skor sendiri.
+  async function updateSubDistrictScoresBulk(
+    subDistrictId: string,
+    indicators: BulkScoreItem[]
+  ): Promise<BulkSaveResult> {
+    const res = await fetch("/api/admin/subdistrict-scores/bulk", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ subDistrictId, indicators }),
+    });
+    if (res.ok) return { ok: true };
+    const data = await res.json();
+    if (res.status === 409) {
+      return { ok: false, conflict: true, error: data.message ?? "Data ini sudah diubah di sesi lain" };
+    }
+    return { ok: false, conflict: false, error: data.error ?? "Gagal menyimpan" };
+  }
+
   return (
-    <AdminContext.Provider value={{ state, login, logout, updateScore, updateScoresBulk }}>
+    <AdminContext.Provider
+      value={{ state, login, logout, updateScore, updateScoresBulk, updateSubDistrictScoresBulk }}
+    >
       {children}
     </AdminContext.Provider>
   );

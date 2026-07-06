@@ -34,6 +34,7 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { RelevanceSurvey } from "@/components/shared/RelevanceSurvey";
 import { WhyThisMatch } from "@/components/shared/WhyThisMatch";
 import { rankDistricts } from "@/lib/scoring/rank";
+import { rankSubDistricts } from "@/lib/scoring/rankSubDistricts";
 import { useDistricts } from "@/hooks/useDistricts";
 import { DistrictSwatch } from "@/components/shared/DistrictSwatch";
 import { AmbientBackground } from "@/components/shared/AmbientBackground";
@@ -183,6 +184,7 @@ function ResultHero({
   resultUrl,
   onCompare,
   onRetakeQuiz,
+  topKecamatan,
 }: {
   personaLabel: string;
   ranked: RankedDistrict[];
@@ -191,6 +193,7 @@ function ResultHero({
   resultUrl: string;
   onCompare: () => void;
   onRetakeQuiz: () => void;
+  topKecamatan: Record<string, string>;
 }) {
   const districtMap = Object.fromEntries(districts.map((d) => [d.id, d]));
   const best = ranked[0];
@@ -281,6 +284,12 @@ function ResultHero({
                     Best Match
                   </span>
                   <h2 className="mt-1.5 text-lg font-bold tracking-tight text-ink">{bestDistrict.nama}</h2>
+                  {topKecamatan[bestDistrict.id] && (
+                    <p className="mt-1 flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
+                      <MapPin className="h-3 w-3 shrink-0" />
+                      Area terbaik: {topKecamatan[bestDistrict.id]}
+                    </p>
+                  )}
                   <p className="mt-2 text-[11px] text-muted-foreground">Skor Keseluruhan</p>
                   <p className="font-mono text-2xl font-bold text-positive">
                     {best.skorTotal.toFixed(1)}
@@ -328,10 +337,12 @@ function RankingGrid({
   ranked,
   districts,
   resultUrl,
+  topKecamatan,
 }: {
   ranked: RankedDistrict[];
   districts: District[];
   resultUrl: string;
+  topKecamatan: Record<string, string>;
 }) {
   const districtMap = Object.fromEntries(districts.map((d) => [d.id, d]));
   const qs = resultUrl.split("?")[1] ?? "";
@@ -371,6 +382,11 @@ function RankingGrid({
               </div>
               <div className="p-3.5">
                 <p className="truncate text-[15px] font-extrabold tracking-tight text-ink">{d.nama}</p>
+                {topKecamatan[d.id] && (
+                  <p className="mt-0.5 truncate text-[10px] font-medium text-muted-foreground">
+                    Area terbaik: {topKecamatan[d.id]}
+                  </p>
+                )}
                 <p className="mt-0.5 text-[10.5px] font-semibold text-muted-foreground">Skor Keseluruhan</p>
                 <p className="mt-1.5 font-mono text-xl font-extrabold" style={{ color: scoreColor(r.skorTotal) }}>
                   {r.skorTotal.toFixed(1)}
@@ -398,7 +414,7 @@ function ResultContent() {
 
   const [compareOpen, setCompareOpen] = useState(false);
 
-  const { districts, scores, loading: distLoading, error: distError } = useDistricts();
+  const { districts, scores, subDistricts, subDistrictScores, loading: distLoading, error: distError } = useDistricts();
 
   if (!personaId) {
     return (
@@ -452,6 +468,19 @@ function ResultContent() {
   const quizParams = `persona=${personaId}&budget=${budget}&internet=${internet}&community=${community}&environment=${environment}`;
   const personaLabel = PERSONA_NAMES[personaId] ?? personaId;
 
+  // Area terbaik per distrik — cuma nama kecamatan #1, murah secara komputasi
+  // (pure function, data sudah ter-fetch), langsung menjawab "Sleman yang mana"
+  // di momen pertama user melihat nama distrik.
+  const topKecamatan: Record<string, string> = {};
+  for (const d of districts) {
+    const subHere = subDistricts.filter((sd) => sd.districtId === d.id);
+    const rankedSub = rankSubDistricts(input, subHere, subDistrictScores);
+    if (rankedSub.length > 0) {
+      const top = subHere.find((sd) => sd.id === rankedSub[0].subDistrictId);
+      if (top) topKecamatan[d.id] = top.nama;
+    }
+  }
+
   const bestDistrict = districts.find((d) => d.id === ranked[0]?.districtId);
   const assistantCtx: AssistantContext | null = bestDistrict
     ? {
@@ -472,9 +501,10 @@ function ResultContent() {
         resultUrl={resultUrl}
         onCompare={() => setCompareOpen(true)}
         onRetakeQuiz={() => router.push("/quiz")}
+        topKecamatan={topKecamatan}
       />
 
-      <RankingGrid ranked={ranked} districts={districts} resultUrl={resultUrl} />
+      <RankingGrid ranked={ranked} districts={districts} resultUrl={resultUrl} topKecamatan={topKecamatan} />
 
       <div className="mt-3.5 rounded-[22px] bg-white p-4 shadow-[0_4px_14px_rgba(30,35,48,0.04)] sm:p-5">
         <ScoreComparisonTable ranked={ranked} districts={districts} />

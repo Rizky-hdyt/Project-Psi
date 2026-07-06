@@ -17,7 +17,9 @@ export function tier(skor: number): string {
 }
 
 interface Props {
-  ranked: RankedDistrict;
+  // Cuma butuh 2 field ini — dibuat longgar (bukan RankedDistrict penuh) supaya
+  // RankedSubDistrict (ranking level kecamatan) bisa dipakai juga tanpa adaptasi.
+  ranked: Pick<RankedDistrict, "kontribusi" | "skorPerIndikator">;
   districtNama: string;
 }
 

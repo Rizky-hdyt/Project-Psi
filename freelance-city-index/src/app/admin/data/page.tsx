@@ -2,7 +2,7 @@
 
 import { useState, useEffect, ChangeEvent, useMemo } from "react";
 import Image from "next/image";
-import { Save, CheckCircle2, TriangleAlert, RefreshCw } from "lucide-react";
+import { Save, CheckCircle2, TriangleAlert, RefreshCw, ChevronDown, ChevronUp, MapPin } from "lucide-react";
 import { useAdmin } from "@/contexts/AdminContext";
 import { useAdminSearch } from "@/contexts/AdminSearchContext";
 import { useDistricts } from "@/hooks/useDistricts";
@@ -50,15 +50,42 @@ function initForm(
   return form;
 }
 
+// Sama persis initForm, cuma filter by subDistrictId — kecamatan pakai tabel
+// skor sendiri (SubDistrictScore) jadi tidak bisa reuse initForm langsung.
+function initSubForm(
+  subDistrictId: string,
+  scores: { subDistrictId: string; indicatorId: string; skor: number; updatedAt: string }[]
+): DistrictForm {
+  const form = {} as DistrictForm;
+  for (const ind of INDICATORS) {
+    const found = scores.find(
+      (s) => s.subDistrictId === subDistrictId && s.indicatorId === ind.id
+    );
+    form[ind.id] = {
+      value: found ? String(found.skor) : "",
+      error: null,
+      saved: false,
+      loadedUpdatedAt: found?.updatedAt ?? null,
+    };
+  }
+  return form;
+}
+
 export default function DataManagementPage() {
-  const { updateScoresBulk } = useAdmin();
+  const { updateScoresBulk, updateSubDistrictScoresBulk } = useAdmin();
   const { query } = useAdminSearch();
-  const { districts, scores, loading, error } = useDistricts();
+  const { districts, scores, subDistricts, subDistrictScores, loading, error } = useDistricts();
 
   const [forms, setForms] = useState<Record<string, DistrictForm>>({});
   const [savedDistrict, setSavedDistrict] = useState<string | null>(null);
   const [savingDistrict, setSavingDistrict] = useState<string | null>(null);
   const [conflictDistrict, setConflictDistrict] = useState<string | null>(null);
+
+  const [subForms, setSubForms] = useState<Record<string, DistrictForm>>({});
+  const [savedSubDistrict, setSavedSubDistrict] = useState<string | null>(null);
+  const [savingSubDistrict, setSavingSubDistrict] = useState<string | null>(null);
+  const [conflictSubDistrict, setConflictSubDistrict] = useState<string | null>(null);
+  const [expandedDistricts, setExpandedDistricts] = useState<Set<string>>(new Set());
 
   // Initialize forms once data is loaded from API — dilakukan saat render
   // (pola "adjust state when props change"), bukan di dalam effect, supaya
@@ -73,12 +100,38 @@ export default function DataManagementPage() {
     setFormsInitialized(true);
   }
 
+  const [subFormsInitialized, setSubFormsInitialized] = useState(false);
+  if (!loading && subDistricts.length > 0 && !subFormsInitialized) {
+    const init: Record<string, DistrictForm> = {};
+    for (const sd of subDistricts) {
+      init[sd.id] = initSubForm(sd.id, subDistrictScores);
+    }
+    setSubForms(init);
+    setSubFormsInitialized(true);
+  }
+
   useEffect(() => {
     if (savedDistrict) {
       const t = setTimeout(() => setSavedDistrict(null), 3000);
       return () => clearTimeout(t);
     }
   }, [savedDistrict]);
+
+  useEffect(() => {
+    if (savedSubDistrict) {
+      const t = setTimeout(() => setSavedSubDistrict(null), 3000);
+      return () => clearTimeout(t);
+    }
+  }, [savedSubDistrict]);
+
+  function toggleExpanded(districtId: string) {
+    setExpandedDistricts((prev) => {
+      const next = new Set(prev);
+      if (next.has(districtId)) next.delete(districtId);
+      else next.add(districtId);
+      return next;
+    });
+  }
 
   function handleChange(districtId: string, indicatorId: IndicatorId, e: ChangeEvent<HTMLInputElement>) {
     const val = e.target.value;
@@ -157,6 +210,85 @@ export default function DataManagementPage() {
   function hasFormError(districtId: string): boolean {
     if (!forms[districtId]) return false;
     return INDICATORS.some((ind) => !!forms[districtId][ind.id].error);
+  }
+
+  function handleSubChange(subDistrictId: string, indicatorId: IndicatorId, e: ChangeEvent<HTMLInputElement>) {
+    const val = e.target.value;
+    const err = val === "" ? null : validateIndicatorScore(val);
+    setSubForms((prev) => ({
+      ...prev,
+      [subDistrictId]: {
+        ...prev[subDistrictId],
+        [indicatorId]: { ...prev[subDistrictId][indicatorId], value: val, error: err, saved: false },
+      },
+    }));
+  }
+
+  async function handleSubSave(subDistrictId: string) {
+    const form = subForms[subDistrictId];
+    let hasError = false;
+    const updated = { ...form } as DistrictForm;
+
+    for (const ind of INDICATORS) {
+      const { value } = form[ind.id];
+      if (value === "") {
+        updated[ind.id] = { ...form[ind.id], error: "Wajib diisi" };
+        hasError = true;
+        continue;
+      }
+      const err = validateIndicatorScore(value);
+      if (err) {
+        updated[ind.id] = { ...form[ind.id], error: err };
+        hasError = true;
+      }
+    }
+
+    if (hasError) {
+      setSubForms((prev) => ({ ...prev, [subDistrictId]: updated }));
+      return;
+    }
+
+    setConflictSubDistrict(null);
+    setSavingSubDistrict(subDistrictId);
+    const result = await updateSubDistrictScoresBulk(
+      subDistrictId,
+      INDICATORS.map((ind) => ({
+        indicatorId: ind.id,
+        skor: Number(form[ind.id].value),
+        expectedUpdatedAt: form[ind.id].loadedUpdatedAt,
+      }))
+    );
+    setSavingSubDistrict(null);
+
+    if (result.conflict) {
+      setConflictSubDistrict(subDistrictId);
+      return;
+    }
+
+    if (result.ok) {
+      const saved = { ...form } as DistrictForm;
+      for (const ind of INDICATORS) {
+        saved[ind.id] = { ...updated[ind.id], saved: true };
+      }
+      setSubForms((prev) => ({ ...prev, [subDistrictId]: saved }));
+      setSavedSubDistrict(subDistrictId);
+    }
+  }
+
+  function isSubFormDirty(subDistrictId: string): boolean {
+    const form = subForms[subDistrictId];
+    if (!form) return false;
+    return INDICATORS.some((ind) => {
+      const original = subDistrictScores.find(
+        (s) => s.subDistrictId === subDistrictId && s.indicatorId === ind.id
+      );
+      return form[ind.id].value !== String(original?.skor ?? "");
+    });
+  }
+
+  function hasSubFormError(subDistrictId: string): boolean {
+    if (!subForms[subDistrictId]) return false;
+    return INDICATORS.some((ind) => !!subForms[subDistrictId][ind.id].error);
   }
 
   const districtName = (id: string) =>
@@ -320,6 +452,137 @@ export default function DataManagementPage() {
                     {isSaving ? "Menyimpan..." : `Simpan ${districtName(district.id)}`}
                   </button>
                 </div>
+
+                {(() => {
+                  const subDistrictsHere = subDistricts.filter((sd) => sd.districtId === district.id);
+                  if (subDistrictsHere.length === 0) return null;
+                  const isExpanded = expandedDistricts.has(district.id);
+
+                  return (
+                    <div className="mt-4 border-t border-[var(--a-line-2)] pt-4">
+                      <button
+                        type="button"
+                        onClick={() => toggleExpanded(district.id)}
+                        className="flex w-full items-center justify-between text-[12.5px] font-bold text-[var(--a-ink-2)]"
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <MapPin className="h-3.5 w-3.5" />
+                          Kecamatan ({subDistrictsHere.length})
+                        </span>
+                        {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                      </button>
+
+                      {isExpanded && (
+                        <div className="mt-3.5 space-y-3.5">
+                          {subDistrictsHere.map((sd) => {
+                            const subForm = subForms[sd.id];
+                            if (!subForm) return null;
+                            const isSubSaved = savedSubDistrict === sd.id;
+                            const isSubSaving = savingSubDistrict === sd.id;
+                            const hasSubConflict = conflictSubDistrict === sd.id;
+                            const subDirty = isSubFormDirty(sd.id);
+                            const subHasErr = hasSubFormError(sd.id);
+
+                            return (
+                              <div
+                                key={sd.id}
+                                className="rounded-[12px] border border-[var(--a-line-2)] bg-[var(--a-bg-2,#fafafa)] p-4"
+                              >
+                                {hasSubConflict && (
+                                  <div
+                                    className="mb-3 flex items-start gap-2.5 rounded-[10px] border px-3.5 py-3"
+                                    style={{ borderColor: "var(--a-amber)", background: "var(--a-amber-soft)" }}
+                                    role="alert"
+                                  >
+                                    <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" style={{ color: "var(--a-amber)" }} />
+                                    <div className="flex-1">
+                                      <p className="text-[12.5px] font-semibold text-[var(--a-ink-2)]">
+                                        Data kecamatan {sd.nama} sudah diubah di sesi lain. Muat ulang dulu
+                                        sebelum menyimpan lagi.
+                                      </p>
+                                      <button
+                                        type="button"
+                                        onClick={() => window.location.reload()}
+                                        className="mt-2 inline-flex items-center gap-1.5 text-[12px] font-bold text-[var(--a-red)] hover:underline"
+                                      >
+                                        <RefreshCw className="h-3 w-3" />
+                                        Muat Ulang Halaman
+                                      </button>
+                                    </div>
+                                  </div>
+                                )}
+
+                                <div className="mb-3 flex items-center justify-between gap-3">
+                                  <h3 className="text-[13px] font-extrabold text-[var(--a-ink)]">{sd.nama}</h3>
+                                  {isSubSaved && (
+                                    <span className="flex items-center gap-1.5 text-xs font-bold text-[var(--a-red)]">
+                                      <CheckCircle2 className="h-3.5 w-3.5" />
+                                      Tersimpan
+                                    </span>
+                                  )}
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                  {INDICATORS.map((ind) => {
+                                    const field = subForm[ind.id];
+                                    return (
+                                      <div key={ind.id} className="space-y-1">
+                                        <label
+                                          htmlFor={`${sd.id}-${ind.id}`}
+                                          className="text-[11px] font-bold text-[var(--a-ink-2)]"
+                                        >
+                                          {ind.label}
+                                        </label>
+                                        <input
+                                          id={`${sd.id}-${ind.id}`}
+                                          type="number"
+                                          min={0}
+                                          max={100}
+                                          step={1}
+                                          value={field.value}
+                                          onChange={(e) => handleSubChange(sd.id, ind.id, e)}
+                                          aria-invalid={!!field.error}
+                                          aria-describedby={field.error ? `${sd.id}-${ind.id}-err` : undefined}
+                                          className={cn(
+                                            "min-h-11 w-full rounded-[10px] border bg-white px-3 font-mono text-sm text-[var(--a-ink)] outline-none transition-colors",
+                                            field.error
+                                              ? "border-[var(--a-red)]"
+                                              : "border-[var(--a-line-2)] focus:border-[#f2aab5] focus:shadow-[0_0_0_3px_rgba(224,38,60,.07)]"
+                                          )}
+                                        />
+                                        {field.error && (
+                                          <p
+                                            id={`${sd.id}-${ind.id}-err`}
+                                            className="text-xs font-semibold text-[var(--a-red)]"
+                                            role="alert"
+                                          >
+                                            {field.error}
+                                          </p>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+
+                                <div className="mt-3 flex justify-end">
+                                  <button
+                                    type="button"
+                                    disabled={!subDirty || subHasErr || isSubSaving || hasSubConflict}
+                                    onClick={() => handleSubSave(sd.id)}
+                                    className="flex min-h-9 items-center gap-1.5 rounded-[10px] bg-[var(--a-red)] px-3.5 text-[12px] font-bold text-white shadow-[0_2px_6px_rgba(224,38,60,.25)] transition-colors hover:bg-[var(--a-red-dark)] disabled:cursor-not-allowed disabled:opacity-40"
+                                  >
+                                    <Save className="h-3 w-3" />
+                                    {isSubSaving ? "Menyimpan..." : `Simpan ${sd.nama}`}
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             );
           })}

@@ -34,6 +34,7 @@ export default function AuditLogPage() {
     return logs.filter(
       (l) =>
         (l.district?.nama ?? l.districtId).toLowerCase().includes(q) ||
+        (l.subDistrictNama ?? "").toLowerCase().includes(q) ||
         (INDICATOR_LABELS[l.indicatorId] ?? l.indicatorId).toLowerCase().includes(q)
     );
   }, [logs, query]);
@@ -105,7 +106,9 @@ export default function AuditLogPage() {
                           >
                             <SlidersHorizontal className="h-3 w-3" />
                           </span>
-                          {entry.district?.nama ?? entry.districtId}
+                          {entry.subDistrictNama
+                            ? `Kec. ${entry.subDistrictNama} (${entry.district?.nama ?? entry.districtId})`
+                            : (entry.district?.nama ?? entry.districtId)}
                         </span>
                       </td>
                       <td className="px-4 py-3 font-medium text-[var(--a-muted)]">

@@ -20,6 +20,7 @@ model District {
   ringkasanKarakteristik String
   scores                 DistrictScore[]
   auditLogs              AuditLog[]
+  subDistricts           SubDistrict[]
 }
 
 model DistrictScore {
@@ -33,15 +34,49 @@ model DistrictScore {
   @@unique([districtId, indicatorId])
 }
 
+// Kecamatan — level ranking kedua di dalam satu distrik (lihat rankSubDistricts).
+// UMK tidak disimpan di sini karena di Indonesia UMK ditetapkan per Kabupaten/Kota,
+// bukan per kecamatan — semua kecamatan dalam satu distrik berbagi umk induknya.
+model SubDistrict {
+  id                     String             @id
+  districtId             String
+  nama                   String
+  latitude               Float?
+  longitude              Float?
+  estimasiBiayaHidup     Int
+  coworkingCount         Int
+  cafeCount              Int
+  universityCount        Int
+  tourismScore           Float
+  ringkasanKarakteristik String
+  district               District           @relation(fields: [districtId], references: [id])
+  scores                 SubDistrictScore[]
+}
+
+model SubDistrictScore {
+  id            String      @id @default(cuid())
+  subDistrictId String
+  indicatorId   String
+  skor          Float
+  updatedAt     DateTime    @default(now()) @updatedAt
+  subDistrict   SubDistrict @relation(fields: [subDistrictId], references: [id])
+
+  @@unique([subDistrictId, indicatorId])
+}
+
 model AuditLog {
-  id          String   @id @default(cuid())
-  districtId  String
-  indicatorId String
-  nilaiLama   Float
-  nilaiBaru   Float
-  operator    String
-  createdAt   DateTime @default(now())
-  district    District @relation(fields: [districtId], references: [id])
+  id              String   @id @default(cuid())
+  districtId      String
+  indicatorId     String
+  nilaiLama       Float
+  nilaiBaru       Float
+  operator        String
+  createdAt       DateTime @default(now())
+  district        District @relation(fields: [districtId], references: [id])
+  // Diisi kalau entri ini sebenarnya tentang kecamatan (districtId tetap diisi
+  // = distrik induknya, supaya relasi lama tidak perlu berubah).
+  subDistrictId   String?
+  subDistrictNama String?
 }
 
 model Survey {

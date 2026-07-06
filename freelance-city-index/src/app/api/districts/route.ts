@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 export async function GET() {
   try {
     const districts = await prisma.district.findMany({
-      include: { scores: true },
+      include: { scores: true, subDistricts: { include: { scores: true } } },
       orderBy: { nama: "asc" },
     });
     return NextResponse.json(districts);

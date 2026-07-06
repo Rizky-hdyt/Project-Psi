@@ -14,6 +14,28 @@
 
 ---
 
+### 2026-07-06 lanjutan 13 — Ranking level kedua: Kecamatan Terbaik di dalam tiap distrik
+
+**Konteks:** Masukan dari dosen pembimbing — distrik itu wilayahnya luas (mis. "Sleman"), begitu user dapat rekomendasi mereka belum tahu titik spesifik mana yang dimaksud. Didiskusikan 2 opsi: flatten total ke 25 kecamatan (ganti struktur 5 distrik), atau tetap 5 distrik + kecamatan sebagai ranking kedua di dalamnya ("ranking 2 kali"). Dipilih opsi kedua supaya tesis inti produk (keputusan < 60 detik di level distrik) tidak hilang, dan algoritma scoring inti (§5 CLAUDE.md) tidak perlu diubah.
+
+**Sumber data:** `files/Dataset_25_Kecamatan_FCI_Yogyakarta.xlsx` dari dosen pembimbing — 25 baris (5 kecamatan × 5 distrik), skor Internet/Cost/Community/Environment skala 0–10 (dikali 10 ke skala 0–100 yang sudah dipakai `DistrictScore`). Kolom lain (`Tourism_Score`, `Cafes`, `Universities`, `Coworking_Spaces`, `Estimated_Monthly_Cost_IDR`, `Latitude`/`Longitude`) sengaja **tidak** dijadikan indikator ke-5 — diperlakukan sebagai data mentah/tampilan saja (persis pola `umk`/`coworkingCount`/`internetMbps` di level distrik yang juga tampil tapi tidak ikut bobot), supaya formula scoring distrik dan kecamatan tetap identik.
+
+**Perubahan:**
+- `prisma/schema.prisma`: model baru `SubDistrict` + `SubDistrictScore` (relasi ke `District`), `AuditLog` dapat 2 kolom nullable `subDistrictId`/`subDistrictNama`. Migration `20260706130531_add_subdistrict`.
+- `prisma/seed.ts`: seed 25 `SubDistrict` + 100 `SubDistrictScore` dari dataset asli, `ringkasanKarakteristik` ditulis ulang jadi kalimat Bahasa Indonesia dari kolom `Notes`.
+- `src/types/district.ts`, `src/types/recommendation.ts`: tipe `SubDistrict`, `SubDistrictScore`, `RankedSubDistrict`.
+- `src/lib/scoring/rankSubDistricts.ts` (baru): reuse langsung `computeAdjustedWeights`/`computeDistrictScore`/`computeKontribusi` dari `normalize.ts`/`score.ts` (tidak diubah) — formula sama persis dengan `rank.ts`, cuma tiebreaker beda (skor internet tertinggi, bukan UMK terendah, karena UMK di Indonesia satu nilai per Kabupaten/Kota, dibagi rata semua kecamatan di dalamnya).
+- `src/components/shared/WhyThisMatch.tsx`: prop `ranked` dilonggarkan jadi `Pick<RankedDistrict, "kontribusi"|"skorPerIndikator">` supaya bisa dipakai ulang untuk `RankedSubDistrict` tanpa adaptasi.
+- API: `/api/districts` sekarang include `subDistricts` bersarang; endpoint admin baru `/api/admin/subdistrict-scores/bulk` (copy pola atomic transaction + optimistic locking dari `/api/admin/scores/bulk`). `useDistricts()` dan `AdminContext` (`updateSubDistrictScoresBulk`) diperluas mengikuti pola yang sama persis dengan distrik.
+- UI: `/admin/data` — tiap kartu distrik dapat section "Kecamatan" collapsible (5 form skor, sama seperti distrik). `/admin/audit` & Dashboard — label entri berubah jadi "Kec. {nama} ({distrik})" kalau itu edit kecamatan. `/district/:id` — section baru "Kecamatan Terbaik di {distrik}" (ranking 5 kecamatan, expand per-kartu untuk lihat `WhyThisMatch`). `/result` — subtitle kecil "Area terbaik: {kecamatan}" di kartu Best Match & tiap kartu ranking, langsung menjawab "Sleman yang mana" di momen pertama.
+- Tidak ada route baru (tetap sesuai §6 PERMANEN), tidak ada perubahan pada algoritma/data level distrik yang sudah ada.
+
+**Verifikasi:** `npm run lint` & `tsc --noEmit` bersih. Skrip verifikasi sementara (dihapus setelah dipakai) menjalankan `rankSubDistricts` langsung terhadap data live dari `/api/districts`: ranking distrik level 1 tidak berubah (Sleman tetap #1 untuk kasus uji lama), ranking kecamatan di Sleman masuk akal dan berubah sesuai sinyal (Depok #1 di semua varian karena internet+community dominan, tapi Ngaglik naik ke #2 saat Environment=Quiet karena skor environment-nya lebih tinggi dari Depok) — membuktikan real-time recompute (gaya FR-010) juga berlaku di level kecamatan. Duplikat nama "Jetis" (ada di Kota Yogyakarta & Bantul) dites aman karena id dibuat unik per distrik (`kota-yogyakarta-jetis` vs `bantul-jetis`). Alur admin dites end-to-end via curl (login → PUT bulk kecamatan → cek masuk ke audit log dengan `subDistrictId`/`subDistrictNama` terisi benar), lalu nilai tes dikembalikan ke seed asli.
+
+**Catatan:** Tidak bisa screenshot browser (tidak ada tool otomasi browser tersedia di sesi ini) — verifikasi UI kecamatan di `/district/:id`, `/result`, dan `/admin/data` sebaiknya dicek manual sekali lagi langsung di browser oleh user.
+
+---
+
 ### 2026-07-06 lanjutan 12 — Footer kecil di semua halaman publik (termasuk Result)
 
 **Konteks:** User minta setiap halaman punya footer kecil seperti di District Detail, kecuali Landing (punya LandingFooter sendiri) dan Admin.
