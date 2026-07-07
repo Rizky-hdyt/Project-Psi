@@ -69,7 +69,7 @@ export async function askGemini(
     throw new GeminiError("missing_key", "GEMINI_API_KEY belum diisi di .env");
   }
 
-  const model = process.env.GEMINI_MODEL || "gemini-flash-latest";
+  const model = process.env.GEMINI_MODEL || "gemini-flash-lite-latest";
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
   const contents = [
