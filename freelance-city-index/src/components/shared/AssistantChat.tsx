@@ -13,8 +13,17 @@ import {
 const SUGGESTED_CHIPS = SUGGESTED_CHIP_IDS.map((id) => QA_BANK.find((e) => e.id === id)!);
 
 // Jeda sebelum jawaban muncul — meniru asisten yang "berpikir dulu", bukan
-// jawaban instan yang terasa kaku/robotik.
+// jawaban instan yang terasa kaku/robotik. Hanya dipakai di jalur instan
+// (rule-based / belum ada ctx) — jalur Gemini sudah punya jeda alami dari
+// round-trip network, jadi tidak perlu delay sintetis tambahan.
 const REPLY_DELAY_MS = 2000;
+
+// Satu pesan generik untuk SEMUA kegagalan jalur Gemini (key hilang, timeout,
+// rate limit, network error) — client tidak perlu tahu jenis errornya, cukup
+// server yang log detail aslinya (lihat api/chat/route.ts).
+const GEMINI_FALLBACK_ANSWER =
+  "Maaf, asisten AI sedang tidak bisa dihubungi. Coba lagi sebentar lagi, atau gunakan salah satu pertanyaan yang disarankan di atas.";
+
 import { cn } from "@/lib/utils";
 
 interface Message {
@@ -47,15 +56,38 @@ export function AssistantChat({ ctx, onClose, className }: Props) {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, isTyping]);
 
-  function respond(question: string) {
+  async function respond(question: string) {
     setMessages((prev) => [...prev, { role: "user", text: question }]);
     const matched = ctx ? matchQuestion(question) : null;
-    const answerText = matched ? matched.answer(ctx!) : FALLBACK_ANSWER;
     setIsTyping(true);
-    window.setTimeout(() => {
+
+    if (matched || !ctx) {
+      // Jalur instan: keyword cocok, atau quiz belum selesai (ctx null) —
+      // tidak ada dasar sesi untuk digroundkan ke Gemini, tetap rule-based.
+      const answerText = matched ? matched.answer(ctx!) : FALLBACK_ANSWER;
+      window.setTimeout(() => {
+        setIsTyping(false);
+        setMessages((prev) => [...prev, { role: "assistant", text: answerText }]);
+      }, REPLY_DELAY_MS);
+      return;
+    }
+
+    // Free-typed, ada ctx, tidak match keyword apa pun → fallback ke Gemini.
+    try {
+      const history = messages.slice(-6).map((m) => ({ role: m.role, text: m.text }));
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: question, ctx, history }),
+      });
+      if (!res.ok) throw new Error("chat api error");
+      const data = (await res.json()) as { answer: string };
+      setMessages((prev) => [...prev, { role: "assistant", text: data.answer }]);
+    } catch {
+      setMessages((prev) => [...prev, { role: "assistant", text: GEMINI_FALLBACK_ANSWER }]);
+    } finally {
       setIsTyping(false);
-      setMessages((prev) => [...prev, { role: "assistant", text: answerText }]);
-    }, REPLY_DELAY_MS);
+    }
   }
 
   function askChip(id: string, chipLabel: string) {
@@ -87,7 +119,7 @@ export function AssistantChat({ ctx, onClose, className }: Props) {
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold text-white">FCI Assistant</p>
           <p className="truncate text-[11px] text-white/60">
-            Jawaban berbasis aturan, tanpa AI/API eksternal
+            Jawaban instan untuk topik umum, dibantu AI untuk pertanyaan lain
           </p>
         </div>
         {onClose && (

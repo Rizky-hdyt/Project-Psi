@@ -95,7 +95,7 @@ export const QA_BANK: QAEntry[] = [
     chipLabel: "Apa itu Freelance City Index?",
     keywords: ["apa itu", "fci", "freelance city index", "siapa kamu", "kamu siapa"],
     answer: () =>
-      "Freelance City Index adalah sistem pendukung keputusan (DSS) untuk membantu freelancer memilih distrik kerja terbaik di Yogyakarta, berdasarkan skor 4 indikator yang dibobot sesuai profil Anda — bukan chatbot AI, semua jawaban di sini sudah ditentukan aturannya sebelumnya.",
+      "Freelance City Index adalah sistem pendukung keputusan (DSS) untuk membantu freelancer memilih distrik kerja terbaik di Yogyakarta, berdasarkan skor 4 indikator yang dibobot sesuai profil Anda — rekomendasinya selalu dihitung oleh mesin skor yang sama, bukan opini AI.",
   },
 ];
 

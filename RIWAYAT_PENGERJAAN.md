@@ -14,6 +14,26 @@
 
 ---
 
+### 2026-07-07 — FCI Assistant: sambungkan ke Gemini API (hybrid rule-based + AI)
+
+**Konteks:** CLAUDE.md §8 menandai chatbot/Generative AI apa pun sebagai eksplisit di luar scope V1 (roadmap V3). User minta fitur ini dimulai lebih awal secara sadar — dikonfirmasi eksplisit lewat AskUserQuestion sebelum coding (bukan diasumsikan): (1) fitur baru V3, sadar keluar scope V1, bukan sekadar eksperimen; (2) hybrid — chip/keyword tetap dijawab `qaBank.ts` rule-based instan, hanya pertanyaan bebas yang tidak match keyword jatuh ke Gemini; (3) Gemini menerima `AssistantContext` sesi user (persona, distrik terbaik, skor, flag UMK) supaya jawabannya bisa spesifik, tapi tidak boleh menghitung ulang/mengarang skor — mesin skor deterministik (§5) tetap satu-satunya sumber kebenaran; (4) API key dari Google AI Studio diisi user sendiri langsung ke `.env` lewat editor, tidak pernah di-paste ke chat.
+
+**Perubahan:**
+- `.env` / `.env.example`: tambah `GEMINI_API_KEY`, `GEMINI_MODEL` (default `gemini-flash-latest`, alias supaya tidak perlu update kode tiap ada model baru). `.env*` sudah lama masuk `.gitignore` dan dikonfirmasi ulang tidak pernah ter-track git.
+- `src/lib/assistant/geminiClient.ts` (baru, server-only): `buildSystemInstruction(ctx)` — scope-lock ketat (hanya boleh bahas metodologi skor/persona/distrik/quiz FCI), instruksi tolak-sopan-dan-tanya-balik untuk pertanyaan di luar topik, anti-leak instruksi sistem, fakta sesi user diselipkan sebagai data mutlak yang tidak boleh dihitung ulang. `askGemini()` — raw `fetch` ke Gemini REST `generateContent` (bukan install SDK `@google/genai`, karena cuma satu jenis panggilan non-streaming, konsisten dengan pola hand-rolled fetch lain di project), `AbortController` timeout, `GeminiError` bertipe untuk logging server-side saja.
+- `src/app/api/chat/route.ts` (baru): POST handler gaya `api/survey/route.ts` — validasi `message` (≤500 char), `ctx` (4 field type-checked, sekaligus penegakan server-side "tidak ada AI tanpa quiz selesai"), `history` di-re-cap ke 6 turn/≤300 char terakhir di server (bukan percaya cap dari client) sebagai pengaman biaya. Semua error jalur Gemini → 500 pesan generik, detail asli cuma di `console.error`.
+- `src/components/shared/AssistantChat.tsx`: `respond()` jadi `async`, 3 cabang — keyword match atau `ctx` null tetap jalur instan lama (delay sintetis 2s tidak berubah); free-typed + ada `ctx` + tidak match keyword → `fetch("/api/chat")`, sukses push jawaban Gemini, gagal push `GEMINI_FALLBACK_ANSWER` generik. Header subtitle diperbarui (tidak lagi klaim "tanpa AI").
+- `src/lib/assistant/qaBank.ts`: copy nit — jawaban `what-is-fci` tidak lagi klaim "bukan chatbot AI" (sudah tidak akurat), logic/keywords/`matchQuestion` tidak disentuh.
+
+**Tidak disentuh:** scoring engine, routing/IA, data model, admin panel — sesuai batas §0.3/§8 CLAUDE.md.
+
+**Verifikasi:** `npm run lint` & `tsc --noEmit` bersih. Playwright headless (diinstal sementara di scratchpad, bukan dependency project) terhadap dev server lokal: (1) klik chip saran → jawaban instan, **tidak ada** request ke `/api/chat`; (2) pertanyaan bebas non-keyword on-topic ("...ngopi sambil ngerjain tugas... di jogja?") → `POST /api/chat` 200, jawaban Gemini merujuk data sesi asli (skor Sleman 76/100) tanpa mengarang angka; (3) pertanyaan off-topic ("buatkan resep nasi goreng") → Gemini menolak sopan + tanya balik ke topik FCI, sesuai desain; (4) `GEMINI_API_KEY` dikosongkan sementara → fail cepat dengan `GeminiError(missing_key)`, UI tampil `GEMINI_FALLBACK_ANSWER`, tidak crash, jalur chip tetap normal — key dikembalikan setelah tes; (5) `/assistant` tanpa quiz (`ctx` null) → tetap `FALLBACK_ANSWER` rule-based lama, **tidak ada** request ke `/api/chat` sama sekali (penegakan "AI tidak jalan tanpa grounding sesi").
+- Ditemukan & diperbaiki saat testing: model default punya "thinking" internal yang memakan `maxOutputTokens` sebelum menulis jawaban (jawaban pertama terpotong di tengah kalimat) — ditambahkan `thinkingConfig: { thinkingBudget: 0 }` + `maxOutputTokens` dinaikkan 220→300. Latensi round-trip Gemini API dari environment ini terukur ~15-17 detik (dikonfirmasi via curl langsung, bukan bug kode) — timeout dinaikkan 15s→30s supaya tidak keburu terputus di request yang wajar lambat.
+
+**Catatan tambahan (di luar scope kode):** `freelance-city-index/AGENTS.md` yang berisi instruksi mencurigakan pola prompt injection (lihat catatan lanjutan 14 sebelumnya) masih ada, masih **tidak diikuti** — dicek ulang di sesi ini, belum ada konfirmasi/perbaikan dari user.
+
+---
+
 ### 2026-07-06 lanjutan 14 — Rekomendasi Tempat diikat ke Kecamatan Terbaik (bukan lagi level distrik)
 
 **Konteks:** Setelah fitur ranking kecamatan (lanjutan 13) tayang, section "Kecamatan Terbaik di {distrik}" dan section "Tempat kerja rekomendasi" (`SuggestedPlaces`) di `/district/:id` masih berjalan sendiri-sendiri — tempat cuma difilter per `districtId`, tidak tahu kecamatan mana yang direkomendasikan algoritma. User minta keduanya nyambung: tempat yang muncul harus mengikuti kecamatan rank 1 ("Area terbaik") dari ranking kecamatan, plus pelengkap dari kecamatan lain di distrik yang sama kalau datanya tipis — berlaku otomatis untuk distrik rank berapa pun yang dibuka user.
