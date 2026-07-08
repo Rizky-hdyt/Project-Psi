@@ -8,6 +8,7 @@ PANDUAN_KODE.md
 
 # PDF & dokumen
 *.pdf
+!files/KELOMPOK-6_INNOVATIVE_TECHNOLOGY_GROUP.pdf
 
 # Video
 *.mp4
