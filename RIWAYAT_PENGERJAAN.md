@@ -10,6 +10,28 @@
 
 > Urutan terbaru di atas.
 
+---
+
+### 2026-07-08 — Perbaikan README.md (petunjuk teknis) + tambah laporan kelompok
+
+**Konteks:** User sudah mengisi sendiri petunjuk teknis menjalankan aplikasi di `README.md`, lalu minta di-push ke git bersama file laporan yang baru ditambahkan. Sebelum push, user minta dicek dulu apakah README-nya sudah akurat/lengkap. Hasil audit (dibandingkan langsung ke kode di `freelance-city-index/`) menemukan beberapa hal yang keliru/fiktif dan diperbaiki:
+
+- **Lokasi project:** README nyuruh `npm install` di root repo, padahal aplikasi Next.js ada di subfolder `freelance-city-index/` (gak ada `package.json` di root). Ditambahkan catatan eksplisit + instruksi `cd Project-Psi/freelance-city-index`.
+- **Env var hilang:** contoh `.env` di README cuma punya `DATABASE_URL`/`ADMIN_USERNAME`/`ADMIN_PASSWORD`, padahal kode butuh juga `JWT_SECRET` (`src/lib/auth.ts`) dan `GEMINI_API_KEY`/`GEMINI_MODEL` (`src/lib/assistant/geminiClient.ts`) — dicek langsung ke `.env.example` asli. Dihapus juga `NODE_ENV`/`NEXT_PUBLIC_API_URL` manual karena gak dipakai di kode manapun.
+- **Versi tech stack salah:** README bilang Tailwind 3.4.x & Prisma 6.x, padahal `package.json` pakai Tailwind v4 & Prisma ^7.8.
+- **Database adapter:** ditambahkan catatan bahwa `src/lib/db.ts` pakai `@prisma/adapter-neon` (koneksi WebSocket ke Neon), jadi PostgreSQL lokal biasa TIDAK bisa dipakai tanpa modifikasi kode — instruksi "PostgreSQL Lokal" lama (yang menyesatkan) dihapus.
+- **Section Testing fiktif:** README nyebut `npm run test`, Jest, `src/__tests__/`, `docs/TEST_CASES.md` — semua ini gak ada di project (gak ada script `test` di `package.json`, gak ada file `*.test.ts`, file `TEST_CASES.md` gak ada). Diganti jadi catatan jujur "belum ada automated test" + manual testing steps. Angka reference case juga dikoreksi ke Sleman 75,9 / Kota Yogyakarta 74,8 / Bantul 68,0 sesuai CLAUDE.md §5.4 (README lama pakai angka 74,9/73,6/68,8 yang sudah kadaluwarsa dari sebelum rebalance 2026-07-06).
+- **API Documentation banyak path salah** dibanding route asli di `src/app/api/`: `POST /api/score` didokumentasikan tapi gak ada (scoring dihitung client-side); `/api/admin/login` seharusnya `/api/auth/login`; `/api/audit` seharusnya `/api/admin/audit`; `/api/admin/score` seharusnya `/api/admin/scores`. Auth juga didokumentasikan salah sebagai Bearer token, padahal asli pakai session cookie httpOnly. Ditambahkan endpoint yang sebelumnya gak disebut sama sekali: `/api/chat` (FCI Assistant), `/api/survey`, `/api/auth/logout`, `/api/auth/session`, `/api/admin/scores/bulk`, `/api/admin/subdistrict-scores/bulk`.
+- **Struktur Proyek** diperbaiki supaya mencerminkan root repo yang sebenarnya (`freelance-city-index/` sebagai subfolder app, bukan root), termasuk hapus `tailwind.config.js`/`next.config.js` yang gak ada (Tailwind v4 pakai CSS-based config, next config-nya `.ts`).
+- **Security Notes** dikoreksi: "password hashing bcrypt" dihapus dari daftar "sudah diterapkan" karena `api/auth/login/route.ts` sebenarnya masih membandingkan password sebagai plaintext — dipindah ke daftar "belum diterapkan" biar jujur.
+- **Deploy ke Vercel:** ditambahkan catatan wajib set **Root Directory** ke `freelance-city-index` di project settings Vercel (karena app bukan di root repo), plus lengkapi daftar env var yang perlu diisi di dashboard Vercel.
+
+**File yang diubah:** `README.md` (root repo, bukan di dalam `freelance-city-index/`)
+
+**Tambahan lain:** `.gitignore` punya aturan blanket `*.pdf` (supaya dokumen referensi kayak PRD gak ikut ke-track) yang ternyata juga memblokir file laporan kelompok yang baru ditambahkan user di `files/KELOMPOK-6_INNOVATIVE_TECHNOLOGY_GROUP.pdf`. Ditambahkan exception `!files/KELOMPOK-6_INNOVATIVE_TECHNOLOGY_GROUP.pdf` supaya file ini spesifik bisa di-commit tanpa membuka blanket rule untuk PDF lain. Sudah dikonfirmasi ke user lewat AskUserQuestion sebelum mengubah `.gitignore`.
+
+**Commit:** `114939b` — sudah di-push ke `origin/main`.
+
 > **Status commit:** entri 2026-07-05 (identitas "Crimson/Paper", lanjutan 4–13) sudah masuk **commit `de01985`**. Entri 2026-07-03 dan 2026-07-04 (Field Notes/biru/Terracotta/Almanac/TerraNova) masih bertanda "BELUM DI-COMMIT" tapi sebenarnya sudah tidak relevan untuk di-commit — semua sudah tertimpa oleh iterasi berikutnya di working tree sebelum sempat di-commit sendiri-sendiri, jadi kodenya sudah tidak ada lagi untuk di-commit. Entri itu dibiarkan sebagai riwayat evolusi desain saja.
 
 ---
