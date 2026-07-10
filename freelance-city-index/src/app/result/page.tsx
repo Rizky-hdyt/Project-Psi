@@ -33,8 +33,10 @@ import type { AssistantContext } from "@/lib/assistant/qaBank";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { RelevanceSurvey } from "@/components/shared/RelevanceSurvey";
 import { WhyThisMatch } from "@/components/shared/WhyThisMatch";
+import { AnimatedNumber } from "@/components/shared/AnimatedNumber";
 import { rankDistricts } from "@/lib/scoring/rank";
 import { rankSubDistricts } from "@/lib/scoring/rankSubDistricts";
+import { computeAdjustedWeights } from "@/lib/scoring/normalize";
 import { useDistricts } from "@/hooks/useDistricts";
 import { DistrictSwatch } from "@/components/shared/DistrictSwatch";
 import { AmbientBackground } from "@/components/shared/AmbientBackground";
@@ -279,7 +281,8 @@ function ResultHero({
             <div className="rounded-2xl border border-line bg-white/95 p-4 shadow-[0_10px_26px_rgba(30,35,48,0.10)] sm:p-5">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-amber-600">
+                  {/* Animasi #9: pulse ring amber sekali saat pertama tampil */}
+                  <span className="anim-badge-pulse inline-flex items-center gap-1.5 px-1 text-[11px] font-bold uppercase tracking-wide text-amber-600">
                     <Crown className="h-3 w-3" />
                     Best Match
                   </span>
@@ -291,8 +294,9 @@ function ResultHero({
                     </p>
                   )}
                   <p className="mt-2 text-[11px] text-muted-foreground">Skor Keseluruhan</p>
+                  {/* Animasi #11: skor count-up & bertransisi saat recompute FR-010 */}
                   <p className="font-mono text-2xl font-bold text-positive">
-                    {best.skorTotal.toFixed(1)}
+                    <AnimatedNumber value={best.skorTotal} />
                     <span className="ml-0.5 text-xs font-normal text-muted-foreground">/100</span>
                   </p>
                   <div className="mt-1.5 flex items-center gap-1">
@@ -351,17 +355,19 @@ function RankingGrid({
     <section className="mt-3.5 rounded-[22px] bg-white p-4 shadow-[0_4px_14px_rgba(30,35,48,0.04)] sm:p-5">
       <p className="mb-3.5 text-sm font-extrabold text-ink">Ranking 5 Distrik di DIY</p>
       <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 lg:grid-cols-5">
-        {ranked.map((r) => {
+        {ranked.map((r, i) => {
           const d = districtMap[r.districtId];
           if (!d) return null;
           const photo = getDistrictVisual(d.id).imageUrl;
           const isFirst = r.rank === 1;
           return (
+            // Animasi #8: kartu masuk stagger sesuai urutan rank (rank 1 duluan)
             <Link
               key={r.districtId}
               href={`/district/${d.id}?${qs}`}
+              style={{ animationDelay: `${i * 70}ms` }}
               className={cn(
-                "group overflow-hidden rounded-2xl border bg-white transition-all duration-[180ms] hover:-translate-y-1 hover:shadow-[0_12px_26px_rgba(30,35,48,0.12)]",
+                "stagger-in group overflow-hidden rounded-2xl border bg-white transition-all duration-[180ms] hover:-translate-y-1 hover:shadow-[0_12px_26px_rgba(30,35,48,0.12)]",
                 isFirst ? "border-2 border-amber-500 shadow-[0_8px_22px_rgba(245,158,11,0.22)]" : "border-line"
               )}
             >
@@ -388,8 +394,9 @@ function RankingGrid({
                   </p>
                 )}
                 <p className="mt-0.5 text-[10.5px] font-semibold text-muted-foreground">Skor Keseluruhan</p>
+                {/* Animasi #11: skor count-up & bertransisi saat recompute FR-010 */}
                 <p className="mt-1.5 font-mono text-xl font-extrabold" style={{ color: scoreColor(r.skorTotal) }}>
-                  {r.skorTotal.toFixed(1)}
+                  <AnimatedNumber value={r.skorTotal} />
                   <span className="ml-0.5 text-xs font-semibold text-muted-foreground">/100</span>
                 </p>
               </div>
@@ -481,13 +488,32 @@ function ResultContent() {
     }
   }
 
+  // Grounding lengkap untuk FCI Assistant (Gemini): ranking 5 distrik + skor
+  // per indikator + bobot' + ranking kecamatan Best Match, supaya asisten bisa
+  // menjawab pertanyaan apa pun seputar hasil sesi ini tanpa mengarang angka.
   const bestDistrict = districts.find((d) => d.id === ranked[0]?.districtId);
+  const bestSubHere = subDistricts.filter((sd) => sd.districtId === ranked[0]?.districtId);
+  const bestSubRanked = rankSubDistricts(input, bestSubHere, subDistrictScores);
   const assistantCtx: AssistantContext | null = bestDistrict
     ? {
         personaLabel,
         bestName: bestDistrict.nama,
         bestScore: ranked[0].skorTotal,
         isBelowUMK: !!ranked[0].isBelowUMK,
+        budget,
+        weights: computeAdjustedWeights(input),
+        ranking: ranked.map((r) => ({
+          rank: r.rank,
+          nama: districts.find((d) => d.id === r.districtId)?.nama ?? r.districtId,
+          skorTotal: r.skorTotal,
+          skorPerIndikator: r.skorPerIndikator,
+          topKecamatan: topKecamatan[r.districtId],
+        })),
+        bestKecamatan: bestSubRanked.map((k) => ({
+          rank: k.rank,
+          nama: bestSubHere.find((s) => s.id === k.subDistrictId)?.nama ?? k.subDistrictId,
+          skorTotal: k.skorTotal,
+        })),
       }
     : null;
 

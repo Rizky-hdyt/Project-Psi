@@ -1,6 +1,6 @@
 "use client";
 
-import { Laptop, Palette, GraduationCap, Globe } from "lucide-react";
+import { Laptop, Palette, GraduationCap, Globe, Check } from "lucide-react";
 import type { PersonaId } from "@/types/persona";
 import { cn } from "@/lib/utils";
 
@@ -26,7 +26,8 @@ interface Props {
 export function PersonaCardSelector({ selected, onSelect, showError }: Props) {
   return (
     <div>
-      <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+      {/* Animasi #6: grid ikut shake halus saat submit tanpa persona */}
+      <div className={cn("grid grid-cols-2 gap-2.5 sm:grid-cols-4", showError && "anim-shake")}>
         {PERSONAS.map(({ id, nama, icon: Icon }) => {
           const isActive = selected === id;
           return (
@@ -37,12 +38,18 @@ export function PersonaCardSelector({ selected, onSelect, showError }: Props) {
               aria-pressed={isActive}
               aria-label={`Pilih persona ${nama}`}
               className={cn(
-                "flex min-h-[72px] flex-col items-center justify-center gap-2 rounded-xl border px-2 py-3.5 text-center transition-colors duration-[180ms] active:scale-[0.99]",
+                "relative flex min-h-[72px] flex-col items-center justify-center gap-2 rounded-xl border px-2 py-3.5 text-center transition-colors duration-[180ms] active:scale-[0.98]",
                 isActive
                   ? "border-sawah bg-sawah/5"
                   : "border-line bg-white [@media(hover:hover)]:hover:border-ink/30"
               )}
             >
+              {/* Animasi #4: check pop saat kartu dipilih */}
+              {isActive && (
+                <span className="anim-pop absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-sawah">
+                  <Check className="h-2.5 w-2.5 text-white" />
+                </span>
+              )}
               <Icon className={cn("h-4 w-4", isActive ? "text-sawah" : "text-muted-foreground")} />
               <p className={cn("text-xs font-medium leading-tight", isActive ? "text-sawah" : "text-ink")}>
                 {nama}
@@ -53,7 +60,7 @@ export function PersonaCardSelector({ selected, onSelect, showError }: Props) {
       </div>
 
       {showError && (
-        <p role="alert" className="mt-2 text-xs font-medium text-error">
+        <p role="alert" className="stagger-in mt-2 text-xs font-medium text-error">
           Pilih dulu profil freelancer Anda
         </p>
       )}

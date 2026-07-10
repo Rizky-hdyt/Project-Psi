@@ -239,9 +239,91 @@
   }
 }
 
+/* ── Animasi batch 2026-07-11 (lihat RIWAYAT_PENGERJAAN.md daftar #1-#15) ──
+   Semua class di bawah dinonaktifkan otomatis di prefers-reduced-motion. */
+
+/* #7 #10 #13 — bar skor/bobot tumbuh dari kiri saat pertama muncul.
+   Pakai scaleX (bukan width) supaya tidak memicu layout. */
+@keyframes bar-grow {
+  from {
+    transform: scaleX(0);
+  }
+}
+.anim-bar {
+  transform-origin: left;
+  animation: bar-grow 600ms var(--ease-entrance) both;
+}
+
+/* #9 — pulse ring amber sekali pada badge Best Match saat pertama tampil */
+@keyframes badge-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.45);
+  }
+  100% {
+    box-shadow: 0 0 0 14px rgba(245, 158, 11, 0);
+  }
+}
+.anim-badge-pulse {
+  border-radius: 9999px;
+  animation: badge-pulse 900ms var(--ease-entrance) 350ms 1 both;
+}
+
+/* #4 — check kecil "pop" saat kartu persona dipilih */
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}
+.anim-pop {
+  animation: pop-in 220ms var(--ease-entrance) both;
+}
+
+/* #6 — shake halus saat validasi gagal (persona belum dipilih) */
+@keyframes shake-x {
+  10%, 50%, 90% {
+    transform: translateX(-3px);
+  }
+  30%, 70% {
+    transform: translateX(3px);
+  }
+}
+.anim-shake {
+  animation: shake-x 320ms var(--ease-micro);
+}
+
+/* #14 — flash hijau lembut sekali pada kartu admin yang baru tersimpan */
+@keyframes flash-bg {
+  from {
+    background-color: var(--positive-bg);
+  }
+}
+.anim-flash {
+  animation: flash-bg 1.2s var(--ease-micro);
+}
+
+/* #1b — Ken Burns: gambar hero landing zoom-out pelan tiap slide aktif */
+@keyframes hero-zoom {
+  from {
+    transform: scale(1.06);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+.anim-hero-zoom {
+  animation: hero-zoom 7s ease-out both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .page-fade-in,
-  .stagger-in {
+  .stagger-in,
+  .anim-bar,
+  .anim-badge-pulse,
+  .anim-pop,
+  .anim-shake,
+  .anim-flash,
+  .anim-hero-zoom {
     animation: none;
   }
 }

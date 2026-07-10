@@ -68,8 +68,9 @@ export function ScoreComparisonTable({ ranked, districts }: Props) {
                             {skor}
                           </span>
                           <div className="h-1.5 w-16 overflow-hidden rounded-full bg-line">
+                            {/* Animasi #10: bar tumbuh dari kiri saat pertama muncul */}
                             <div
-                              className="h-full rounded-full"
+                              className="anim-bar h-full rounded-full"
                               style={{ width: `${skor}%`, backgroundColor: color }}
                             />
                           </div>

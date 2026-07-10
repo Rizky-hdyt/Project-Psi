@@ -349,8 +349,10 @@ function QuizContent() {
         )}
       >
         {/* ── STEP 1: Input ──────────────────────────────────── */}
+        {/* Animasi #5: konten step fade+naik tiap pindah step (key memaksa
+            remount sehingga stagger-in replay saat bolak-balik Step 1↔2) */}
         {quiz.step === 1 && (
-          <div>
+          <div key="step-1" className="stagger-in">
             {/* Header, center-aligned meniru referensi */}
             <div className="mb-6 text-center">
               <p className="mb-1.5 font-mono text-xs font-semibold text-sawah">Langkah 1 dari 2</p>
@@ -420,7 +422,7 @@ function QuizContent() {
 
         {/* ── STEP 2: Algorithm Explanation ──────────────────── */}
         {quiz.step === 2 && adjustedWeights && (
-          <div>
+          <div key="step-2" className="stagger-in">
             {/* Header, center-aligned meniru referensi */}
             <div className="mb-8 text-center">
               <p className="mb-1.5 font-mono text-xs font-semibold text-sawah">Langkah 2 dari 2</p>

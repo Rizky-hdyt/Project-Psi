@@ -36,7 +36,7 @@ export function HeroBackgroundSlideshow() {
           priority={i === 0}
           sizes="100vw"
           className={`object-cover transition-opacity duration-1000 ease-in-out ${
-            i === index ? "opacity-100" : "opacity-0"
+            i === index ? "anim-hero-zoom opacity-100" : "opacity-0"
           }`}
         />
       ))}

@@ -11,10 +11,10 @@ import { validateIndicatorScore } from "@/lib/validation/adminInput";
 import { cn } from "@/lib/utils";
 
 const INDICATORS = [
-  { id: "internet", label: "Internet Quality", desc: "Kualitas & kecepatan internet (0–100)" },
+  { id: "internet", label: "Internet Quality", desc: "Kualitas & kecepatan internet (0-100)" },
   { id: "cost", label: "Biaya Hidup", desc: "Keterjangkauan (0 = mahal, 100 = sangat murah)" },
-  { id: "community", label: "Komunitas", desc: "Keaktifan komunitas freelancer/remote (0–100)" },
-  { id: "environment", label: "Lingkungan", desc: "Kenyamanan lingkungan kerja (0–100)" },
+  { id: "community", label: "Komunitas", desc: "Keaktifan komunitas freelancer/remote (0-100)" },
+  { id: "environment", label: "Lingkungan", desc: "Kenyamanan lingkungan kerja (0-100)" },
 ] as const;
 
 type IndicatorId = (typeof INDICATORS)[number]["id"];
@@ -305,7 +305,7 @@ export default function DataManagementPage() {
       <div className="mb-4">
         <h1 className="text-[19px] font-extrabold tracking-tight text-[var(--a-ink)]">Data Distrik</h1>
         <p className="mt-1 text-[12.5px] font-medium text-[var(--a-muted)]">
-          Perbarui skor indikator (0–100) per distrik. Perubahan berlaku langsung &amp; tercatat di
+          Perbarui skor indikator (0-100) per distrik. Perubahan berlaku langsung &amp; tercatat di
           Log Aktivitas.
         </p>
       </div>
@@ -342,9 +342,13 @@ export default function DataManagementPage() {
             const visual = getDistrictVisual(district.id);
 
             return (
+              // Animasi #14: kartu flash hijau lembut sekali saat baru tersimpan
               <div
                 key={district.id}
-                className="rounded-[16px] border border-[var(--a-line-2)] bg-white p-5 shadow-[0_1px_2px_rgba(25,29,39,.04)]"
+                className={cn(
+                  "rounded-[16px] border border-[var(--a-line-2)] bg-white p-5 shadow-[0_1px_2px_rgba(25,29,39,.04)]",
+                  isSaved && "anim-flash"
+                )}
               >
                 {hasConflict && (
                   <div
@@ -388,7 +392,7 @@ export default function DataManagementPage() {
                     </div>
                   </div>
                   {isSaved && (
-                    <span className="flex items-center gap-1.5 text-xs font-bold text-[var(--a-red)]">
+                    <span className="stagger-in flex items-center gap-1.5 text-xs font-bold text-[var(--a-red)]">
                       <CheckCircle2 className="h-3.5 w-3.5" />
                       Tersimpan
                     </span>
@@ -484,9 +488,13 @@ export default function DataManagementPage() {
                             const subHasErr = hasSubFormError(sd.id);
 
                             return (
+                              // Animasi #14 (kecamatan): flash sekali saat tersimpan
                               <div
                                 key={sd.id}
-                                className="rounded-[12px] border border-[var(--a-line-2)] bg-[var(--a-bg-2,#fafafa)] p-4"
+                                className={cn(
+                                  "rounded-[12px] border border-[var(--a-line-2)] bg-[var(--a-bg-2,#fafafa)] p-4",
+                                  isSubSaved && "anim-flash"
+                                )}
                               >
                                 {hasSubConflict && (
                                   <div
@@ -515,7 +523,7 @@ export default function DataManagementPage() {
                                 <div className="mb-3 flex items-center justify-between gap-3">
                                   <h3 className="text-[13px] font-extrabold text-[var(--a-ink)]">{sd.nama}</h3>
                                   {isSubSaved && (
-                                    <span className="flex items-center gap-1.5 text-xs font-bold text-[var(--a-red)]">
+                                    <span className="stagger-in flex items-center gap-1.5 text-xs font-bold text-[var(--a-red)]">
                                       <CheckCircle2 className="h-3.5 w-3.5" />
                                       Tersimpan
                                     </span>

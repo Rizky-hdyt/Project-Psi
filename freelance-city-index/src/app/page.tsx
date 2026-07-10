@@ -10,6 +10,7 @@ import { HeroBackgroundSlideshow } from "@/components/landing/HeroBackgroundSlid
 import { ScrollReveal } from "@/components/landing/ScrollReveal";
 import { DistrictPreviewSection } from "@/components/landing/DistrictPreviewSection";
 import { CapabilityShowcase } from "@/components/landing/CapabilityShowcase";
+import { StatCountUp } from "@/components/landing/StatCountUp";
 
 const FEATURE_BADGES = [
   { icon: Wifi, label: "Internet" },
@@ -90,19 +91,20 @@ export default function LandingPage() {
           />
 
           <div className="relative mx-auto grid max-w-[1280px] gap-10 lg:grid-cols-[55fr_45fr] lg:items-center">
-            {/* Hero Left */}
-            <div className="stagger-in pt-4">
-              <h1 className="max-w-lg text-3xl font-bold leading-[1.15] tracking-tight text-ink sm:text-4xl lg:text-[2.6rem]">
+            {/* Hero Left — animasi #1: tiap elemen masuk berurutan (stagger),
+                bukan satu blok sekaligus */}
+            <div className="pt-4">
+              <h1 className="stagger-in max-w-lg text-3xl font-bold leading-[1.15] tracking-tight text-ink sm:text-4xl lg:text-[2.6rem]">
                 Temukan distrik terbaik di Daerah Istimewa Yogyakarta{" "}
                 <span className="text-sawah">untuk gaya kerja Anda</span>
               </h1>
-              <p className="mt-4 max-w-md text-sm leading-relaxed text-ink/70 sm:text-base">
+              <p className="stagger-in mt-4 max-w-md text-sm leading-relaxed text-ink/70 sm:text-base" style={{ animationDelay: "70ms" }}>
                 Sistem rekomendasi berbasis data yang membandingkan 5 distrik di DIY lewat
                 4 indikator utama, dengan perhitungan yang sepenuhnya transparan.
               </p>
 
               {/* Feature Badges — 4 pill terpisah */}
-              <div className="mt-6 flex flex-wrap gap-2">
+              <div className="stagger-in mt-6 flex flex-wrap gap-2" style={{ animationDelay: "140ms" }}>
                 {FEATURE_BADGES.map(({ icon: Icon, label }) => (
                   <span
                     key={label}
@@ -115,7 +117,7 @@ export default function LandingPage() {
               </div>
 
               {/* CTA Group */}
-              <div className="mt-8 flex flex-wrap items-center gap-3">
+              <div className="stagger-in mt-8 flex flex-wrap items-center gap-3" style={{ animationDelay: "210ms" }}>
                 <Link
                   href="/quiz"
                   className="group inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-sawah to-[#F0384F] px-6 text-sm font-medium text-white shadow-[0_10px_25px_rgba(220,35,64,0.3)] transition-transform duration-[180ms] hover:-translate-y-0.5 active:scale-[0.98] sm:min-h-13"
@@ -131,22 +133,25 @@ export default function LandingPage() {
                 </Link>
               </div>
 
-              {/* Statistics Cards — 4, ukuran identik, hover lift */}
-              <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {/* Statistics Cards — 4, ukuran identik, hover lift.
+                  Animasi #3: angka count-up saat pertama terlihat. */}
+              <div className="stagger-in mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4" style={{ animationDelay: "280ms" }}>
                 {STATS.map(({ value, label }) => (
                   <div
                     key={label}
                     className="rounded-2xl border border-line bg-white p-3.5 transition-transform duration-[180ms] hover:-translate-y-1 hover:shadow-md"
                   >
-                    <p className="font-mono text-xl font-bold text-ink sm:text-2xl">{value}</p>
+                    <p className="font-mono text-xl font-bold text-ink sm:text-2xl">
+                      <StatCountUp value={value} />
+                    </p>
                     <p className="mt-1 text-[11px] leading-snug text-muted-foreground">{label}</p>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Hero Right — Floating Recommendation Card */}
-            <div className="relative lg:justify-self-end">
+            {/* Hero Right — Floating Recommendation Card (ikut stagger #1) */}
+            <div className="stagger-in relative lg:justify-self-end" style={{ animationDelay: "180ms" }}>
               {/* Floating decorative shapes */}
               <div className="pointer-events-none absolute -left-8 -top-8 h-24 w-24 rounded-full bg-sawah/20 blur-2xl motion-safe:animate-[float_7s_ease-in-out_infinite]" />
               <div className="pointer-events-none absolute -bottom-10 -right-6 h-32 w-32 rounded-full bg-positive/20 blur-3xl motion-safe:animate-[float_9s_ease-in-out_infinite_reverse]" />
@@ -269,7 +274,7 @@ export default function LandingPage() {
               4 indikator yang benar-benar menentukan
             </h2>
             <p className="text-base leading-relaxed text-muted-foreground">
-              Internet, biaya hidup, komunitas, dan lingkungan kerja — klik salah satu
+              Internet, biaya hidup, komunitas, dan lingkungan kerja. Klik salah satu
               untuk lihat bagaimana bobotnya bergeser antar profil freelancer.
             </p>
           </ScrollReveal>
@@ -297,7 +302,7 @@ export default function LandingPage() {
             Mulai temukan distrik terbaik untuk gaya kerja Anda.
           </h2>
           <p className="mx-auto mb-8 max-w-md text-sm leading-relaxed text-white/80 sm:mb-10 sm:text-base">
-            Tanpa akun, tanpa biaya — hasilnya langsung terlihat begitu kuis selesai.
+            Tanpa akun, tanpa biaya. Hasilnya langsung terlihat begitu kuis selesai.
           </p>
           <Link
             href="/quiz"
