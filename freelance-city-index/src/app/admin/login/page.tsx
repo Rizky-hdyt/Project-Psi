@@ -87,7 +87,7 @@ export default function AdminLoginPage() {
           </div>
           <h1 className="text-xl font-extrabold tracking-tight text-[var(--a-ink)]">Admin Panel</h1>
           <p className="mt-1 text-sm font-semibold text-[var(--a-muted)]">
-            Freelance City Index — DIY Edition
+            Freelance City Index DIY Edition
           </p>
         </div>
 

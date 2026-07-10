@@ -164,7 +164,7 @@ export default function AdminDashboardPage() {
             Selamat datang di panel admin
           </h1>
           <p className="mt-2 max-w-[440px] text-[12.5px] leading-relaxed text-[var(--a-muted)]">
-            Kelola data distrik dan skor indikator Freelance City Index — DIY Edition dari satu tempat.
+            Kelola data distrik dan skor indikator Freelance City Index DIY Edition dari satu tempat.
           </p>
         </div>
       </div>

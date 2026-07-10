@@ -14,7 +14,7 @@ interface Capability {
 const CAPABILITIES: Capability[] = [
   { icon: Wifi, label: "Internet", desc: "Kualitas & kecepatan koneksi, syarat mutlak kerja remote.", weight: "Bobot tertinggi untuk Tech Professional (40%)" },
   { icon: Wallet, label: "Biaya Hidup", desc: "Keterjangkauan kost & kebutuhan harian, dibalik skornya.", weight: "Bobot tertinggi untuk Student & Fresh Graduate (45%)" },
-  { icon: Users, label: "Komunitas", desc: "Aktivitas coworking & jaringan profesional di sekitar.", weight: "Bobot merata di semua persona (20–25%)" },
+  { icon: Users, label: "Komunitas", desc: "Aktivitas coworking & jaringan profesional di sekitar.", weight: "Bobot merata di semua persona (20-25%)" },
   { icon: Leaf, label: "Lingkungan", desc: "Kebisingan & kenyamanan suasana kerja sehari-hari.", weight: "Bobot tertinggi untuk Creative Professional (30%)" },
 ];
 

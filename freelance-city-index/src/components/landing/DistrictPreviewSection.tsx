@@ -46,7 +46,7 @@ const DISTRICTS = [
     nama: "Kulon Progo",
     tipe: "Kabupaten",
     sub: "Potensi terbesar",
-    alasan: "Sedang berkembang pesat sejak YIA beroperasi — biaya rendah dengan potensi jangka panjang.",
+    alasan: "Sedang berkembang pesat sejak YIA beroperasi, biaya rendah dengan potensi jangka panjang.",
     foto: "/images/districts/kulon-progo.jpg",
   },
 ];
@@ -66,7 +66,7 @@ export function DistrictPreviewSection() {
             5 distrik yang dievaluasi
           </h2>
           <p className="text-base leading-relaxed text-muted-foreground">
-            Setiap distrik punya karakter kerja sendiri — klik untuk lihat penjelasan singkatnya.
+            Setiap distrik punya karakter kerja sendiri. Klik untuk lihat penjelasan singkatnya.
           </p>
         </ScrollReveal>
 

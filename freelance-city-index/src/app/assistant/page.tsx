@@ -8,6 +8,8 @@ import { PillNavbar } from "@/components/shared/PillNavbar";
 import { AmbientBackground } from "@/components/shared/AmbientBackground";
 import { AssistantChat } from "@/components/shared/AssistantChat";
 import { rankDistricts } from "@/lib/scoring/rank";
+import { rankSubDistricts } from "@/lib/scoring/rankSubDistricts";
+import { computeAdjustedWeights } from "@/lib/scoring/normalize";
 import { useDistricts } from "@/hooks/useDistricts";
 import type { AssistantContext } from "@/lib/assistant/qaBank";
 import type { QuizInput } from "@/types/quiz";
@@ -37,7 +39,7 @@ function AssistantContent() {
     : "";
   const backHref = hasQuizContext ? `/result${quizQuery}` : "/result";
 
-  const { districts, scores, loading } = useDistricts();
+  const { districts, scores, subDistricts, subDistrictScores, loading } = useDistricts();
 
   if (loading) {
     return (
@@ -59,11 +61,35 @@ function AssistantContent() {
     const ranked = rankDistricts(input, districts, scores);
     const bestDistrict = districts.find((d) => d.id === ranked[0]?.districtId);
     if (ranked[0] && bestDistrict) {
+      // Grounding lengkap yang sama dengan Result page (lihat komentar di sana):
+      // ranking distrik + kecamatan terbaik per distrik + bobot' + ranking
+      // kecamatan Best Match, supaya Gemini bisa jawab seluruh lingkup sesi.
+      const bestSubHere = subDistricts.filter((sd) => sd.districtId === ranked[0].districtId);
+      const bestSubRanked = rankSubDistricts(input, bestSubHere, subDistrictScores);
+      const topKecamatan = (districtId: string): string | undefined => {
+        const subHere = subDistricts.filter((sd) => sd.districtId === districtId);
+        const rankedSub = rankSubDistricts(input, subHere, subDistrictScores);
+        return subHere.find((sd) => sd.id === rankedSub[0]?.subDistrictId)?.nama;
+      };
       ctx = {
         personaLabel: PERSONA_NAMES[personaId] ?? personaId,
         bestName: bestDistrict.nama,
         bestScore: ranked[0].skorTotal,
         isBelowUMK: !!ranked[0].isBelowUMK,
+        budget,
+        weights: computeAdjustedWeights(input),
+        ranking: ranked.map((r) => ({
+          rank: r.rank,
+          nama: districts.find((d) => d.id === r.districtId)?.nama ?? r.districtId,
+          skorTotal: r.skorTotal,
+          skorPerIndikator: r.skorPerIndikator,
+          topKecamatan: topKecamatan(r.districtId),
+        })),
+        bestKecamatan: bestSubRanked.map((k) => ({
+          rank: k.rank,
+          nama: bestSubHere.find((s) => s.id === k.subDistrictId)?.nama ?? k.subDistrictId,
+          skorTotal: k.skorTotal,
+        })),
       };
     }
   }

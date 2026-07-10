@@ -17,7 +17,7 @@ export default function Forbidden403Page() {
         >
           <ShieldAlert className="h-7 w-7" />
         </div>
-        <h1 className="text-lg font-extrabold tracking-tight text-[var(--a-ink)]">403 — Akses Ditolak</h1>
+        <h1 className="text-lg font-extrabold tracking-tight text-[var(--a-ink)]">403: Akses Ditolak</h1>
         <p className="mt-2 text-sm font-medium text-[var(--a-muted)]">
           Anda tidak memiliki izin untuk mengakses halaman ini. Sesi Anda mungkin sudah kedaluwarsa.
         </p>

@@ -44,7 +44,7 @@ export function AssistantChat({ ctx, onClose, className }: Props) {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      text: "Halo! Saya FCI Assistant. Saya bisa bantu jelaskan seputar rekomendasi, skor, dan algoritma di balik hasil Anda — coba pilih salah satu pertanyaan di bawah, atau ketik sendiri.",
+      text: "Halo! Saya FCI Assistant. Saya bisa bantu jelaskan seputar rekomendasi, skor, dan algoritma di balik hasil Anda. Coba pilih salah satu pertanyaan di bawah, atau ketik sendiri.",
     },
   ]);
   const [input, setInput] = useState("");
@@ -56,23 +56,29 @@ export function AssistantChat({ ctx, onClose, className }: Props) {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, isTyping]);
 
+  function pushInstantAnswer(answerText: string) {
+    window.setTimeout(() => {
+      setIsTyping(false);
+      setMessages((prev) => [...prev, { role: "assistant", text: answerText }]);
+    }, REPLY_DELAY_MS);
+  }
+
+  // Routing diubah 2026-07-11: ketikan bebas SELALU ke Gemini kalau ada ctx.
+  // Sebelumnya keyword matcher mencegat duluan, tapi substring match sering
+  // salah tangkap (mis. "bobot internet saya berapa persen?" kena keyword
+  // "internet" lalu dijawab definisi generik, padahal Gemini punya angka
+  // bobot user di grounding). Rule-based sekarang hanya untuk: chip (jawaban
+  // kurasi instan), ctx null (belum quiz), dan fallback saat API gagal.
   async function respond(question: string) {
     setMessages((prev) => [...prev, { role: "user", text: question }]);
-    const matched = ctx ? matchQuestion(question) : null;
     setIsTyping(true);
 
-    if (matched || !ctx) {
-      // Jalur instan: keyword cocok, atau quiz belum selesai (ctx null) —
-      // tidak ada dasar sesi untuk digroundkan ke Gemini, tetap rule-based.
-      const answerText = matched ? matched.answer(ctx!) : FALLBACK_ANSWER;
-      window.setTimeout(() => {
-        setIsTyping(false);
-        setMessages((prev) => [...prev, { role: "assistant", text: answerText }]);
-      }, REPLY_DELAY_MS);
+    if (!ctx) {
+      // Quiz belum selesai: tidak ada dasar sesi untuk digroundkan ke Gemini.
+      pushInstantAnswer(FALLBACK_ANSWER);
       return;
     }
 
-    // Free-typed, ada ctx, tidak match keyword apa pun → fallback ke Gemini.
     try {
       const history = messages.slice(-6).map((m) => ({ role: m.role, text: m.text }));
       const res = await fetch("/api/chat", {
@@ -84,7 +90,13 @@ export function AssistantChat({ ctx, onClose, className }: Props) {
       const data = (await res.json()) as { answer: string };
       setMessages((prev) => [...prev, { role: "assistant", text: data.answer }]);
     } catch {
-      setMessages((prev) => [...prev, { role: "assistant", text: GEMINI_FALLBACK_ANSWER }]);
+      // Gemini gagal → coba selamatkan dengan keyword match dulu, baru pesan
+      // error generik kalau benar-benar tidak ada jawaban rule-based.
+      const matched = matchQuestion(question);
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", text: matched ? matched.answer(ctx) : GEMINI_FALLBACK_ANSWER },
+      ]);
     } finally {
       setIsTyping(false);
     }
@@ -92,8 +104,14 @@ export function AssistantChat({ ctx, onClose, className }: Props) {
 
   function askChip(id: string, chipLabel: string) {
     if (isTyping) return;
+    const entry = QA_BANK.find((e) => e.id === id);
+    if (!entry || !ctx) return;
     setAskedIds((prev) => new Set(prev).add(id));
-    respond(chipLabel);
+    // Chip = jawaban kurasi instan by id (tidak lewat keyword match maupun
+    // Gemini) — tetap deterministik dan tanpa biaya API.
+    setMessages((prev) => [...prev, { role: "user", text: chipLabel }]);
+    setIsTyping(true);
+    pushInstantAnswer(entry.answer(ctx));
   }
 
   function submitFreeText() {

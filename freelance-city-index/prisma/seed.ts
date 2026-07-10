@@ -44,7 +44,7 @@ async function main() {
         kostMax: 1600000,
         estimasiBiayaHidup: 2800000,
         ringkasanKarakteristik:
-          "Kawasan paling seimbang di DIY — internet kencang, banyak coworking di area Depok & Mlati, dan biaya hidup lebih terjangkau dari kota. Favorit tech worker dan mahasiswa S2.",
+          "Kawasan paling seimbang di DIY: internet kencang, banyak coworking di area Depok & Mlati, dan biaya hidup lebih terjangkau dari kota. Favorit tech worker dan mahasiswa S2.",
       },
       {
         id: "bantul",
@@ -70,7 +70,7 @@ async function main() {
         kostMax: 800000,
         estimasiBiayaHidup: 1900000,
         ringkasanKarakteristik:
-          "Biaya hidup terendah di DIY dengan lingkungan paling tenang. Internet masih berkembang — cocok untuk kerja yang tidak butuh bandwidth tinggi. Pilihan bagi yang prioritaskan pengeluaran rendah dan ketenangan.",
+          "Biaya hidup terendah di DIY dengan lingkungan paling tenang. Internet masih berkembang, cocok untuk kerja yang tidak butuh bandwidth tinggi. Pilihan bagi yang prioritaskan pengeluaran rendah dan ketenangan.",
       },
       {
         id: "kulon-progo",
@@ -135,7 +135,7 @@ async function main() {
     // Kota Yogyakarta
     { id: "kota-yogyakarta-gondokusuman", districtId: "kota-yogyakarta", nama: "Gondokusuman",
       latitude: -7.782, longitude: 110.376, estimasiBiayaHidup: 3200000, coworkingCount: 8, cafeCount: 120, universityCount: 3, tourismScore: 8.5,
-      ringkasanKarakteristik: "Jantung akademik dekat UGM dan Kotabaru, coworking dan kafe terpadat di Kota Yogyakarta. Internet kencang dan komunitas profesional sangat aktif, favorit tech professional — tapi biaya sewa termasuk tinggi.",
+      ringkasanKarakteristik: "Jantung akademik dekat UGM dan Kotabaru, coworking dan kafe terpadat di Kota Yogyakarta. Internet kencang dan komunitas profesional sangat aktif, favorit tech professional, tapi biaya sewa termasuk tinggi.",
       skor: { internet: 94, cost: 75, community: 94, environment: 85 } },
     { id: "kota-yogyakarta-umbulharjo", districtId: "kota-yogyakarta", nama: "Umbulharjo",
       latitude: -7.816, longitude: 110.390, estimasiBiayaHidup: 2800000, coworkingCount: 4, cafeCount: 90, universityCount: 2, tourismScore: 7.8,
@@ -147,7 +147,7 @@ async function main() {
       skor: { internet: 87, cost: 81, community: 84, environment: 84 } },
     { id: "kota-yogyakarta-mantrijeron", districtId: "kota-yogyakarta", nama: "Mantrijeron",
       latitude: -7.812, longitude: 110.359, estimasiBiayaHidup: 3100000, coworkingCount: 5, cafeCount: 95, universityCount: 0, tourismScore: 9.2,
-      ringkasanKarakteristik: "Rumah bagi kawasan Prawirotaman yang penuh kafe dan galeri seni — favorit pekerja kreatif. Lingkungan nyaman dan komunitas seni aktif, meski internet sedikit di bawah Gondokusuman.",
+      ringkasanKarakteristik: "Rumah bagi kawasan Prawirotaman yang penuh kafe dan galeri seni, favorit pekerja kreatif. Lingkungan nyaman dan komunitas seni aktif, meski internet sedikit di bawah Gondokusuman.",
       skor: { internet: 89, cost: 79, community: 92, environment: 90 } },
     { id: "kota-yogyakarta-gondomanan", districtId: "kota-yogyakarta", nama: "Gondomanan",
       latitude: -7.801, longitude: 110.369, estimasiBiayaHidup: 3000000, coworkingCount: 2, cafeCount: 60, universityCount: 0, tourismScore: 9.0,
@@ -157,7 +157,7 @@ async function main() {
     // Sleman
     { id: "sleman-depok", districtId: "sleman", nama: "Depok",
       latitude: -7.758, longitude: 110.401, estimasiBiayaHidup: 3300000, coworkingCount: 15, cafeCount: 180, universityCount: 5, tourismScore: 8.7,
-      ringkasanKarakteristik: "Pusat gravitasi freelancer & mahasiswa S2 di Sleman — dekat UGM, coworking dan kafe terbanyak se-DIY. Internet dan komunitas paling kuat, ideal untuk tech professional dan digital nomad.",
+      ringkasanKarakteristik: "Pusat gravitasi freelancer & mahasiswa S2 di Sleman: dekat UGM, coworking dan kafe terbanyak se-DIY. Internet dan komunitas paling kuat, ideal untuk tech professional dan digital nomad.",
       skor: { internet: 98, cost: 77, community: 98, environment: 86 } },
     { id: "sleman-mlati", districtId: "sleman", nama: "Mlati",
       latitude: -7.747, longitude: 110.362, estimasiBiayaHidup: 2800000, coworkingCount: 5, cafeCount: 80, universityCount: 2, tourismScore: 7.8,
@@ -195,7 +195,7 @@ async function main() {
       skor: { internet: 81, cost: 92, community: 79, environment: 88 } },
     { id: "bantul-imogiri", districtId: "bantul", nama: "Imogiri",
       latitude: -7.919, longitude: 110.400, estimasiBiayaHidup: 2000000, coworkingCount: 1, cafeCount: 20, universityCount: 0, tourismScore: 9.0,
-      ringkasanKarakteristik: "Kawasan wisata alam dan heritage, lingkungan paling tenang di Bantul dengan biaya hidup termurah — tapi internet dan komunitas kerja masih terbatas.",
+      ringkasanKarakteristik: "Kawasan wisata alam dan heritage, lingkungan paling tenang di Bantul dengan biaya hidup termurah, tapi internet dan komunitas kerja masih terbatas.",
       skor: { internet: 78, cost: 94, community: 76, environment: 93 } },
 
     // Kulon Progo
@@ -217,7 +217,7 @@ async function main() {
       skor: { internet: 81, cost: 92, community: 77, environment: 84 } },
     { id: "kulon-progo-panjatan", districtId: "kulon-progo", nama: "Panjatan",
       latitude: -7.913, longitude: 110.167, estimasiBiayaHidup: 2000000, coworkingCount: 1, cafeCount: 15, universityCount: 0, tourismScore: 8.4,
-      ringkasanKarakteristik: "Dekat akses pantai selatan, lingkungan tenang dan biaya hidup rendah — pilihan untuk yang mengutamakan suasana santai.",
+      ringkasanKarakteristik: "Dekat akses pantai selatan, lingkungan tenang dan biaya hidup rendah. Pilihan untuk yang mengutamakan suasana santai.",
       skor: { internet: 79, cost: 93, community: 75, environment: 89 } },
 
     // Gunungkidul
@@ -231,7 +231,7 @@ async function main() {
       skor: { internet: 80, cost: 92, community: 78, environment: 86 } },
     { id: "gunungkidul-patuk", districtId: "gunungkidul", nama: "Patuk",
       latitude: -7.827, longitude: 110.490, estimasiBiayaHidup: 2150000, coworkingCount: 1, cafeCount: 25, universityCount: 0, tourismScore: 9.3,
-      ringkasanKarakteristik: "Terkenal lewat Bukit Bintang dengan pemandangan Kota Yogyakarta dari ketinggian — environment terbaik di Gunungkidul, favorit yang cari suasana inspiratif.",
+      ringkasanKarakteristik: "Terkenal lewat Bukit Bintang dengan pemandangan Kota Yogyakarta dari ketinggian. Environment terbaik di Gunungkidul, favorit yang cari suasana inspiratif.",
       skor: { internet: 82, cost: 91, community: 79, environment: 94 } },
     { id: "gunungkidul-karangmojo", districtId: "gunungkidul", nama: "Karangmojo",
       latitude: -7.835, longitude: 110.672, estimasiBiayaHidup: 2000000, coworkingCount: 1, cafeCount: 18, universityCount: 0, tourismScore: 8.1,
