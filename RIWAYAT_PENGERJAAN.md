@@ -12,6 +12,108 @@
 
 ---
 
+### 2026-07-11 lanjutan 4 — FCI Assistant: jawab semua pertanyaan dalam lingkup aplikasi (grounding diperkaya + routing diperbaiki)
+
+**Konteks:** User komplain chatbot tidak bisa jawab "ada berapa kecamatan yang dihasilkan?" padahal masih lingkup project. Dua akar masalah ditemukan: (1) grounding Gemini cuma 4 fakta (persona, distrik terbaik, skor, flag UMK) + aturan "jangan jawab di luar fakta ini"; (2) keyword matcher rule-based mencegat ketikan bebas duluan lewat substring match yang sering salah tangkap (mis. "bobot internet saya berapa persen?" kena keyword "internet" → dijawab definisi generik, tidak pernah sampai Gemini).
+
+**Perubahan:**
+- `src/lib/assistant/qaBank.ts`: `AssistantContext` diperluas dengan field opsional `budget`, `weights` (bobot' ternormalisasi), `ranking` (5 distrik: rank, nama, skor total, skor 4 indikator, kecamatan terbaik), `bestKecamatan` (5 kecamatan distrik Best Match + skor). Back-compat: semua opsional, jawaban rule-based tidak berubah.
+- `src/lib/assistant/geminiClient.ts`: system prompt dirombak — ada section **FAKTA APLIKASI** statis (5 distrik, 25 kecamatan/5 per distrik, 4 indikator + arah, formula & multiplier quiz, bobot dasar persona, tiebreaker distrik=UMK / kecamatan=internet, deterministik/tanpa akun, data admin >7 hari ditandai) + **FAKTA SESI** dirender dari ctx yang diperkaya (helper `buildSessionFacts`). Aturan diubah dari "hanya boleh bahas daftar topik" jadi "jawab APA PUN selama lingkup aplikasi, pakai fakta ini; angka yang tidak tersedia jangan dikarang, arahkan ke halaman terkait". `MAX_OUTPUT_TOKENS` 300→420 (jawaban ber-angka butuh ruang).
+- `src/app/result/page.tsx` & `src/app/assistant/page.tsx`: `assistantCtx` sekarang dibangun lengkap (reuse `ranked`, `topKecamatan`, `computeAdjustedWeights`, `rankSubDistricts` yang sudah dihitung/tersedia).
+- `src/app/api/chat/route.ts`: `isValidCtx` diganti `sanitizeCtx` — 4 field inti tetap wajib, field grounding baru di-whitelist per-field dengan cap (array max 5, string max 60 char, angka harus finite); payload aneh dibuang diam-diam, bukan menggagalkan request.
+- `src/components/shared/AssistantChat.tsx`: **routing hybrid diubah** — chip = jawaban kurasi instan by id (tanpa keyword match, tanpa API); ketikan bebas + ada ctx = SELALU Gemini; keyword matcher tinggal untuk ctx null dan fallback saat API Gemini gagal (coba selamatkan pakai rule-based dulu sebelum pesan error generik).
+
+**Verifikasi (Playwright + Gemini asli, dev server lokal):** (1) "ada berapa kecamatan yang dihasilkan aplikasi ini?" → "25 kecamatan yang tersebar di 5 distrik di Yogyakarta" ✓; (2) "kecamatan terbaik di distrik peringkat 2 itu apa?" → "Gondokusuman" (benar sesuai data sesi: rank 2 = Kota Yogyakarta) ✓; (3) off-topic "resep nasi goreng" → tetap ditolak sopan + diarahkan balik ✓; (4) payload request `/api/chat` terkonfirmasi membawa `ranking`/`bestKecamatan`/`weights` ✓; (5) tidak ada em-dash di semua jawaban (aturan lanjutan 3 dipatuhi Gemini) ✓. tsc+lint bersih.
+
+**Trade-off yang disadari:** ketikan bebas yang dulu instan (kena keyword) sekarang lewat Gemini (~15 detik dari environment lokal, kuota API kepakai) — ditukar dengan jawaban yang benar-benar kontekstual; chip tetap instan dan gratis.
+
+**Status commit:** sudah di-commit & push 2026-07-11 atas perintah user (lihat git log).
+
+---
+
+### 2026-07-11 lanjutan 3 — Bersihkan em-dash (—) dari semua copy user-facing (anti "kelihatan AI")
+
+**Konteks:** User minta semua tulisan yang tampil ke user dicek dari pola tanda pisah "—"/"--" (ciri khas teks AI-generated) dan dirapikan. Audit grep seluruh `src/` + `prisma/seed.ts`: 72 kemunculan, mayoritas di komentar kode (tidak tampil, dibiarkan). Yang di-copy user-facing semua dibersihkan, diganti koma/titik/titik dua sesuai konteks kalimat:
+
+- **UI:** `page.tsx` landing (2 kalimat section indikator & CTA penutup), `DistrictPreviewSection` (subtitle + alasan Kulon Progo), `CapabilityShowcase` ("20-25%"), `admin/403` ("403: Akses Ditolak"), `admin/login` & `admin/page` ("Freelance City Index DIY Edition" tanpa dash), `admin/data` (4× rentang "0-100").
+- **Chatbot:** `AssistantChat.tsx` (sapaan pembuka), `qaBank.ts` (10 jawaban + fallback ditulis ulang tanpa dash).
+- **Prompt Gemini** (`geminiClient.ts`): semua dash di instruksi dihapus, contoh gaya penolakan ditulis ulang tanpa dash (Gemini meniru contoh), dan **ditambah aturan gaya eksplisit: "JANGAN pakai tanda pisah (em dash atau --) di jawaban"** supaya output AI juga bebas dash.
+- **Data:** `districts.seed.json` (2 ringkasan), `prisma/seed.ts` (2 distrik + 6 kecamatan). **DB Neon live ikut di-update** via skrip sekali-pakai `prisma/fix-ringkasan.ts` (dihapus setelah jalan) yang hanya menyentuh kolom `ringkasanKarakteristik` (2 District + 6 SubDistrict), skor & audit log tidak tersentuh — verifikasi query: 0 baris ber-em-dash tersisa di DB.
+
+**Sengaja TIDAK diubah:** placeholder nilai kosong "–"/"—" di dashboard admin & kartu distrik landing (konvensi standar tampilan data, bukan gaya kalimat), semua komentar kode, dan `console.log` seed (output CLI).
+
+**Verifikasi:** grep ulang — sisa kemunculan dash hanya komentar/placeholder/aturan larangan di prompt. `tsc --noEmit` + `npm run lint` bersih.
+
+**Status commit:** sudah di-commit & push 2026-07-11 atas perintah user (lihat git log).
+
+---
+
+### 2026-07-11 lanjutan 2 — KATALOG ANIMASI #1–#15 (semua halaman)
+
+**Konteks:** User minta saran animasi per halaman, menyetujui SEMUA 15 saran, dan minta katalognya dicatat bernomor di sini — supaya nanti bisa bilang "ubah/hapus animasi #X" tanpa perlu menjelaskan ulang. **Gunakan tabel ini sebagai rujukan.** Semua animasi otomatis nonaktif saat `prefers-reduced-motion: reduce` (blok reduce di `globals.css`). Keyframes & utility class baru semuanya di `src/app/globals.css` (section berkomentar "Animasi batch 2026-07-11"): `.anim-bar`, `.anim-badge-pulse`, `.anim-pop`, `.anim-shake`, `.anim-flash`, `.anim-hero-zoom` — plus `.stagger-in`/`.page-fade-in` yang sudah ada sebelumnya.
+
+| # | Animasi | Halaman | File & cara hapus |
+|---|---|---|---|
+| **#1** | Hero entrance stagger — headline→deskripsi→badge→CTA→stats→kartu kanan masuk berurutan (delay 0/70/140/210/280/180ms) | Landing | `src/app/page.tsx` — hapus class `stagger-in` + `style animationDelay` di 6 elemen hero (sebelumnya cuma 1 `stagger-in` di blok kiri) |
+| **#1b** | Ken Burns — gambar slideshow hero zoom-out pelan 1.06→1 tiap slide aktif (7 detik) | Landing | `src/components/landing/HeroBackgroundSlideshow.tsx` — hapus class `anim-hero-zoom` |
+| **#2** | Kartu 5 distrik & section masuk stagger saat di-scroll | Landing | **SUDAH ADA sebelum batch ini** (`ScrollReveal.tsx`, dipakai di `page.tsx` & `DistrictPreviewSection.tsx`) — tidak diubah |
+| **#3** | Angka statistik hero count-up saat pertama terlihat ("5 Distrik" dst.) | Landing | `src/components/landing/StatCountUp.tsx` (komponen baru) dipakai di `page.tsx` STATS grid — kembalikan ke `{value}` polos untuk hapus |
+| **#4** | Check merah "pop" di pojok kartu persona saat dipilih | Quiz Step 1 | `src/components/quiz/PersonaCardSelector.tsx` — hapus `<span className="anim-pop ...">` berisi ikon Check |
+| **#5** | Transisi antar step — konten Step 1↔2 fade+naik saat pindah | Quiz | `src/app/quiz/page.tsx` — hapus `key="step-1"/"step-2"` + class `stagger-in` di 2 div step |
+| **#6** | Shake halus grid persona + error fade-in saat submit tanpa persona | Quiz Step 1 | `PersonaCardSelector.tsx` — hapus `showError && "anim-shake"` di grid + `stagger-in` di `<p role="alert">` |
+| **#7** | Bar bobot tumbuh dari 0 (stagger 90ms/bar) + angka % count-up sinkron | Quiz Step 2 | `src/components/quiz/WeightBarChart.tsx` — di-refactor jadi sub-komponen `WeightRow` dengan `useCountUp`; hapus `anim-bar` + ganti `Math.round(animatedPct)` ke `pct` untuk hapus |
+| **#8** | Kartu ranking masuk stagger urutan rank (70ms/kartu) | Result | `src/app/result/page.tsx` `RankingGrid` — hapus class `stagger-in` + `animationDelay` di `<Link>` |
+| **#9** | Badge "Best Match" pulse ring amber sekali saat tampil | Result | `src/app/result/page.tsx` `ResultHero` — hapus class `anim-badge-pulse` |
+| **#10** | Bar mini per indikator di tabel perbandingan tumbuh dari kiri | Result | `src/components/result/ScoreComparisonTable.tsx` — hapus class `anim-bar` |
+| **#11** | Skor count-up + bertransisi saat recompute FR-010 (bukti hitung ulang terlihat) | Result | `src/components/shared/AnimatedNumber.tsx` + `src/hooks/useCountUp.ts` (baru), dipakai 2 tempat di `result/page.tsx` (skor Best Match hero + skor tiap kartu grid) — ganti balik ke `{r.skorTotal.toFixed(1)}` untuk hapus |
+| **#12** | Expand/collapse smooth (grid-template-rows 0fr↔1fr) + chevron berputar di panel "Kenapa {kecamatan}?" | District Detail | `src/app/district/[id]/page.tsx` — 2 tempat (kartu featured + kartu compact); untuk hapus: kembalikan ke conditional render `{isExpanded && ...}` + 2 ikon ChevronUp/Down |
+| **#13** | Bar skor kecamatan (featured + compact) tumbuh dari kiri | District Detail | `src/app/district/[id]/page.tsx` — hapus class `anim-bar` di 2 bar |
+| **#14** | Kartu admin flash hijau sekali + badge "Tersimpan" fade-in saat sukses simpan (distrik & kecamatan) | Admin Data | `src/app/admin/data/page.tsx` — hapus `isSaved && "anim-flash"` / `isSubSaved && "anim-flash"` + `stagger-in` di 2 badge Tersimpan |
+| **#15** | Crossfade antar halaman (route transition) | Semua halaman | **SUDAH ADA sebelum batch ini** (`PageTransition.tsx` + `.page-fade-in`, dipasang di `layout.tsx`) — tidak diubah |
+
+**File baru:** `src/hooks/useCountUp.ts`, `src/components/shared/AnimatedNumber.tsx`, `src/components/landing/StatCountUp.tsx`.
+**Catatan teknis:** (a) bar pakai `scaleX` bukan `width` supaya tidak memicu layout; (b) route transition tetap fade+naik ringan yang lama — sengaja tidak ditambah transform besar karena ancestor ber-transform merusak descendant `position: fixed` (pelajaran bug backdrop-blur lama); (c) `useCountUp` menjadwalkan setState via `requestAnimationFrame` (aturan lint `react-hooks/set-state-in-effect`); (d) shake TIDAK dipasang di error real-time admin (mengetik memicu error tiap keystroke — bakal mengganggu), hanya di validasi submit quiz.
+
+**Verifikasi:** `tsc --noEmit` + `npm run lint` bersih. Playwright end-to-end: landing count-up berhenti di nilai benar; quiz submit tanpa persona → `anim-shake` + error inline tampil; pilih persona → check pop muncul; Step 2 → 4 `anim-bar` + % tampil; result → 5 kartu stagger + 1 badge pulse + skor 75.9 (reference case tetap benar); district → grid-rows terukur 0px → 125px (tengah animasi) → 143px + chevron rotate. 0 console error di semua halaman.
+
+**Status commit:** sudah di-commit & push 2026-07-11 atas perintah user (lihat git log).
+
+---
+
+### 2026-07-11 lanjutan — Fix lemot masuk `/result` & `/district/:id`: cache in-memory data distrik
+
+**Konteks:** User tanya kenapa masuk halaman result/detail distrik terasa delay. Diagnosa terukur: `useDistricts` fetch `/api/districts` **setiap kali halaman mount** (tanpa cache apa pun), dan tiap panggilan = roundtrip ke Neon PostgreSQL (~1,1s warm, 2,8–4,5s saat compute Neon free tier baru bangun dari idle). Jadi tiap navigasi result → district → balik bayar penuh roundtrip itu.
+
+**Fix:**
+- `src/hooks/useDistricts.ts`: cache module-level berupa shared Promise — fetch hanya sekali per sesi, halaman yang mount bersamaan ikut satu request; kalau fetch gagal cache dikosongkan supaya retry benar-benar mengulang (tombol "Coba Lagi" tetap berfungsi). In-memory murni, BUKAN localStorage (aturan §15.3 efemeral tetap dipatuhi). Ekspor `invalidateDistrictsCache()`.
+- `src/contexts/AdminContext.tsx`: panggil `invalidateDistrictsCache()` setelah `updateScore`/`updateScoresBulk`/`updateSubDistrictScoresBulk` sukses — halaman publik berikutnya baca data segar, bukan cache basi.
+
+**Verifikasi:** tsc+lint bersih. Playwright hitung request: load pertama `/result` 1× call (5,4s — termasuk compile dev + cold Neon), navigasi ke `/district/:id` **519ms**, balik ke result **992ms**, total tetap 1× call `/api/districts` (sebelumnya 3×). Load pertama tetap tergantung Neon (di luar kendali kode); yang dihilangkan adalah delay di semua navigasi berikutnya.
+
+**Catatan sesi yang sama:** kartu featured Kecamatan Terbaik dikecilkan (padding/teks dirapatkan) atas feedback user "terlalu besar"; dev server sempat error "Jest worker... retry limit" di semua halaman `/district/:id` — proses lama setengah mati, fix: kill + hapus `.next` + restart (bukan bug kode).
+
+**Status commit:** sudah di-commit & push 2026-07-11 atas perintah user (lihat git log).
+
+---
+
+### 2026-07-11 — Redesign section "Kecamatan Terbaik" di `/district/:id` (featured card + compact list)
+
+**Konteks:** User melampirkan mockup Figma Make "Redesign Best Subdistrict Ranking" (https://www.figma.com/make/hbgnLaKfrd7iZaLnnItP1Y) dan minta section Kecamatan Terbaik dibuat lebih menarik mengikuti pola mockup: kartu featured besar untuk rank #1 + kartu compact untuk rank 2–5, menggantikan list flat seragam yang lama. Tambahan permintaan user saat review plan: rank 1–3 masing-masing beda warna, rank 4–5 sama (pola medali). Mockup **diadaptasi**, bukan disalin mentah — copy Inggris → Bahasa Indonesia, 6 indikator mockup (ada Safety/Growth) → tetap 4 indikator asli, warna monokrom mockup → token Almanac aktif, data mock → data asli `rankSubDistricts`.
+
+**Perubahan (1 file: `src/app/district/[id]/page.tsx`):**
+- Header section: eyebrow "Ranking Kecamatan" dengan bar aksen `bg-sawah`, judul dinaikkan ke `text-lg sm:text-xl`.
+- Kartu featured rank #1: strip gradient sawah di tepi atas, badge "Area Terbaik" (Crown, amber — konsisten konvensi rank-1 halaman ini) + "Rank #1 dari 5", nama kecamatan besar uppercase + subjudul "{distrik} · Daerah Istimewa Yogyakarta", skor mono besar + progress bar + label, deskripsi penuh (tidak truncate), 4 chip indikator dengan skor asli `skorPerIndikator`, CTA "Lihat Tempat di {nama}" (scroll ke section SuggestedPlaces, hormati `prefers-reduced-motion`) + toggle "Kenapa {nama}?" (expand `WhyThisMatch`, reuse state `expandedSubDistrict` lama).
+- Kartu compact rank 2–5: kartu terpisah ber-gap (bukan `divide-y`), chip rank kotak font-mono **warna medali** — #2 perak (`#EDEEF2`/`#5B6472`), #3 perunggu (`#F3E8DC`/`#92613A`), #4–#5 netral sama (`bg-secondary`); nama uppercase, deskripsi truncate, skor + progress bar mini, chevron, hover border+shadow, tetap expandable ke `WhyThisMatch`.
+- Section SuggestedPlaces diberi `id="tempat-rekomendasi"` + `scroll-mt-4` sebagai target scroll CTA. Import `ArrowRight` ditambah. Konstanta baru `RANK_CHIP_STYLE`.
+
+**Tidak disentuh:** `rankSubDistricts`/scoring (hanya dibaca), `WhyThisMatch` (reuse apa adanya), routing, section lain.
+
+**Verifikasi:** `tsc --noEmit` & `npm run lint` bersih. Playwright (instalasi scratchpad lama) terhadap dev server: screenshot Gunungkidul (Patuk featured), Sleman + expand "Kenapa Depok?" (WhyThisMatch tampil), Bantul mobile 360px (stack vertikal rapi, chip wrap, tombol ≥44px); CTA "Lihat Tempat di Patuk" terverifikasi scroll sampai `#tempat-rekomendasi` terlihat di viewport; 0 console error. Ranking berubah sesuai query param quiz antar screenshot (recompute gaya FR-010 tetap jalan).
+
+**Status commit:** sudah di-commit & push 2026-07-11 setelah user review di dev server dan minta push (awalnya sengaja ditahan atas permintaan user).
+
+---
+
 ### 2026-07-08 — Perbaikan README.md (petunjuk teknis) + tambah laporan kelompok
 
 **Konteks:** User sudah mengisi sendiri petunjuk teknis menjalankan aplikasi di `README.md`, lalu minta di-push ke git bersama file laporan yang baru ditambahkan. Sebelum push, user minta dicek dulu apakah README-nya sudah akurat/lengkap. Hasil audit (dibandingkan langsung ke kode di `freelance-city-index/`) menemukan beberapa hal yang keliru/fiktif dan diperbaiki:
