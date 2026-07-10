@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useReducer, useEffect, ReactNode } from "react";
+import { invalidateDistrictsCache } from "@/hooks/useDistricts";
 
 interface AdminState {
   isAuthenticated: boolean;
@@ -104,7 +105,10 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ districtId, indicatorId, skor }),
     });
-    if (res.ok) return { ok: true };
+    if (res.ok) {
+      invalidateDistrictsCache();
+      return { ok: true };
+    }
     const data = await res.json();
     return { ok: false, error: data.error ?? "Gagal menyimpan" };
   }
@@ -123,7 +127,10 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ districtId, indicators }),
     });
-    if (res.ok) return { ok: true };
+    if (res.ok) {
+      invalidateDistrictsCache();
+      return { ok: true };
+    }
     const data = await res.json();
     if (res.status === 409) {
       return { ok: false, conflict: true, error: data.message ?? "Data ini sudah diubah di sesi lain" };
@@ -142,7 +149,10 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ subDistrictId, indicators }),
     });
-    if (res.ok) return { ok: true };
+    if (res.ok) {
+      invalidateDistrictsCache();
+      return { ok: true };
+    }
     const data = await res.json();
     if (res.status === 409) {
       return { ok: false, conflict: true, error: data.message ?? "Data ini sudah diubah di sesi lain" };

@@ -21,6 +21,34 @@ interface UseDistrictsResult {
   error: string | null;
 }
 
+// Cache in-memory per sesi (module-level, BUKAN localStorage — tetap efemeral
+// sesuai aturan §15.3). Data distrik hampir statis (cuma berubah kalau admin
+// edit), jadi cukup satu roundtrip ke Neon per sesi; navigasi antar halaman
+// (result → district → balik) tidak perlu menunggu fetch ulang. Promise
+// di-share supaya beberapa halaman yang mount bersamaan ikut satu request.
+let districtsCache: Promise<ApiDistrict[]> | null = null;
+
+function fetchDistricts(): Promise<ApiDistrict[]> {
+  if (!districtsCache) {
+    districtsCache = fetch("/api/districts").then((res) => {
+      if (!res.ok) throw new Error("Gagal memuat data distrik");
+      return res.json() as Promise<ApiDistrict[]>;
+    });
+    // Kalau gagal, kosongkan cache supaya percobaan berikutnya (tombol
+    // "Coba Lagi" / reload) benar-benar fetch ulang, bukan replay error.
+    districtsCache.catch(() => {
+      districtsCache = null;
+    });
+  }
+  return districtsCache;
+}
+
+// Dipanggil AdminContext setelah admin berhasil mengubah skor, supaya halaman
+// publik berikutnya membaca data segar, bukan cache lama.
+export function invalidateDistrictsCache() {
+  districtsCache = null;
+}
+
 export function useDistricts(): UseDistrictsResult {
   const [districts, setDistricts] = useState<District[]>([]);
   const [scores, setScores] = useState<DistrictScore[]>([]);
@@ -30,11 +58,7 @@ export function useDistricts(): UseDistrictsResult {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/districts")
-      .then((res) => {
-        if (!res.ok) throw new Error("Gagal memuat data distrik");
-        return res.json() as Promise<ApiDistrict[]>;
-      })
+    fetchDistricts()
       .then((data) => {
         setDistricts(
           data.map(({ scores, subDistricts, ...d }) => {

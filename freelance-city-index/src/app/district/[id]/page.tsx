@@ -5,8 +5,8 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  ArrowLeft, Wifi, Wallet, Users, Leaf, Crown, Star, Building2, ChevronRight,
-  MapPin, ChevronDown, ChevronUp,
+  ArrowLeft, ArrowRight, Wifi, Wallet, Users, Leaf, Crown, Star, Building2, ChevronRight,
+  MapPin, ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PillNavbar } from "@/components/shared/PillNavbar";
@@ -35,6 +35,15 @@ const CONTRIB_STYLE: Record<IndicatorId, { icon: React.ElementType; bg: string; 
   cost:        { icon: Wallet, bg: "#FDEED3", color: "#F59E0B" },
   community:   { icon: Users,  bg: "#FFE9DB", color: "#F97316" },
   environment: { icon: Leaf,   bg: "#E3F5EA", color: "#1A9B4B" },
+};
+
+// Warna chip peringkat kecamatan pola medali (permintaan user):
+// #1 emas (badge amber di kartu featured), #2 perak, #3 perunggu,
+// #4–#5 netral sama (bg-secondary). Angka rank selalu ikut tampil,
+// jadi tidak mengandalkan warna saja (§12.2).
+const RANK_CHIP_STYLE: Record<number, { bg: string; color: string }> = {
+  2: { bg: "#EDEEF2", color: "#5B6472" },
+  3: { bg: "#F3E8DC", color: "#92613A" },
 };
 
 const CONTRIB_DESC = [
@@ -108,6 +117,16 @@ export default function DistrictDetailPage() {
 
   const resultUrl = `/result?persona=${input.personaId}&budget=${input.budget}&internet=${input.internetPriority}&community=${input.communityPriority}&environment=${input.environmentPreference}`;
   const heroPhoto = getDistrictVisual(district.id).imageUrl;
+
+  const topSub     = rankedSub[0];
+  const topSubData = topSub ? subDistrictsHere.find((s) => s.id === topSub.subDistrictId) : undefined;
+
+  const scrollToPlaces = () => {
+    const el = document.getElementById("tempat-rekomendasi");
+    if (!el) return;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    el.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+  };
 
   const contribEntries = rankedEntry
     ? (Object.entries(rankedEntry.kontribusi) as [IndicatorId, number][]).sort(([, a], [, b]) => b - a)
@@ -234,70 +253,225 @@ export default function DistrictDetailPage() {
           {/* Kecamatan Terbaik — ranking level kedua di dalam distrik ini, pakai
               formula scoring yang sama persis dengan level distrik (lihat
               rankSubDistricts), supaya user tahu titik spesifik di dalam
-              distrik yang luas ini, bukan cuma nama kabupaten/kota. */}
-          {rankedSub.length > 0 && (
+              distrik yang luas ini, bukan cuma nama kabupaten/kota.
+              Layout: kartu featured besar untuk rank #1 + kartu compact untuk
+              rank 2–5 (adaptasi mockup Figma Make user, token Almanac). */}
+          {topSub && topSubData && (
             <section className="mt-3.5 rounded-2xl bg-white p-4 shadow-[0_4px_14px_rgba(30,35,48,0.04)] sm:p-5">
-              <h2 className="text-sm font-extrabold text-ink">Kecamatan Terbaik di {district.nama}</h2>
+              <div className="flex items-center gap-2">
+                <span className="h-4 w-1 rounded-full bg-sawah" aria-hidden="true" />
+                <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+                  Ranking Kecamatan
+                </p>
+              </div>
+              <h2 className="mt-1.5 text-lg font-extrabold tracking-tight text-ink sm:text-xl">
+                Kecamatan Terbaik di {district.nama}
+              </h2>
               <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
                 Diranking pakai bobot &amp; preferensi yang sama dengan hasil quiz Anda.
               </p>
 
-              <div className="mt-4 divide-y divide-line rounded-2xl border border-line">
-                {rankedSub.map((r) => {
-                  const sd = subDistrictsHere.find((s) => s.id === r.subDistrictId)!;
-                  const isFirst = r.rank === 1;
-                  const isExpanded = expandedSubDistrict === r.subDistrictId;
-                  return (
-                    <div key={r.subDistrictId} className="px-4 py-3.5 sm:px-5">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setExpandedSubDistrict((prev) => (prev === r.subDistrictId ? null : r.subDistrictId))
-                        }
-                        className="flex w-full items-center gap-3.5 text-left"
-                      >
-                        <span
-                          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-extrabold text-white"
-                          style={{ backgroundColor: isFirst ? "#F59E0B" : "var(--ink)" }}
-                        >
-                          {r.rank}
-                        </span>
-                        <div className="min-w-0 flex-1">
-                          <p className="flex items-center gap-1.5 text-sm font-extrabold text-ink">
-                            <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                            {sd.nama}
-                            {isFirst && (
-                              <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700">
-                                Terbaik
-                              </span>
-                            )}
-                          </p>
-                          <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                            {sd.ringkasanKarakteristik}
-                          </p>
-                        </div>
-                        <span className="shrink-0 text-right">
-                          <span className="font-mono text-lg font-extrabold text-positive">
-                            {r.skorTotal.toFixed(1)}
-                          </span>
-                          <span className="ml-0.5 text-[11px] font-semibold text-muted-foreground">/100</span>
-                        </span>
-                        {isExpanded ? (
-                          <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" />
-                        ) : (
-                          <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
-                        )}
-                      </button>
+              {/* Kartu featured — rank #1 */}
+              <div className="relative mt-4 overflow-hidden rounded-[22px] border border-line bg-white shadow-[0_2px_18px_rgba(30,35,48,0.06)]">
+                <div
+                  className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-sawah via-sawah/35 to-transparent"
+                  aria-hidden="true"
+                />
+                <div className="p-4 sm:p-5">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-amber-700">
+                      <Crown className="h-3 w-3" />
+                      Area Terbaik
+                    </span>
+                    <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                      Rank #1 dari {rankedSub.length}
+                    </span>
+                  </div>
 
-                      {isExpanded && (
-                        <div className="ml-11 mt-3 rounded-xl bg-paper/60 p-3.5">
-                          <WhyThisMatch ranked={r} districtNama={sd.nama} />
-                        </div>
-                      )}
+                  <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                    <div className="min-w-0">
+                      <h3 className="text-xl font-extrabold uppercase tracking-tight text-ink sm:text-2xl">
+                        {topSubData.nama}
+                      </h3>
+                      <p className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+                        <MapPin className="h-3.5 w-3.5 shrink-0" />
+                        {district.nama} · Daerah Istimewa Yogyakarta
+                      </p>
                     </div>
-                  );
-                })}
+                    <div className="shrink-0">
+                      <div className="flex items-baseline gap-1 sm:justify-end">
+                        <span className="font-mono text-2xl font-extrabold tracking-tight text-positive sm:text-3xl">
+                          {topSub.skorTotal.toFixed(1)}
+                        </span>
+                        <span className="text-xs font-semibold text-muted-foreground">/100</span>
+                      </div>
+                      <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-line sm:w-36">
+                        {/* Animasi #13: bar tumbuh dari kiri saat pertama muncul */}
+                        <div
+                          className="anim-bar h-full rounded-full"
+                          style={{
+                            width: `${Math.min(100, topSub.skorTotal)}%`,
+                            background: "linear-gradient(90deg,#0f6f3c,#7cc244)",
+                          }}
+                        />
+                      </div>
+                      <p className="mt-1 text-[10px] font-semibold text-muted-foreground sm:text-right">
+                        Skor kecocokan total
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-3.5 border-t border-line" aria-hidden="true" />
+
+                  <p className="mt-3 max-w-xl text-[13px] leading-relaxed text-muted-foreground">
+                    {topSubData.ringkasanKarakteristik}
+                  </p>
+
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {INDICATOR_CARDS.map(({ id: indId, label, icon: Icon }) => (
+                      <span
+                        key={indId}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-line bg-paper/50 px-2.5 py-1 text-xs font-semibold text-ink"
+                      >
+                        <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+                        {label}
+                        <span className="font-mono font-extrabold text-positive">
+                          {Math.round(topSub.skorPerIndikator[indId])}
+                        </span>
+                      </span>
+                    ))}
+                  </div>
+
+                  <div className="mt-4 flex flex-wrap items-center gap-2.5">
+                    <button
+                      type="button"
+                      onClick={scrollToPlaces}
+                      className="inline-flex min-h-11 items-center gap-2 rounded-full bg-sawah px-4 text-[13px] font-bold text-white transition-colors hover:bg-sawah/90"
+                    >
+                      Lihat Tempat di {topSubData.nama}
+                      <ArrowRight className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setExpandedSubDistrict((prev) =>
+                          prev === topSub.subDistrictId ? null : topSub.subDistrictId
+                        )
+                      }
+                      aria-expanded={expandedSubDistrict === topSub.subDistrictId}
+                      className="inline-flex min-h-11 items-center gap-2 rounded-full border border-line bg-white px-4 text-[13px] font-bold text-ink transition-colors hover:bg-muted"
+                    >
+                      Kenapa {topSubData.nama}?
+                      {/* Animasi #12: chevron berputar, panel expand smooth */}
+                      <ChevronDown
+                        className={`h-4 w-4 text-muted-foreground motion-safe:transition-transform motion-safe:duration-300 ${
+                          expandedSubDistrict === topSub.subDistrictId ? "rotate-180" : ""
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  <div
+                    className="grid motion-safe:transition-[grid-template-rows] motion-safe:duration-300 motion-safe:ease-[var(--ease-entrance)]"
+                    style={{ gridTemplateRows: expandedSubDistrict === topSub.subDistrictId ? "1fr" : "0fr" }}
+                    aria-hidden={expandedSubDistrict !== topSub.subDistrictId}
+                  >
+                    <div className="min-h-0 overflow-hidden">
+                      <div className="mt-3.5 rounded-xl bg-paper/60 p-3.5">
+                        <WhyThisMatch ranked={topSub} districtNama={topSubData.nama} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
+
+              {/* Kartu compact — rank 2–5 */}
+              {rankedSub.length > 1 && (
+                <>
+                  <div className="mt-5 flex items-center gap-2.5">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                      Kecamatan Lainnya
+                    </span>
+                    <span className="h-px flex-1 bg-line" aria-hidden="true" />
+                  </div>
+
+                  <div className="mt-3 flex flex-col gap-2.5">
+                    {rankedSub.slice(1).map((r) => {
+                      const sd = subDistrictsHere.find((s) => s.id === r.subDistrictId)!;
+                      const isExpanded = expandedSubDistrict === r.subDistrictId;
+                      const chip = RANK_CHIP_STYLE[r.rank];
+                      return (
+                        <div
+                          key={r.subDistrictId}
+                          className="rounded-2xl border border-line bg-white transition-all hover:border-ink/20 hover:shadow-[0_2px_14px_rgba(30,35,48,0.06)]"
+                        >
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setExpandedSubDistrict((prev) =>
+                                prev === r.subDistrictId ? null : r.subDistrictId
+                              )
+                            }
+                            aria-expanded={isExpanded}
+                            className="flex min-h-11 w-full items-center gap-3.5 px-4 py-3.5 text-left sm:px-5"
+                          >
+                            <span
+                              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] font-mono text-xs font-extrabold ${
+                                chip ? "" : "bg-secondary text-muted-foreground"
+                              }`}
+                              style={chip ? { backgroundColor: chip.bg, color: chip.color } : undefined}
+                            >
+                              #{r.rank}
+                            </span>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-extrabold uppercase tracking-wide text-ink">
+                                {sd.nama}
+                              </p>
+                              <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                                {sd.ringkasanKarakteristik}
+                              </p>
+                            </div>
+                            <span className="shrink-0 text-right">
+                              <span className="font-mono text-base font-extrabold text-positive">
+                                {r.skorTotal.toFixed(1)}
+                              </span>
+                              <span className="ml-0.5 text-[11px] font-semibold text-muted-foreground">/100</span>
+                              <span className="ml-auto mt-1.5 block h-1 w-16 overflow-hidden rounded-full bg-line">
+                                {/* Animasi #13 */}
+                                <span
+                                  className="anim-bar block h-full rounded-full"
+                                  style={{
+                                    width: `${Math.min(100, r.skorTotal)}%`,
+                                    background: "linear-gradient(90deg,#0f6f3c,#7cc244)",
+                                  }}
+                                />
+                              </span>
+                            </span>
+                            {/* Animasi #12: chevron berputar, panel expand smooth */}
+                            <ChevronDown
+                              className={`h-4 w-4 shrink-0 text-muted-foreground motion-safe:transition-transform motion-safe:duration-300 ${
+                                isExpanded ? "rotate-180" : ""
+                              }`}
+                            />
+                          </button>
+
+                          <div
+                            className="grid motion-safe:transition-[grid-template-rows] motion-safe:duration-300 motion-safe:ease-[var(--ease-entrance)]"
+                            style={{ gridTemplateRows: isExpanded ? "1fr" : "0fr" }}
+                            aria-hidden={!isExpanded}
+                          >
+                            <div className="min-h-0 overflow-hidden">
+                              <div className="mx-4 mb-4 rounded-xl bg-paper/60 p-3.5 sm:mx-5">
+                                <WhyThisMatch ranked={r} districtNama={sd.nama} />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
             </section>
           )}
 
@@ -383,8 +557,12 @@ export default function DistrictDetailPage() {
             </section>
           )}
 
-          {/* Tempat kerja rekomendasi */}
-          <section className="mt-3.5 rounded-2xl bg-white p-4 shadow-[0_4px_14px_rgba(30,35,48,0.04)] sm:p-5">
+          {/* Tempat kerja rekomendasi — id dipakai sebagai target scroll CTA
+              "Lihat Tempat di {kecamatan}" di kartu featured Kecamatan Terbaik */}
+          <section
+            id="tempat-rekomendasi"
+            className="mt-3.5 scroll-mt-4 rounded-2xl bg-white p-4 shadow-[0_4px_14px_rgba(30,35,48,0.04)] sm:p-5"
+          >
             <SuggestedPlaces
               districtId={district.id}
               districtNama={district.nama}
