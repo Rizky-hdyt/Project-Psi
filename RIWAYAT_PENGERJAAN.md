@@ -12,6 +12,21 @@
 
 ---
 
+### 2026-07-11 lanjutan 5 — Popup survei rating: sekali muncul per sesi + auto-tutup kalau didiamkan
+
+**Konteks:** Permintaan user — popup "Bantu kami menilai" di `/result`: (1) tetap muncul otomatis di awal; (2) kalau didiamkan tanpa diisi, hilang sendiri; (3) kalau diisi, hilang seperti biasa; (4) setelah pernah muncul sekali, TIDAK muncul lagi saat user balik ke result dari detail distrik / bandingkan distrik.
+
+**Perubahan (1 file: `src/components/shared/RelevanceSurvey.tsx`):**
+- Flag module-level `surveyShownThisSession` (in-memory murni, BUKAN localStorage — aturan efemeral §15.3): begitu popup tampil sekali, mount berikutnya di sesi yang sama tidak menampilkannya lagi; reset otomatis saat full reload.
+- `AUTO_DISMISS_MS = 15_000`: popup menutup sendiri setelah 15 detik tanpa interaksi. Timer dibatalkan begitu user berinteraksi (memberi bintang atau membuka kolom masukan teks) lewat state `interacted`.
+- Perilaku lama tetap: delay muncul 3,5 detik, tombol Lewati/X, auto-tutup 2,5 detik setelah submit sukses.
+
+**Verifikasi (Playwright, dev server):** 5 skenario lolos semua — (1) muncul ~3,5s setelah result; (2) didiamkan 15s → hilang sendiri; (3) navigasi ke `/district/:id` lalu back → tidak muncul lagi; (4) full reload → muncul lagi (sesi baru), dan setelah klik bintang tetap terbuka >16s (timer batal); (5) isi lengkap + Kirim → "Terima kasih!" tampil lalu tertutup otomatis. tsc+lint bersih.
+
+**Status commit:** sudah di-commit & push 2026-07-11 atas perintah user (aset poster & video sengaja TIDAK ikut di-push, sesuai permintaan).
+
+---
+
 ### 2026-07-11 lanjutan 4 — FCI Assistant: jawab semua pertanyaan dalam lingkup aplikasi (grounding diperkaya + routing diperbaiki)
 
 **Konteks:** User komplain chatbot tidak bisa jawab "ada berapa kecamatan yang dihasilkan?" padahal masih lingkup project. Dua akar masalah ditemukan: (1) grounding Gemini cuma 4 fakta (persona, distrik terbaik, skor, flag UMK) + aturan "jangan jawab di luar fakta ini"; (2) keyword matcher rule-based mencegat ketikan bebas duluan lewat substring match yang sering salah tangkap (mis. "bobot internet saya berapa persen?" kena keyword "internet" → dijawab definisi generik, tidak pernah sampai Gemini).

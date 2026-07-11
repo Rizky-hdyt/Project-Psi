@@ -73,6 +73,15 @@ function RatingRow({
   );
 }
 
+// Popup survei cuma boleh muncul SEKALI per sesi (permintaan user 2026-07-11):
+// setelah tampil sekali (diisi maupun tidak), balik ke /result dari detail
+// distrik atau halaman bandingkan tidak memunculkannya lagi. Flag module-level
+// in-memory (bukan localStorage — aturan efemeral §15.3), reset saat full reload.
+let surveyShownThisSession = false;
+
+// Kalau didiamkan tanpa interaksi apa pun, tutup sendiri setelah durasi ini.
+const AUTO_DISMISS_MS = 15_000;
+
 export function RelevanceSurvey({
   personaId = null,
 }: {
@@ -85,13 +94,27 @@ export function RelevanceSurvey({
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [showKomentar, setShowKomentar] = useState(false);
+  const [interacted, setInteracted] = useState(false);
   const mounted = useHasMounted();
 
-  // Muncul otomatis setelah 3.5 detik, user sudah sempat melihat hasil
+  // Muncul otomatis setelah 3.5 detik (user sudah sempat melihat hasil) —
+  // kecuali sudah pernah tampil di sesi ini.
   useEffect(() => {
-    const t = setTimeout(() => setVisible(true), 3500);
+    if (surveyShownThisSession) return;
+    const t = setTimeout(() => {
+      surveyShownThisSession = true;
+      setVisible(true);
+    }, 3500);
     return () => clearTimeout(t);
   }, []);
+
+  // Auto-tutup kalau tidak disentuh sama sekali; batal begitu user mulai
+  // berinteraksi (memberi bintang / membuka kolom masukan).
+  useEffect(() => {
+    if (!visible || submitted || interacted) return;
+    const t = setTimeout(() => setVisible(false), AUTO_DISMISS_MS);
+    return () => clearTimeout(t);
+  }, [visible, submitted, interacted]);
 
   // Setelah submit, tutup otomatis setelah 2.5 detik
   useEffect(() => {
@@ -170,7 +193,10 @@ export function RelevanceSurvey({
             </p>
             <RatingRow
               value={relevansi}
-              onChange={setRelevansi}
+              onChange={(v) => {
+                setInteracted(true);
+                setRelevansi(v);
+              }}
               ariaLabel="Kesesuaian rekomendasi distrik, 1 sampai 5"
             />
           </div>
@@ -182,7 +208,10 @@ export function RelevanceSurvey({
             </p>
             <RatingRow
               value={kemudahan}
-              onChange={setKemudahan}
+              onChange={(v) => {
+                setInteracted(true);
+                setKemudahan(v);
+              }}
               ariaLabel="Kemudahan penggunaan aplikasi, 1 sampai 5"
             />
           </div>
@@ -201,7 +230,10 @@ export function RelevanceSurvey({
           ) : (
             <button
               type="button"
-              onClick={() => setShowKomentar(true)}
+              onClick={() => {
+                setInteracted(true);
+                setShowKomentar(true);
+              }}
               className="text-xs text-muted-foreground underline-offset-2 hover:text-ink hover:underline focus-visible:outline-none"
             >
               + Tambah masukan teks
