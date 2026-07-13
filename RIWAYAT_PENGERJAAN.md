@@ -1145,3 +1145,13 @@ rm src/components/landing/CapabilityShowcase.tsx
 **Root cause:** `PillNavbar` (`src/components/shared/PillNavbar.tsx`) cuma `position: relative` tanpa `z-index` sendiri. Section hero di `/result` & `/district/:id` pakai `isolate` (bikin stacking context baru) dan urutannya di DOM setelah navbar. Karena navbar dan hero section sama-sama positioned tanpa z-index eksplisit di dalam stacking context wrapper (`backdrop-blur-2xl`), elemen yang render belakangan (hero section) menang secara visual dan menutupi dropdown mobile navbar.
 
 **Fix:** beri `nav` di `PillNavbar` `z-30` eksplisit (navbar + dropdownnya jadi stacking context dominan), dan dropdown mobile-nya sendiri dinaikkan dari `z-10` ke `z-40`. Perbaikan di level komponen jadi otomatis berlaku di semua halaman yang pakai `PillNavbar` (Landing, Quiz, Result, District Detail, Compare, Assistant).
+
+---
+
+## Lanjutan (2026-07-13) — Fix bug: popup survei rating muncul lagi setelah refresh
+
+**Bug:** popup `RelevanceSurvey` di `/result` sudah pernah diisi/submit, tapi begitu halaman di-refresh, popup muncul lagi minta diisi ulang.
+
+**Root cause:** flag "sudah tampil/ditangani" (`surveyShownThisSession`) di `src/components/shared/RelevanceSurvey.tsx` cuma variabel in-memory level module. Refresh (F5) me-reload JS dari nol sehingga flag balik ke `false`, walau user sudah submit sebelumnya.
+
+**Fix:** flag dipersist ke `localStorage` (`fci-survey-handled`), ditandai saat user submit, klik X (tutup), atau klik "Lewati" — sehingga tidak nanya ulang lagi meski refresh/tutup-buka tab. Auto-dismiss karena timeout 15 detik (tidak disentuh sama sekali) sengaja TIDAK menandai handled, supaya popup masih boleh muncul lagi lain waktu kalau user belum sempat lihat. Ini tidak melanggar §15.3 CLAUDE.md (larangan localStorage untuk state quiz/hasil) karena preferensi popup feedback ini di luar cakupan state quiz/rekomendasi yang wajib efemeral.

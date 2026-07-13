@@ -73,11 +73,34 @@ function RatingRow({
   );
 }
 
-// Popup survei cuma boleh muncul SEKALI per sesi (permintaan user 2026-07-11):
-// setelah tampil sekali (diisi maupun tidak), balik ke /result dari detail
-// distrik atau halaman bandingkan tidak memunculkannya lagi. Flag module-level
-// in-memory (bukan localStorage — aturan efemeral §15.3), reset saat full reload.
+// Popup survei cuma boleh muncul SEKALI (permintaan user 2026-07-11), dan
+// tidak boleh muncul lagi setelah ditangani (diisi/dilewati/ditutup) meski
+// halaman di-refresh — sebelumnya flag ini cuma in-memory sehingga refresh
+// mereset dan popup nanya ulang walau user sudah submit (bug dilaporkan
+// 2026-07-13). §15.3 CLAUDE.md soal larangan localStorage berlaku untuk
+// state quiz & hasil, bukan preferensi popup feedback seperti ini, jadi
+// dipersist ke localStorage supaya tidak nagging ulang tiap reload.
+const SURVEY_STORAGE_KEY = "fci-survey-handled";
 let surveyShownThisSession = false;
+
+function hasSurveyBeenHandled(): boolean {
+  if (surveyShownThisSession) return true;
+  try {
+    return localStorage.getItem(SURVEY_STORAGE_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function markSurveyHandled(): void {
+  surveyShownThisSession = true;
+  try {
+    localStorage.setItem(SURVEY_STORAGE_KEY, "1");
+  } catch {
+    // localStorage tidak tersedia (mis. private mode) — degradasi ke
+    // flag in-memory saja, popup tetap tidak muncul ulang di sesi ini.
+  }
+}
 
 // Kalau didiamkan tanpa interaksi apa pun, tutup sendiri setelah durasi ini.
 const AUTO_DISMISS_MS = 15_000;
@@ -100,9 +123,8 @@ export function RelevanceSurvey({
   // Muncul otomatis setelah 3.5 detik (user sudah sempat melihat hasil) —
   // kecuali sudah pernah tampil di sesi ini.
   useEffect(() => {
-    if (surveyShownThisSession) return;
+    if (hasSurveyBeenHandled()) return;
     const t = setTimeout(() => {
-      surveyShownThisSession = true;
       setVisible(true);
     }, 3500);
     return () => clearTimeout(t);
@@ -138,6 +160,7 @@ export function RelevanceSurvey({
     });
     setSubmitting(false);
     setSubmitted(true);
+    markSurveyHandled();
   }
 
   if (!mounted || !visible) return null;
@@ -167,7 +190,10 @@ export function RelevanceSurvey({
         </div>
         <button
           type="button"
-          onClick={() => setVisible(false)}
+          onClick={() => {
+            markSurveyHandled();
+            setVisible(false);
+          }}
           aria-label="Tutup survei"
           className="relative rounded p-0.5 text-muted-foreground after:absolute after:-inset-2.5 after:content-[''] hover:text-ink focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring transition-colors"
         >
@@ -244,7 +270,10 @@ export function RelevanceSurvey({
           <div className="flex items-center justify-between pt-0.5">
             <button
               type="button"
-              onClick={() => setVisible(false)}
+              onClick={() => {
+                markSurveyHandled();
+                setVisible(false);
+              }}
               className="min-h-11 rounded px-1 text-xs text-muted-foreground hover:text-ink focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             >
               Lewati
