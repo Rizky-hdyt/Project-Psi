@@ -3,12 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowRight, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-interface NavbarProps {
-  showStartQuiz?: boolean;
-}
 
 const links = [
   { href: "/", label: "Beranda" },
@@ -17,7 +13,7 @@ const links = [
   { href: "/result", label: "Distrik" },
 ];
 
-export function Navbar({ showStartQuiz = true }: NavbarProps) {
+export function Navbar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -62,18 +58,8 @@ export function Navbar({ showStartQuiz = true }: NavbarProps) {
           })}
         </nav>
 
-        {/* Right: CTA + mobile hamburger */}
+        {/* Right: mobile hamburger */}
         <div className="flex items-center gap-2">
-          {showStartQuiz && (
-            <Link
-              href="/quiz"
-              className="hidden min-h-10 items-center gap-1.5 rounded-full bg-sawah px-5 text-sm font-medium text-white transition-colors duration-[180ms] hover:bg-sawah/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink sm:flex"
-            >
-              Mulai
-              <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-          )}
-
           {/* Mobile hamburger — 44px touch target (NFR02) */}
           <button
             className="flex h-11 w-11 items-center justify-center rounded-[var(--radius-sm)] text-muted-foreground hover:bg-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:hidden"
@@ -109,15 +95,6 @@ export function Navbar({ showStartQuiz = true }: NavbarProps) {
               </Link>
             );
           })}
-          {showStartQuiz && (
-            <Link
-              href="/quiz"
-              onClick={() => setMobileOpen(false)}
-              className="mt-2 flex min-h-11 items-center justify-center rounded-[var(--radius-sm)] bg-sawah px-4 text-sm font-medium text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
-            >
-              Mulai Quiz
-            </Link>
-          )}
         </nav>
       )}
     </header>

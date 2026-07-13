@@ -1155,3 +1155,13 @@ rm src/components/landing/CapabilityShowcase.tsx
 **Root cause:** flag "sudah tampil/ditangani" (`surveyShownThisSession`) di `src/components/shared/RelevanceSurvey.tsx` cuma variabel in-memory level module. Refresh (F5) me-reload JS dari nol sehingga flag balik ke `false`, walau user sudah submit sebelumnya.
 
 **Fix:** flag dipersist ke `localStorage` (`fci-survey-handled`), ditandai saat user submit, klik X (tutup), atau klik "Lewati" — sehingga tidak nanya ulang lagi meski refresh/tutup-buka tab. Auto-dismiss karena timeout 15 detik (tidak disentuh sama sekali) sengaja TIDAK menandai handled, supaya popup masih boleh muncul lagi lain waktu kalau user belum sempat lihat. Ini tidak melanggar §15.3 CLAUDE.md (larangan localStorage untuk state quiz/hasil) karena preferensi popup feedback ini di luar cakupan state quiz/rekomendasi yang wajib efemeral.
+
+---
+
+## Lanjutan (2026-07-13) — Hapus tombol CTA "Mulai" dari navbar
+
+**Permintaan user:** tombol "Mulai" di navbar dihilangkan; untuk mengulang quiz dari awal, user diarahkan lewat link "Beranda" di navbar atau tombol "Ulangi Quiz" yang sudah ada di `/result`.
+
+**Perubahan:**
+- `src/components/shared/PillNavbar.tsx` (dipakai di Landing, Quiz, Result, District Detail, Compare, Assistant): hapus blok CTA "Mulai" desktop & mobile, hapus logic `hideCta`, hapus import `ArrowRight` yang jadi tidak terpakai.
+- `src/components/shared/Navbar.tsx` (dipakai di halaman Algoritma & 404): hapus blok CTA "Mulai"/"Mulai Quiz" desktop & mobile, hapus prop `showStartQuiz` (tidak ada pemanggil yang memakainya), hapus import `ArrowRight`.

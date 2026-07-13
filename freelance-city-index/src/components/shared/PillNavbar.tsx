@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowRight, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
@@ -23,9 +23,6 @@ const NAV_LINKS = [
 export function PillNavbar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
-  // Sembunyikan CTA "Mulai" kalau sudah di halaman quiz — tidak masuk akal
-  // menawarkan "mulai quiz" saat user sedang mengisi quiz itu sendiri.
-  const hideCta = pathname?.startsWith("/quiz");
 
   function isActive(href: string) {
     if (href === "/result") {
@@ -60,17 +57,8 @@ export function PillNavbar() {
           );
         })}
       </div>
-      {!hideCta && (
-        <Link
-          href="/quiz"
-          className="ml-auto hidden shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-sawah px-4 py-2 text-[12px] font-bold text-white transition-[filter] hover:brightness-110 @[560px]:flex"
-        >
-          Mulai <ArrowRight className="h-3 w-3" />
-        </Link>
-      )}
-
       {/* Hamburger — cuma tampil kalau lebar navbar < 560px (container query),
-          menggantikan link & CTA yang disembunyikan di atas supaya navigasi
+          menggantikan link yang disembunyikan di atas supaya navigasi
           tidak hilang total di konteks sempit (mobile). */}
       <button
         type="button"
@@ -100,15 +88,6 @@ export function PillNavbar() {
               </Link>
             );
           })}
-          {!hideCta && (
-            <Link
-              href="/quiz"
-              onClick={() => setMobileOpen(false)}
-              className="mt-1 flex min-h-11 items-center justify-center gap-1.5 rounded-xl bg-sawah px-3 text-sm font-bold text-white"
-            >
-              Mulai <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-          )}
         </div>
       )}
     </nav>
