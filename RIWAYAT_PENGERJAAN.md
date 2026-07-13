@@ -1120,3 +1120,28 @@ rm src/components/landing/CapabilityShowcase.tsx
 | Backend API (Neon + Prisma + JWT) | ✅ |
 | Build TypeScript | ✅ 0 error, 17 routes |
 | Deploy Vercel | 🔜 Fase 9 |
+
+---
+
+## Lanjutan (2026-07-13) — Poster Expo: logo resmi prodi + ekspor cetak A1
+
+**Konteks:** poster expo di `poster/poster.html` (versi final yang diekspor ke `FCI-Poster-Expo-A1.png/pdf`).
+
+1. **Logo header diganti file resmi.** Lockup rakitan manual (uii-badge.png + teks HTML "PROGRAM STUDI / INFORMATIKA / PROGRAM SARJANA") diganti satu gambar resmi `poster/assets/H_FC_BG_W.png` (lockup horizontal Prodi Informatika UII, PNG transparan 987x287). Tinggi tampil tetap 74px.
+2. **Ekspor ulang kualitas cetak A1:**
+   - `FCI-Poster-Expo-A1.png` → 7016x9933 px = **300 DPI** pada A1 594x841 mm (sebelumnya 4800x6796 ≈ 205 DPI). Render via Chrome headless `--force-device-scale-factor=5.846667`.
+   - `FCI-Poster-Expo-A1.pdf` → 1 halaman, MediaBox 594x841 mm persis; teks jadi vektor (paling tajam untuk percetakan). Ditambah `@page { size: 594mm 841mm }` + `.poster { zoom: 1.870866 }` di `@media print` pada poster.html.
+3. **QR anti-blur:** `image-rendering: pixelated` pada `.qr-img` supaya modul QR tetap tajam saat di-upscale (sumber 480px, butuh ~491px pada 300 DPI).
+4. **Verifikasi:** crop 1:1 logo & QR dari PNG 300 DPI tajam; preview keseluruhan utuh; MediaBox PDF & jumlah halaman dicek dari bytes PDF.
+
+**Catatan untuk percetakan:** serahkan PDF-nya (vektor, ukuran halaman sudah A1). PNG 300 DPI sebagai cadangan kalau percetakan minta raster.
+
+---
+
+## Lanjutan (2026-07-13) — Fix bug: mobile dropdown navbar muncul di belakang konten
+
+**Bug:** di `/result` dan `/district/:id` (tampilan HP), buka hamburger menu `PillNavbar` membuat dropdown-nya muncul di belakang hero card, bukan di atasnya.
+
+**Root cause:** `PillNavbar` (`src/components/shared/PillNavbar.tsx`) cuma `position: relative` tanpa `z-index` sendiri. Section hero di `/result` & `/district/:id` pakai `isolate` (bikin stacking context baru) dan urutannya di DOM setelah navbar. Karena navbar dan hero section sama-sama positioned tanpa z-index eksplisit di dalam stacking context wrapper (`backdrop-blur-2xl`), elemen yang render belakangan (hero section) menang secara visual dan menutupi dropdown mobile navbar.
+
+**Fix:** beri `nav` di `PillNavbar` `z-30` eksplisit (navbar + dropdownnya jadi stacking context dominan), dan dropdown mobile-nya sendiri dinaikkan dari `z-10` ke `z-40`. Perbaikan di level komponen jadi otomatis berlaku di semua halaman yang pakai `PillNavbar` (Landing, Quiz, Result, District Detail, Compare, Assistant).

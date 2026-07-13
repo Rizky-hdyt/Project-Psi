@@ -36,7 +36,7 @@ export function PillNavbar() {
   }
 
   return (
-    <nav className="@container relative flex items-center gap-2 rounded-full border border-white/50 bg-white/70 px-3.5 py-2.5 shadow-[0_4px_14px_rgba(30,35,48,0.06)] backdrop-blur-xl">
+    <nav className="@container relative z-30 flex items-center gap-2 rounded-full border border-white/50 bg-white/70 px-3.5 py-2.5 shadow-[0_4px_14px_rgba(30,35,48,0.06)] backdrop-blur-xl">
       <Link href="/" className="flex shrink-0 items-center gap-2 whitespace-nowrap text-[13px] font-extrabold text-ink">
         <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sawah text-sm font-extrabold text-white">
           F
@@ -83,7 +83,7 @@ export function PillNavbar() {
       </button>
 
       {mobileOpen && (
-        <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-10 flex flex-col gap-1 rounded-2xl border border-white/50 bg-white/90 p-2 shadow-[0_10px_30px_rgba(30,35,48,0.12)] backdrop-blur-xl @[560px]:hidden">
+        <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-40 flex flex-col gap-1 rounded-2xl border border-white/50 bg-white/90 p-2 shadow-[0_10px_30px_rgba(30,35,48,0.12)] backdrop-blur-xl @[560px]:hidden">
           {NAV_LINKS.map(({ href, label }) => {
             const active = isActive(href);
             return (
