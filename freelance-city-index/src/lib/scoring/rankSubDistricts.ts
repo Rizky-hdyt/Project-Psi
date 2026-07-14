@@ -4,17 +4,8 @@ import type { QuizInput } from "@/types/quiz";
 import { computeAdjustedWeights } from "./normalize";
 import { computeDistrictScore, computeKontribusi } from "./score";
 
-const STALE_THRESHOLD_DAYS = 7;
-
 function isScoreValid(skor: number): boolean {
   return skor > 0 && skor <= 100;
-}
-
-function isScoreStale(updatedAt: string): boolean {
-  const updated = new Date(updatedAt).getTime();
-  const now = Date.now();
-  const diffDays = (now - updated) / (1000 * 60 * 60 * 24);
-  return diffDays > STALE_THRESHOLD_DAYS;
 }
 
 // Ranking level kedua: kecamatan di dalam SATU distrik. Formula sama persis
@@ -40,7 +31,7 @@ export function rankSubDistricts(
 
     for (const id of indicators) {
       const scoreEntry = subDistrictScores.find((s) => s.indicatorId === id);
-      if (!scoreEntry || !isScoreValid(scoreEntry.skor) || isScoreStale(scoreEntry.updatedAt)) {
+      if (!scoreEntry || !isScoreValid(scoreEntry.skor)) {
         isValid = false;
         break;
       }
